@@ -12,7 +12,7 @@ const SystemSettings = () => {
     useEffect(() => {
         fetchConsultationFee();
     }, []);
-
+ 
     const fetchConsultationFee = async () => {
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/settings/consultation_fee`);

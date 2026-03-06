@@ -6,7 +6,8 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://naitiri-jambo-v2.vercel.app',
+        // 'https://naitiri-jambo-v2.vercel.app',
+        'https://njambo.vercel.app',
         'http://localhost:5173',
         'naitirijambo.com',
         'https://naitirijambo.com',

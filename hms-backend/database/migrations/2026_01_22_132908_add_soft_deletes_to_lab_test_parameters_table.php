@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('lab_test_parameters', function (Blueprint $table) {
-            //
+            $table->softDeletes();
         });
     }
 
@@ -22,7 +22,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('lab_test_parameters', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn($table->getTable(), 'deleted_at')) {
+                $table->dropSoftDeletes();
+            }
         });
     }
 };

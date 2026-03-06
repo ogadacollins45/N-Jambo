@@ -49,7 +49,7 @@ const Navbar = () => {
               <div className="hidden sm:block">
                 <h2 className={`text-lg lg:text-xl font-bold ${darkMode ? "text-white" : "bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
                   }`}>
-                  Brixton HMS
+                  Naitiri Jambo HMS
                 </h2>
                 <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                   Healthcare Excellence

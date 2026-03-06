@@ -164,7 +164,7 @@ const TreatmentPrint = () => {
                         <div className="flex justify-between items-center relative z-10">
                             <div>
                                 <h1 className="text-3xl font-sans font-black text-blue-900 tracking-tight uppercase leading-none mb-1">
-                                    Brixton-Makunga
+                                    Naitiri Jambo
                                 </h1>
                                 <h2 className="text-xl font-sans font-bold text-gray-600 tracking-wide uppercase">
                                     Healthcare HMIS
@@ -181,7 +181,7 @@ const TreatmentPrint = () => {
                                     <div className="p-1 bg-blue-50 rounded-full"><Phone size={14} className="text-blue-900" /></div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2 text-gray-600 text-sm">
-                                    <span>info@brixtonmakunga.com</span>
+                                    <span>info@naitirijambo.com</span>
                                     <div className="p-1 bg-blue-50 rounded-full"><Mail size={14} className="text-blue-900" /></div>
                                 </div>
                             </div>
@@ -387,7 +387,7 @@ const TreatmentPrint = () => {
                         <div className="text-[9px] text-gray-500 flex gap-4">
                             <span>Generated: {new Date().toLocaleString()}</span>
                             <span>•</span>
-                            <span>Brixton-Makunga Healthcare HMIS</span>
+                            <span>Naitiri Jambo Healthcare HMIS</span>
                             <span>•</span>
                             <span>Page 1 of 1</span>
                         </div>

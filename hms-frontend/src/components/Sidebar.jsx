@@ -199,7 +199,7 @@ const Sidebar = () => {
 
           {!isCollapsed ? (
             <div className="px-4">
-              <div className="text-2xl font-bold">🏥 Brixton HMS</div>
+              <div className="text-2xl font-bold">🏥 Naitiri Jambo HMS</div>
               <div className="text-xs text-blue-100 mt-1">Healthcare Excellence</div>
             </div>
           ) : (
@@ -361,7 +361,7 @@ const Sidebar = () => {
         {/* Footer */}
         {!isCollapsed && (
           <div className="px-4 py-3 text-center text-xs text-gray-500 border-t border-gray-200 bg-gray-50">
-            <p>© 2025 Brixton HMS</p>
+            <p>© 2025 Naitiri Jambo HMS</p>
           </div>
         )}
       </div>

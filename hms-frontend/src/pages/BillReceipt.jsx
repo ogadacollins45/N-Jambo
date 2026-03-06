@@ -58,7 +58,7 @@ const BillReceipt = () => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex justify-between items-start print:border-b-0">
           <div>
-            <h1 className="text-2xl font-bold text-indigo-700">Brixton HMS</h1>
+            <h1 className="text-2xl font-bold text-indigo-700">Naitiri Jambo HMS</h1>
             <p className="text-xs text-gray-500">Hospital Billing Receipt</p>
           </div>
           <div className="text-right">
@@ -150,7 +150,7 @@ const BillReceipt = () => {
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-200 text-center text-sm text-gray-500 print:text-xs print:border-t-0">
-          <p>Thank you for choosing Brixton HMS. For any inquiries, please contact us.</p>
+          <p>Thank you for choosing Naitiri Jambo HMS. For any inquiries, please contact us.</p>
         </div>
 
         {/* Controls - Hidden on Print */}

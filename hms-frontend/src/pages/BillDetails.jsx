@@ -300,7 +300,7 @@ const ReceiptPreview = ({ bill, paidAmount, balance }) => {
       <div className="p-6 bg-gray-50">
         <div className="bg-white p-6 rounded-lg shadow-inner border border-gray-100">
           <div className="text-center mb-6">
-            <h1 className="text-xl font-bold text-gray-800">Brixton HMS</h1>
+            <h1 className="text-xl font-bold text-gray-800">Naitiri Jambo HMS</h1>
             <p className="text-xs text-gray-500">Billing Receipt</p>
           </div>
           <div className="text-xs text-gray-600 space-y-1 mb-4">

@@ -211,7 +211,7 @@ export default function Documentation() {
                             System Documentation
                         </h1>
                         <p className="text-sm text-gray-600 mt-1">
-                            Complete guide to using the Brixton Hospital Management System
+                            Complete guide to using the Naitiri Jambo Hospital Management System
                         </p>
                     </div>
 
@@ -222,7 +222,7 @@ export default function Documentation() {
                                 <Settings className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold">Brixton HMS</h2>
+                                <h2 className="text-xl font-bold">Naitiri Jambo HMS</h2>
                                 <p className="text-sm text-blue-100">Hospital Management System</p>
                             </div>
                         </div>
@@ -305,7 +305,7 @@ export default function Documentation() {
                             <div>
                                 <p className="text-sm font-semibold text-gray-800 mb-2">Need Additional Help?</p>
                                 <p className="text-sm text-gray-700 mb-2">
-                                    This documentation covers the core features of the Brixton HMS. For detailed technical support, advanced configurations, or reporting issues, please contact your system administrator.
+                                    This documentation covers the core features of the Naitiri Jambo HMS. For detailed technical support, advanced configurations, or reporting issues, please contact your system administrator.
                                 </p>
                                 <p className="text-xs text-gray-600">
                                     <span className="font-semibold">Tip:</span> Click on any section above to expand and view detailed step-by-step instructions.

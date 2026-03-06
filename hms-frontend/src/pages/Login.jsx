@@ -108,7 +108,7 @@ const Login = () => {
           <div className="relative flex flex-col items-center justify-center p-12 text-center text-white z-10 animate-slide-up">
             <div className="flex items-center gap-4 mb-6 transform hover:scale-105 transition-transform duration-300">
               <div className="text-7xl animate-float">🏥</div>
-              <h1 className="text-5xl font-bold drop-shadow-lg">Brixton HMS</h1>
+              <h1 className="text-5xl font-bold drop-shadow-lg">Naitiri Jambo HMS</h1>
             </div>
             <p className="mt-4 text-lg text-white/90 max-w-md drop-shadow-md">
               Dedicated to providing exceptional care and streamlined hospital management.
@@ -126,7 +126,7 @@ const Login = () => {
               <div className="flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
                 <div className="text-5xl sm:text-6xl animate-float">🏥</div>
                 <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
-                  Brixton HMS
+                  Naitiri Jambo HMS
                 </h1>
               </div>
               <p className="text-gray-600 text-sm text-center max-w-sm">

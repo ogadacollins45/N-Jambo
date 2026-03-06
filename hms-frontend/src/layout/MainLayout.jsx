@@ -16,7 +16,7 @@ export default function MainLayout() {
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-4 hidden md:block">
         <div className="flex items-center gap-2 mb-8 text-primary font-bold text-lg">
-          <Stethoscope /> Brixton HMS
+          <Stethoscope /> Naitiri Jambo HMS
         </div>
         <nav className="flex flex-col gap-2">
           {navItems.map((item) => (

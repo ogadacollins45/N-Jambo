@@ -1,0 +1,25 @@
+# Laravel
+/vendor/
+/node_modules/
+.env
+.env.*
+/storage/*.key
+/public/storage
+/storage/logs/*
+/bootstrap/cache/
+
+# Vite / React
+public/build/
+dist/
+*.log
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Composer & NPM debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

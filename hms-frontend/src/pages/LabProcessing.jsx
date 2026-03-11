@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../layout/DashboardLayout';
+import { useLabNotification } from '../context/LabNotificationContext';
 import { Microscope, Save, Send, X, Plus, Loader, Clock, CheckCircle2 } from 'lucide-react';
 
 const LabProcessing = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { refreshLabCount } = useLabNotification();
     const [request, setRequest] = useState(null);
     const [loading, setLoading] = useState(true);
     const [recordingSample, setRecordingSample] = useState(false);
@@ -171,6 +173,9 @@ const LabProcessing = () => {
 
             alert('Results submitted successfully');
             loadRequest();
+
+            // Refresh the lab notification badge for doctors/admins
+            refreshLabCount();
 
             // Clear state for this test
             setResults(prev => {

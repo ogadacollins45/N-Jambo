@@ -9,6 +9,7 @@ import {
 
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SidebarProvider } from "./context/SidebarContext.jsx";
+import { LabNotificationProvider } from "./context/LabNotificationContext.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import RoleBasedRoute from "./components/RoleBasedRoute.jsx";
 
@@ -55,6 +56,7 @@ import PharmacyReview from "./pages/PharmacyReview.jsx";
 import PharmacyReports from "./pages/PharmacyReports.jsx";
 import LabQueue from "./pages/LabQueue.jsx";
 import LabProcessing from "./pages/LabProcessing.jsx";
+import LabCompleted from "./pages/LabCompleted.jsx";
 import Updates from "./pages/Updates.jsx";
 import DatabaseManagement from "./pages/DatabaseManagement.jsx";
 
@@ -64,7 +66,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <SidebarProvider>
-        <Router>
+        <LabNotificationProvider>
+          <Router>
           <Routes>
 
             {/* ------------------ PUBLIC ROUTES ------------------ */}
@@ -104,6 +107,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               {/* Laboratory */}
               <Route path="/lab/queue" element={<LabQueue />} />
               <Route path="/lab/processing/:id" element={<LabProcessing />} />
+              <Route path="/lab/completed" element={<LabCompleted />} />
 
               {/* Patients */}
               <Route path="/patients" element={<Patients />} />
@@ -150,7 +154,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </Route>
 
           </Routes>
-        </Router>
+          </Router>
+        </LabNotificationProvider>
       </SidebarProvider>
     </AuthProvider>
   </React.StrictMode>

@@ -272,6 +272,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lab/requests/{id}', [\App\Http\Controllers\LabRequestController::class, 'show']);
     Route::delete('/lab/requests/{id}/cancel', [\App\Http\Controllers\LabRequestController::class, 'cancel']);
     Route::get('/lab/tests/available', [\App\Http\Controllers\LabRequestController::class, 'availableTests']);
+    // Lab notifications (badge count and marking as reviewed)
+    Route::get('/lab/notifications/count', [\App\Http\Controllers\LabRequestController::class, 'notificationsCount']);
+    Route::post('/lab/requests/{id}/review', [\App\Http\Controllers\LabRequestController::class, 'markAsReviewed']);
+
 
     // Lab Test Management (Admin creates/edits tests and parameters)
     Route::get('/lab/management/categories', [\App\Http\Controllers\LabTestManagementController::class, 'getCategories']);

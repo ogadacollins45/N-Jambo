@@ -157,12 +157,12 @@ class LabProcessingController extends Controller
             // Update test status
             $requestTest->update(['status' => 'completed']);
 
-            // Check if all tests completed
+            // Check if all tests completed - mark request as completed but NOT reviewed
+            // reviewed_at is set separately when a doctor reviews the results
             $allCompleted = $labRequest->tests()->where('status', '!=', 'completed')->count() === 0;
             if ($allCompleted) {
                 $labRequest->update([
                     'status' => 'completed',
-                    'reviewed_at' => now(),
                 ]);
             }
 

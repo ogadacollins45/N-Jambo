@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useSidebar } from "../context/SidebarContext";
+import { useLabNotification } from "../context/LabNotificationContext";
 import {
   LayoutDashboard,
   Users,
@@ -28,6 +29,7 @@ const Sidebar = () => {
   const { user } = useContext(AuthContext);
   const { isCollapsed, isMobileMenuOpen, toggleSidebar, closeMobileMenu } = useSidebar();
   const role = user?.role || localStorage.getItem("role");
+  const { refreshLabCount } = useLabNotification();
 
   const [hoveredItem, setHoveredItem] = useState(null);
   const [queueCount, setQueueCount] = useState(0);
@@ -59,6 +61,12 @@ const Sidebar = () => {
 
     fetchQueueCount();
     // No polling - manual refresh only for cost optimization
+  }, []);
+
+  // Fetch lab notification count on mount (same no-polling pattern)
+  useEffect(() => {
+    refreshLabCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const menu = [

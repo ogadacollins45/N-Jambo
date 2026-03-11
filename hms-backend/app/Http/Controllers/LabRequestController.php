@@ -169,4 +169,44 @@ class LabRequestController extends Controller
 
         return response()->json($tests);
     }
+
+    /**
+     * Get count of completed but unreviewed lab requests (for notification badge)
+     * - Doctors see only their own requests
+     * - Admins see all
+     */
+    public function notificationsCount(Request $request)
+    {
+        $user = $request->user();
+
+        $query = LabRequest::where('status', 'completed')
+            ->whereNull('reviewed_at');
+
+        if ($user->role === 'doctor') {
+            // The authenticated user IS a Staff record; doctor_id in lab_requests references staff.id
+            $query->where('doctor_id', $user->id);
+        }
+        // Admin sees all unreviewed completed requests
+
+        return response()->json(['count' => $query->count()]);
+    }
+
+    /**
+     * Mark a lab request as reviewed by the logged-in doctor/admin
+     */
+    public function markAsReviewed(Request $request, $id)
+    {
+        $labRequest = LabRequest::findOrFail($id);
+
+        if ($labRequest->status !== 'completed') {
+            return response()->json(['message' => 'Lab request is not completed yet'], 422);
+        }
+
+        $labRequest->update([
+            'reviewed_at' => now(),
+            'reviewed_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['message' => 'Lab request marked as reviewed']);
+    }
 }

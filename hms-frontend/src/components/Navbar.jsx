@@ -1,11 +1,15 @@
 import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useSidebar } from "../context/SidebarContext";
-import { Moon, Sun, LogOut, User, Menu, X, Maximize, Minimize } from "lucide-react";
+import { useLabNotification } from "../context/LabNotificationContext";
+import { Moon, Sun, LogOut, User, Menu, X, Maximize, Minimize, Bell } from "lucide-react";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const { toggleMobileMenu } = useSidebar();
+  const navigate = useNavigate();
+  const { labCompletedCount } = useLabNotification();
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -88,6 +92,26 @@ const Navbar = () => {
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </button>
 
+            {/* Lab Notification Bell — doctor & admin only */}
+            {user && (user.role === 'doctor' || user.role === 'admin') && (
+              <button
+                onClick={() => navigate('/lab/completed')}
+                className={`relative p-2 rounded-lg transition-all duration-300 transform hover:scale-110 ${
+                  darkMode
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title="Lab Results Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {labCompletedCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-md">
+                    {labCompletedCount > 99 ? '99+' : labCompletedCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* User info */}
             {user ? (
               <>
@@ -164,6 +188,26 @@ const Navbar = () => {
             >
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </button>
+
+            {/* Lab Notification Bell (mobile) — doctor & admin only */}
+            {user && (user.role === 'doctor' || user.role === 'admin') && (
+              <button
+                onClick={() => navigate('/lab/completed')}
+                className={`relative p-2 rounded-lg transition-all ${
+                  darkMode
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title="Lab Results Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {labCompletedCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-md">
+                    {labCompletedCount > 99 ? '99+' : labCompletedCount}
+                  </span>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`p-2 rounded-lg transition-all ${darkMode

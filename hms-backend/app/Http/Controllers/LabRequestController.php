@@ -90,12 +90,34 @@ class LabRequestController extends Controller
             $query->where('patient_id', $request->patient_id);
         }
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('priority')) {
+        if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
+        }
+
+        // Search by patient name or request number
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('request_number', 'like', "%{$search}%")
+                  ->orWhereHas('patient', function ($q2) use ($search) {
+                      $q2->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%")
+                         ->orWhere('upid', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Date range filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('request_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('request_date', '<=', $request->date_to);
         }
 
         $perPage = $request->input('per_page', 15);

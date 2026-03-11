@@ -15,6 +15,7 @@ import {
     Phone,
     Mail
 } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const TreatmentPrint = () => {
     const { id, treatmentId } = useParams(); // id is patientId
@@ -162,14 +163,17 @@ const TreatmentPrint = () => {
                     {/* Pro Letterhead */}
                     <div className="p-6 border-b-4 border-blue-900 relative overflow-hidden print:p-4">
                         <div className="flex justify-between items-center relative z-10">
-                            <div>
-                                <h1 className="text-3xl font-sans font-black text-blue-900 tracking-tight uppercase leading-none mb-1">
-                                    Naitiri Jambo
-                                </h1>
-                                <h2 className="text-xl font-sans font-bold text-gray-600 tracking-wide uppercase">
-                                    Healthcare HMIS
-                                </h2>
-                                <p className="text-xs text-blue-800 mt-2 font-semibold tracking-widest uppercase">Excellence in Care</p>
+                            <div className="flex items-center gap-4">
+                                <img src={logo} alt="Logo" className="w-16 h-16 rounded-xl object-cover shadow-lg border border-blue-100" />
+                                <div>
+                                    <h1 className="text-3xl font-sans font-black text-blue-900 tracking-tight uppercase leading-none mb-1">
+                                        Naitiri Jambo
+                                    </h1>
+                                    <h2 className="text-xl font-sans font-bold text-gray-600 tracking-wide uppercase">
+                                        Healthcare HMIS
+                                    </h2>
+                                    <p className="text-xs text-blue-800 mt-2 font-semibold tracking-widest uppercase">Excellence in Care</p>
+                                </div>
                             </div>
                             <div className="text-right space-y-1">
                                 <div className="flex items-center justify-end gap-2 text-gray-600 text-sm">
@@ -257,9 +261,11 @@ const TreatmentPrint = () => {
                                     <div className="space-y-3">
                                         {[
                                             { label: 'Chief Complaint', value: treatment.chief_complaint },
-                                            { label: 'Premedication', value: treatment.premedication },
-                                            { label: 'Past Medical History', value: treatment.past_medical_history },
+                                            { label: 'History of Presenting Illness', value: treatment.history_presenting_illness },
                                             { label: 'Systemic Review', value: treatment.systemic_review },
+                                            { label: 'Past Medical and Surgical History', value: treatment.past_medical_history },
+                                            { label: 'Premedication', value: treatment.premedication },
+                                            { label: 'General and Systemic examination', value: treatment.general_systemic_examination },
                                             { label: 'Impression', value: treatment.impression },
                                         ].map((item, idx) => (
                                             <div key={idx} className="block">

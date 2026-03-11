@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useLabNotification } from "../context/LabNotificationContext";
 import { Moon, Sun, LogOut, User, Menu, X, Maximize, Minimize, Bell } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -46,9 +47,8 @@ const Navbar = () => {
           {/* Left side: Brand */}
           <div className="flex items-center flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${darkMode ? "bg-blue-600" : "bg-gradient-to-br from-blue-600 to-indigo-600"
-                }`}>
-                <span className="text-white text-xl font-bold">🏥</span>
+              <div className="flex items-center justify-center">
+                <img src={logo} alt="Naitiri Jambo Logo" className="w-10 h-10 rounded-lg object-cover shadow-md" />
               </div>
               <div className="hidden sm:block">
                 <h2 className={`text-lg lg:text-xl font-bold ${darkMode ? "text-white" : "bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"

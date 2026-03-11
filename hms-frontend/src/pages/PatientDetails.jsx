@@ -76,9 +76,11 @@ const PatientDetails = () => {
     diagnosis: "",
     treatment_notes: "",
     chief_complaint: "",
-    premedication: "",
-    past_medical_history: "",
+    history_presenting_illness: "",
     systemic_review: "",
+    past_medical_history: "",
+    premedication: "",
+    general_systemic_examination: "",
     impression: "",
     attending_doctor: "",
     doctor_id: "",
@@ -304,9 +306,11 @@ const PatientDetails = () => {
           diagnosis: newTreatment.diagnosis,
           treatment_notes: newTreatment.treatment_notes,
           chief_complaint: newTreatment.chief_complaint,
-          premedication: newTreatment.premedication,
-          past_medical_history: newTreatment.past_medical_history,
+          history_presenting_illness: newTreatment.history_presenting_illness,
           systemic_review: newTreatment.systemic_review,
+          past_medical_history: newTreatment.past_medical_history,
+          premedication: newTreatment.premedication,
+          general_systemic_examination: newTreatment.general_systemic_examination,
           impression: newTreatment.impression,
           payment_type: newTreatment.payment_type,
         };
@@ -361,9 +365,11 @@ const PatientDetails = () => {
         diagnosis: "",
         treatment_notes: "",
         chief_complaint: "",
-        premedication: "",
-        past_medical_history: "",
+        history_presenting_illness: "",
         systemic_review: "",
+        past_medical_history: "",
+        premedication: "",
+        general_systemic_examination: "",
         impression: "",
         attending_doctor: "",
         doctor_id: "",
@@ -1095,28 +1101,13 @@ const PatientDetails = () => {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Premedication <span className="text-red-500">*</span>
+                              History of Presenting Illness <span className="text-red-500">*</span>
                             </label>
                             <textarea
-                              name="premedication"
-                              placeholder="Current medications and dosages"
-                              rows="2"
-                              value={newTreatment.premedication}
-                              onChange={handleChange}
-                              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Past Medical History <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                              name="past_medical_history"
-                              placeholder="Relevant past medical conditions, surgeries, hospitalizations"
-                              rows="2"
-                              value={newTreatment.past_medical_history}
+                              name="history_presenting_illness"
+                              placeholder="Detailed history of the current condition"
+                              rows="3"
+                              value={newTreatment.history_presenting_illness}
                               onChange={handleChange}
                               className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                               required
@@ -1132,6 +1123,51 @@ const PatientDetails = () => {
                               placeholder="Review of systems - cardiovascular, respiratory, gastrointestinal, etc."
                               rows="2"
                               value={newTreatment.systemic_review}
+                              onChange={handleChange}
+                              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Past Medical and Surgical History <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              name="past_medical_history"
+                              placeholder="Relevant past medical conditions, surgeries, hospitalizations"
+                              rows="2"
+                              value={newTreatment.past_medical_history}
+                              onChange={handleChange}
+                              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Premedication <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              name="premedication"
+                              placeholder="Current medications and dosages"
+                              rows="2"
+                              value={newTreatment.premedication}
+                              onChange={handleChange}
+                              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              General and Systemic examination <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              name="general_systemic_examination"
+                              placeholder="Physical examination findings"
+                              rows="3"
+                              value={newTreatment.general_systemic_examination}
                               onChange={handleChange}
                               className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                               required
@@ -1594,19 +1630,11 @@ const PatientDetails = () => {
                                             </p>
                                           </div>
 
-                                          {/* Premedication */}
+                                          {/* History of Presenting Illness */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
-                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">Premedication</p>
-                                            <p className={`text-xs ${t.premedication ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.premedication || 'Not recorded'}
-                                            </p>
-                                          </div>
-
-                                          {/* Past Medical History */}
-                                          <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
-                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">Past Medical History</p>
-                                            <p className={`text-xs ${t.past_medical_history ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.past_medical_history || 'Not recorded'}
+                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">History of Presenting Illness</p>
+                                            <p className={`text-xs ${t.history_presenting_illness ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {t.history_presenting_illness || 'Not recorded'}
                                             </p>
                                           </div>
 
@@ -1615,6 +1643,30 @@ const PatientDetails = () => {
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Systemic Review</p>
                                             <p className={`text-xs ${t.systemic_review ? 'text-gray-800' : 'text-gray-400 italic'}`}>
                                               {t.systemic_review || 'Not recorded'}
+                                            </p>
+                                          </div>
+
+                                          {/* Past Medical History */}
+                                          <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
+                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">Past Medical and Surgical History</p>
+                                            <p className={`text-xs ${t.past_medical_history ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {t.past_medical_history || 'Not recorded'}
+                                            </p>
+                                          </div>
+
+                                          {/* Premedication */}
+                                          <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
+                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">Premedication</p>
+                                            <p className={`text-xs ${t.premedication ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {t.premedication || 'Not recorded'}
+                                            </p>
+                                          </div>
+
+                                          {/* General and Systemic examination */}
+                                          <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
+                                            <p className="text-xs font-semibold text-gray-700 mb-0.5">General and Systemic examination</p>
+                                            <p className={`text-xs ${t.general_systemic_examination ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {t.general_systemic_examination || 'Not recorded'}
                                             </p>
                                           </div>
 

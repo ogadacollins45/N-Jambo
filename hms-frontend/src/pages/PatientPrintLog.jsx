@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Printer, X, ChevronLeft } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const PatientPrintLog = () => {
     const { id } = useParams();
@@ -153,10 +154,22 @@ const PatientPrintLog = () => {
             <div className="max-w-7xl mx-auto p-4">
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                     {/* Patient Header */}
-                    <div className="border-b-2 border-gray-300 pb-4 mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                            Patient Medical Record
-                        </h2>
+                    <div className="flex flex-col gap-6 mb-6">
+                        <div className="border-b-2 border-gray-300 pb-4 flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                                <img src={logo} alt="Logo" className="w-16 h-16 rounded-xl object-cover shadow-md border border-gray-100" />
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">
+                                        Patient Medical Record
+                                    </h2>
+                                    <p className="text-sm text-gray-500 font-medium">Naitiri Jambo HMS</p>
+                                </div>
+                            </div>
+                            <div className="text-right hidden sm:block">
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest border border-gray-200 px-2 py-1 rounded">Confidential</p>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                             <div>
                                 <span className="font-semibold text-gray-600">Name:</span>{" "}
@@ -251,18 +264,42 @@ const PatientPrintLog = () => {
                                     )}
                                     {t.chief_complaint && (
                                         <p className="text-sm mb-2">
-                                            <span className="font-semibold text-gray-700">
-                                                Chief Complaint:
-                                            </span>{" "}
-                                            <span className="text-gray-800">{t.chief_complaint}</span>
+                                            <span className="font-semibold text-gray-700">Chief Complaint:</span> <span className="text-gray-800">{t.chief_complaint}</span>
+                                        </p>
+                                    )}
+                                    {t.history_presenting_illness && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">History of Presenting Illness:</span> <span className="text-gray-800">{t.history_presenting_illness}</span>
+                                        </p>
+                                    )}
+                                    {t.systemic_review && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">Systemic Review:</span> <span className="text-gray-800">{t.systemic_review}</span>
+                                        </p>
+                                    )}
+                                    {t.past_medical_history && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">Past Medical and Surgical History:</span> <span className="text-gray-800">{t.past_medical_history}</span>
+                                        </p>
+                                    )}
+                                    {t.premedication && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">Premedication:</span> <span className="text-gray-800">{t.premedication}</span>
+                                        </p>
+                                    )}
+                                    {t.general_systemic_examination && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">General and Systemic examination:</span> <span className="text-gray-800">{t.general_systemic_examination}</span>
+                                        </p>
+                                    )}
+                                    {t.impression && (
+                                        <p className="text-sm mb-2">
+                                            <span className="font-semibold text-gray-700">Impression:</span> <span className="text-gray-800">{t.impression}</span>
                                         </p>
                                     )}
                                     {t.treatment_notes && (
                                         <p className="text-sm mb-2">
-                                            <span className="font-semibold text-gray-700">
-                                                Treatment Notes:
-                                            </span>{" "}
-                                            <span className="text-gray-800">{t.treatment_notes}</span>
+                                            <span className="font-semibold text-gray-700">Treatment Notes:</span> <span className="text-gray-800">{t.treatment_notes}</span>
                                         </p>
                                     )}
 

@@ -76,9 +76,11 @@ class TreatmentController extends Controller
             'diagnosis_subcategory' => 'nullable|string|max:100',
             'treatment_notes'      => 'nullable|string',
             'chief_complaint'      => 'nullable|string',
+            'history_presenting_illness' => 'nullable|string',
             'premedication'        => 'nullable|string',
             'past_medical_history' => 'nullable|string',
             'systemic_review'      => 'nullable|string',
+            'general_systemic_examination' => 'nullable|string',
             'impression'           => 'nullable|string',
             'payment_type'         => 'nullable|string|max:50',
             'doctor_id'            => 'nullable|exists:doctors,id',
@@ -168,9 +170,11 @@ class TreatmentController extends Controller
             'diagnosis_status'     => $diagnosisStatus,
             'treatment_notes'      => $validated['treatment_notes'] ?? null,
             'chief_complaint'      => $validated['chief_complaint'] ?? null,
+            'history_presenting_illness' => $validated['history_presenting_illness'] ?? null,
             'premedication'        => $validated['premedication'] ?? null,
             'past_medical_history' => $validated['past_medical_history'] ?? null,
             'systemic_review'      => $validated['systemic_review'] ?? null,
+            'general_systemic_examination' => $validated['general_systemic_examination'] ?? null,
             'impression'           => $validated['impression'] ?? null,
             'payment_type'         => $validated['payment_type'] ?? null,
             'attending_doctor'     => $attendingDoctor,
@@ -233,9 +237,11 @@ class TreatmentController extends Controller
             'diagnosis_subcategory' => 'nullable|string|max:100',
             'treatment_notes'      => 'nullable|string',
             'chief_complaint'      => 'nullable|string',
+            'history_presenting_illness' => 'nullable|string',
             'premedication'        => 'nullable|string',
             'past_medical_history' => 'nullable|string',
             'systemic_review'      => 'nullable|string',
+            'general_systemic_examination' => 'nullable|string',
             'impression'           => 'nullable|string',
             'payment_type'         => 'nullable|string|max:50',
             'doctor_id'            => 'nullable|exists:doctors,id',
@@ -262,6 +268,9 @@ class TreatmentController extends Controller
         if (isset($validated['chief_complaint'])) {
             $treatment->chief_complaint = $validated['chief_complaint'];
         }
+        if (isset($validated['history_presenting_illness'])) {
+            $treatment->history_presenting_illness = $validated['history_presenting_illness'];
+        }
         if (isset($validated['premedication'])) {
             $treatment->premedication = $validated['premedication'];
         }
@@ -270,6 +279,9 @@ class TreatmentController extends Controller
         }
         if (isset($validated['systemic_review'])) {
             $treatment->systemic_review = $validated['systemic_review'];
+        }
+        if (isset($validated['general_systemic_examination'])) {
+            $treatment->general_systemic_examination = $validated['general_systemic_examination'];
         }
         if (isset($validated['impression'])) {
             $treatment->impression = $validated['impression'];

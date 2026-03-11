@@ -23,6 +23,7 @@ import {
   Microscope,
   Database,
 } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -206,12 +207,17 @@ const Sidebar = () => {
           </button>
 
           {!isCollapsed ? (
-            <div className="px-4">
-              <div className="text-2xl font-bold">🏥 Naitiri Jambo HMS</div>
-              <div className="text-xs text-blue-100 mt-1">Healthcare Excellence</div>
+            <div className="px-4 flex items-center justify-center gap-3">
+              <img src={logo} alt="Logo" className="w-10 h-10 rounded-lg object-cover shadow-md border border-white/20" />
+              <div className="text-left">
+                <div className="text-xl font-bold">Naitiri Jambo HMS</div>
+                <div className="text-xs text-blue-100 italic">Healthcare Excellence</div>
+              </div>
             </div>
           ) : (
-            <div className="text-3xl">🏥</div>
+            <div className="flex justify-center">
+              <img src={logo} alt="Logo" className="w-10 h-10 rounded-lg object-cover shadow-sm" />
+            </div>
           )}
         </div>
 

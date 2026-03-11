@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -107,7 +108,7 @@ const Login = () => {
 
           <div className="relative flex flex-col items-center justify-center p-12 text-center text-white z-10 animate-slide-up">
             <div className="flex items-center gap-4 mb-6 transform hover:scale-105 transition-transform duration-300">
-              <div className="text-7xl animate-float">🏥</div>
+              <img src={logo} alt="Logo" className="w-20 h-20 rounded-2xl object-cover shadow-2xl border-2 border-white/30 animate-float" />
               <h1 className="text-5xl font-bold drop-shadow-lg">Naitiri Jambo HMS</h1>
             </div>
             <p className="mt-4 text-lg text-white/90 max-w-md drop-shadow-md">
@@ -124,7 +125,7 @@ const Login = () => {
             {/* Mobile Header - Only visible on small screens */}
             <div className="flex lg:hidden flex-col items-center gap-4 pb-4 border-b border-gray-200/50">
               <div className="flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
-                <div className="text-5xl sm:text-6xl animate-float">🏥</div>
+                <img src={logo} alt="Logo" className="w-16 h-16 rounded-xl object-cover shadow-xl border border-blue-200 animate-float" />
                 <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
                   Naitiri Jambo HMS
                 </h1>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Printer, X } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 const BillReceipt = () => {
   const { id } = useParams();
@@ -57,9 +58,12 @@ const BillReceipt = () => {
       <div className="max-w-3xl w-full bg-white shadow-xl rounded-lg overflow-hidden my-8 print:shadow-none print:rounded-none print:my-0">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex justify-between items-start print:border-b-0">
-          <div>
-            <h1 className="text-2xl font-bold text-indigo-700">Naitiri Jambo HMS</h1>
-            <p className="text-xs text-gray-500">Hospital Billing Receipt</p>
+          <div className="flex items-center gap-4">
+            <img src={logo} alt="Logo" className="w-14 h-14 rounded-lg object-cover shadow-sm border border-gray-100" />
+            <div>
+              <h1 className="text-2xl font-bold text-indigo-700">Naitiri Jambo HMS</h1>
+              <p className="text-xs text-gray-500">Hospital Billing Receipt</p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold">Receipt # {bill.id}</p>

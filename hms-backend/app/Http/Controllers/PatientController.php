@@ -167,7 +167,10 @@ class PatientController extends Controller
             'last_name'   => 'required|string|max:100',
             'gender'      => 'required|string|max:10',
             'dob'         => 'nullable|date',
-            'age'         => 'nullable|integer|min:0|max:150', //added
+            'age'         => 'nullable|integer|min:0|max:150',
+            'age_years'   => 'nullable|integer|min:0|max:150',
+            'age_months'  => 'nullable|integer|min:0|max:11',
+            'age_days'    => 'nullable|integer|min:0|max:30',
             'phone'       => 'nullable|string|max:20',
             'email'       => 'nullable|email|max:255',
             'address'     => 'nullable|string|max:255',
@@ -265,7 +268,10 @@ class PatientController extends Controller
             'last_name'   => 'required|string|max:100',
             'gender'      => 'required|string|max:10',
             'dob'         => 'nullable|date',
-            'age'         => 'nullable|integer|min:0|max:150', //added
+            'age'         => 'nullable|integer|min:0|max:150',
+            'age_years'   => 'nullable|integer|min:0|max:150',
+            'age_months'  => 'nullable|integer|min:0|max:11',
+            'age_days'    => 'nullable|integer|min:0|max:30',
             'phone'       => 'nullable|string|max:20',
             'email'       => 'nullable|email|max:255',
             'address'     => 'nullable|string|max:255',

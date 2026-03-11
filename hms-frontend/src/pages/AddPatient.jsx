@@ -71,68 +71,140 @@ const TextAreaField = ({ icon, name, label, value, onChange, placeholder, rows =
   </div>
 );
 
+const EMPTY_FORM = {
+  first_name: "",
+  last_name: "",
+  national_id: "",
+  gender: "",
+  dob: "",
+  // legacy age kept in case other parts of the app still read it
+  age: "",
+  age_years: "",
+  age_months: "",
+  age_days: "",
+  phone: "",
+  email: "",
+  address: "",
+  county: "Bungoma",
+  sub_county: "Tongaren",
+  ward: "",
+  village: "",
+  next_of_kin: "",
+  next_of_kin_phone: "",
+  pregnancy_status: "na",
+  has_disability: false,
+  disability_type: "",
+};
+
 const AddPatient = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    national_id: "",
-    gender: "",
-    dob: "",
-    age: "",
-    phone: "",
-    email: "",
-    address: "",
-
-    // NEW MOH fields (all optional)
-    county: "Bungoma",
-    sub_county: "Tongaren",
-    ward: "",
-    village: "",
-    next_of_kin: "",
-    next_of_kin_phone: "",
-    pregnancy_status: "na",
-    has_disability: false,
-    disability_type: "",
-  });
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // 🧮 Helpers
-  const calculateAgeFromDOB = (dob) => {
-    if (!dob) return "";
-    const birthDate = new Date(dob);
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /**
+   * Decompose a DOB string into exact { years, months, days } (all as strings).
+   * This is the inverse of dobFromParts.
+   */
+  const decomposeAge = (dob) => {
+    if (!dob) return { years: "", months: "", days: "" };
+    const birth = new Date(dob);
     const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return age >= 0 ? age : "";
+    if (isNaN(birth)) return { years: "", months: "", days: "" };
+
+    let years  = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth()    - birth.getMonth();
+    let days   = today.getDate()     - birth.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) {
+      years  -= 1;
+      months += 12;
+    }
+
+    return {
+      years:  years  > 0 ? String(years)  : "",
+      months: months > 0 ? String(months) : "",
+      days:   days   > 0 ? String(days)   : "",
+    };
   };
 
-  const calculateDOBFromAge = (age) => {
-    if (!age || isNaN(age)) return "";
+  /**
+   * Compute an exact DOB by subtracting years, months, and days from today.
+   * Returns "" if all parts are empty/zero.
+   */
+  const dobFromParts = (y, m, d) => {
+    const years  = parseInt(y)  || 0;
+    const months = parseInt(m)  || 0;
+    const days   = parseInt(d)  || 0;
+    if (!years && !months && !days) return "";
     const today = new Date();
-    const birthYear = today.getFullYear() - parseInt(age);
-    const dob = new Date(birthYear, today.getMonth(), today.getDate());
-    // Return formatted yyyy-mm-dd
-    return dob.toISOString().split("T")[0];
+    // Subtract years and months first, then days to handle month-boundary correctly
+    const birth = new Date(
+      today.getFullYear()  - years,
+      today.getMonth()     - months,
+      today.getDate()      - days
+    );
+    return birth.toISOString().split("T")[0];
+  };
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  /** Calendar changed → decompose the exact diff into years, months, days. */
+  const handleDOBChange = (e) => {
+    const dob = e.target.value;
+    const { years, months, days } = decomposeAge(dob);
+    setFormData((prev) => ({
+      ...prev,
+      dob,
+      age:        years,
+      age_years:  years,
+      age_months: months,
+      age_days:   days,
+    }));
+  };
+
+  /** Years changed → recompute DOB using all three parts. */
+  const handleYearsChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(raw, prev.age_months, prev.age_days);
+      return { ...prev, age_years: raw, age: raw, dob };
+    });
+  };
+
+  /** Months changed → recompute DOB using all three parts. */
+  const handleMonthsChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(prev.age_years, raw, prev.age_days);
+      return { ...prev, age_months: raw, dob };
+    });
+  };
+
+  /** Days changed → recompute DOB using all three parts. */
+  const handleDaysChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(prev.age_years, prev.age_months, raw);
+      return { ...prev, age_days: raw, dob };
+    });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "dob") {
-      const newAge = calculateAgeFromDOB(value);
-      setFormData((prev) => ({ ...prev, dob: value, age: newAge }));
-    } else if (name === "age") {
-      const newDOB = calculateDOBFromAge(value);
-      setFormData((prev) => ({ ...prev, age: value, dob: newDOB }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -141,31 +213,19 @@ const AddPatient = () => {
     setLoading(true);
 
     try {
-      await axios.post("/patients", formData, {
+      // Coerce age fields to integers before sending
+      const payload = {
+        ...formData,
+        age_years:  parseInt(formData.age_years)  || 0,
+        age_months: parseInt(formData.age_months) || 0,
+        age_days:   parseInt(formData.age_days)   || 0,
+      };
+      await axios.post("/patients", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
       setSuccess("Patient registered successfully!");
-      setFormData({
-        first_name: "",
-        last_name: "",
-        gender: "",
-        dob: "",
-        age: "",
-        phone: "",
-        email: "",
-        address: "",
-        national_id: "",
-        county: "Bungoma",
-        sub_county: "Tongaren",
-        ward: "",
-        village: "",
-        next_of_kin: "",
-        next_of_kin_phone: "",
-        pregnancy_status: "na",
-        has_disability: false,
-        disability_type: "",
-      });
+      setFormData({ ...EMPTY_FORM });
 
       setTimeout(() => {
         navigate("/patients");
@@ -184,6 +244,8 @@ const AddPatient = () => {
       setLoading(false);
     }
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <DashboardLayout>
@@ -228,6 +290,7 @@ const AddPatient = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField
                     icon={<UserPlus className="w-5 h-5 text-gray-600" />}
@@ -247,8 +310,7 @@ const AddPatient = () => {
                   />
                 </div>
 
-
-
+                {/* Gender + ID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <SelectField
                     icon={<UserPlus className="w-5 h-5 text-gray-600" />}
@@ -274,25 +336,77 @@ const AddPatient = () => {
                   />
                 </div>
 
-                {/* 🔄 Two-way sync between DOB and Age */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <InputField
-                    icon={<Calendar className="w-5 h-5 text-gray-600" />}
-                    name="dob"
-                    label="Date of Birth"
-                    value={formData.dob}
-                    onChange={handleChange}
-                    type="date"
-                  />
-                  <InputField
-                    icon={<Hash className="w-5 h-5 text-gray-600" />}
-                    name="age"
-                    label="Age"
-                    placeholder="Age"
-                    type="number"
-                    value={formData.age}
-                    onChange={handleChange}
-                  />
+                {/* DOB + Age (Years / Months / Days) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+                  {/* Date of birth calendar */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" /> Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleDOBChange}
+                      className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+                    />
+                  </div>
+
+                  {/* Age — three separate integer boxes */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <Hash className="w-3.5 h-3.5" /> Age
+                      <span className="font-normal normal-case text-gray-400 ml-1">
+                        (years syncs with DOB · months &amp; days are extra detail)
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* Years */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="150"
+                          value={formData.age_years}
+                          onChange={handleYearsChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Years</span>
+                      </div>
+                      {/* Months */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="11"
+                          value={formData.age_months}
+                          onChange={handleMonthsChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Months</span>
+                      </div>
+                      {/* Days */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="30"
+                          value={formData.age_days}
+                          onChange={handleDaysChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Days</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField
                     icon={<Phone className="w-5 h-5 text-gray-600" />}
                     name="phone"

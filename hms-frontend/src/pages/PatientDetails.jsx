@@ -1381,14 +1381,27 @@ const PatientDetails = () => {
                     icon={<User className="w-5 h-5 text-gray-400" />}
                     label="Age"
                     value={(() => {
-                      const birthDate = new Date(patient.dob);
-                      const today = new Date();
-                      let age = today.getFullYear() - birthDate.getFullYear();
-                      const monthDiff = today.getMonth() - birthDate.getMonth();
-                      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
+                      const y = patient.age_years;
+                      const m = patient.age_months;
+                      const d = patient.age_days;
+
+                      // Use the dedicated columns if present
+                      if (y != null || m != null || d != null) {
+                        const parts = [];
+                        if (parseInt(y) > 0) parts.push(`${y} yr${parseInt(y) !== 1 ? 's' : ''}`);
+                        if (parseInt(m) > 0) parts.push(`${m} mo`);
+                        if (parseInt(d) > 0) parts.push(`${d} day${parseInt(d) !== 1 ? 's' : ''}`);
+                        return parts.length > 0 ? parts.join(', ') : '< 1 day';
                       }
-                      return `${age} years`;
+
+                      // Legacy fallback: compute from DOB
+                      if (!patient.dob) return '—';
+                      const birth = new Date(patient.dob);
+                      const today = new Date();
+                      let legacyAge = today.getFullYear() - birth.getFullYear();
+                      const mo = today.getMonth() - birth.getMonth();
+                      if (mo < 0 || (mo === 0 && today.getDate() < birth.getDate())) legacyAge--;
+                      return `${legacyAge} yrs`;
                     })()}
                   />
                   <Info

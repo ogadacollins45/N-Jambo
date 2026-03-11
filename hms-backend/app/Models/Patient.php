@@ -16,6 +16,9 @@ class Patient extends Model
         'gender',
         'dob',
         'age',
+        'age_years',
+        'age_months',
+        'age_days',
         'phone',
         'email',
         'address',
@@ -97,21 +100,23 @@ class Patient extends Model
     |--------------------------------------------------------------------------
     */
 
-    // Get age group attribute for MOH reporting
+    // Get age group attribute for MOH reporting (uses age_years preferentially)
     public function getAgeGroupAttribute()
     {
-        if (!$this->age) return null;
-        
-        if ($this->age < 1) return '<1';
-        if ($this->age <= 4) return '1-4';
-        if ($this->age <= 14) return '5-14';
-        if ($this->age <= 49) return '15-49';
+        $years = $this->age_years ?? $this->age;
+        if ($years === null) return null;
+
+        if ($years < 1) return '<1';
+        if ($years <= 4) return '1-4';
+        if ($years <= 14) return '5-14';
+        if ($years <= 49) return '15-49';
         return '50+';
     }
 
     // Check if reproductive age female (for pregnancy status)
     public function isReproductiveAgeFemale()
     {
-        return $this->gender === 'F' && $this->age >= 10 && $this->age <= 49;
+        $years = $this->age_years ?? $this->age;
+        return $this->gender === 'F' && $years >= 10 && $years <= 49;
     }
 }

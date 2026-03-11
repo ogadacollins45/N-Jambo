@@ -5,6 +5,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import AddPrescriptionModal from "../components/AddPrescriptionModal";
 import AddDiagnosisModal from "../components/AddDiagnosisModal";
 import TriageForm from "../components/TriageForm";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { AuthContext } from "../context/AuthContext";
 import { SERVICE_CATEGORIES } from "../data/serviceCategories";
 import { TREATMENT_CATEGORIES } from "../data/treatmentCategories";
@@ -123,6 +124,10 @@ const PatientDetails = () => {
     doctor_id: "",
     appointment_time: "",
   });
+
+  // Delete patient states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeletingPatient, setIsDeletingPatient] = useState(false);
 
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -727,6 +732,24 @@ const PatientDetails = () => {
     }
   };
 
+  const handleDeletePatient = async () => {
+    setIsDeletingPatient(true);
+    try {
+      await axios.delete(`${API_BASE_URL}/patients/${id}`);
+      flashMessage(setSuccess, "Patient and all associated records deleted successfully.");
+      setShowDeleteModal(false);
+      // Redirect to patients list after a short delay
+      setTimeout(() => {
+        navigate("/patients");
+      }, 1500);
+    } catch (err) {
+      console.error("Error deleting patient:", err);
+      flashMessage(setError, err.response?.data?.message || "Failed to delete patient. Please try again.");
+    } finally {
+      setIsDeletingPatient(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -857,6 +880,16 @@ const PatientDetails = () => {
                       return hasTreatmentToday ? "Add Revisit" : "New Treatment";
                     })()}
                   </button>
+                  
+                  {user?.role === "admin" && (
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="flex items-center px-4 py-2 bg-white border-2 border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 hover:border-red-300 transition-all duration-300 shadow-sm"
+                      title="Critical Action: Delete Patient"
+                    >
+                      <Trash2 size={16} className="mr-2" /> Delete Patient
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -2566,6 +2599,15 @@ const PatientDetails = () => {
           />
         )}
       </div>
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeletePatient}
+        isDeleting={isDeletingPatient}
+        title="Delete Patient Record"
+        message={`Are you sure you want to delete ${patient.first_name} ${patient.last_name}? This will permanently remove their entire medical history, including all treatments, bills, and lab requests.`}
+        confirmText="Yes, Delete Completely"
+      />
     </DashboardLayout >
   );
 };

@@ -145,7 +145,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // ✅ Protect everything else (patients, billing, etc)
-    Route::apiResource('patients', PatientController::class);
+    Route::apiResource('patients', PatientController::class)->except(['destroy']);
     Route::apiResource('staff', StaffController::class);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
@@ -191,6 +191,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/database/backups/create', [DatabaseManagementController::class, 'createBackupNow']);
         Route::post('/admin/database/backups/download', [DatabaseManagementController::class, 'downloadBackup']);
         Route::delete('/admin/database/backups/delete', [DatabaseManagementController::class, 'deleteBackup']);
+        
+        // Patient Deletion
+        Route::delete('/patients/{id}', [PatientController::class, 'destroy']);
     });
 
     // Pharmacy Batch Management

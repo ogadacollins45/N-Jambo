@@ -60,24 +60,30 @@ class Patient extends Model
         return $this->hasMany(Bill::class)->orderByDesc('created_at');
     }
 
-    // Auto-generate UPID like BH-00001, BH-00002...
+    // Auto-generate UPID like NJ-0001, NJ-0002...
     protected static function booted()
     {
         static::creating(function ($patient) {
             if (empty($patient->upid)) {
-                // Get last patient's UPID numeric part (if exists)
-                $lastPatient = self::where('upid', 'LIKE', 'BH-%')
+                // Get last patient's UPID numeric part (if exists) — check NJ- first, fall back to legacy BH-
+                $lastPatient = self::where('upid', 'LIKE', 'NJ-%')
                     ->orderByDesc('id')
                     ->first();
 
+                if (!$lastPatient) {
+                    $lastPatient = self::where('upid', 'LIKE', 'BH-%')
+                        ->orderByDesc('id')
+                        ->first();
+                }
+
                 // Extract the numeric part and increment
                 $nextNumber = 1;
-                if ($lastPatient && preg_match('/BH-(\d+)/', $lastPatient->upid, $matches)) {
+                if ($lastPatient && preg_match('/(?:NJ|BH)-(\d+)/', $lastPatient->upid, $matches)) {
                     $nextNumber = (int) $matches[1] + 1;
                 }
 
-                // Format to BH-0001 style (4 digits, auto-expands beyond 9999)
-                $patient->upid = 'BH-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+                // Format to NJ-0001 style (4 digits, auto-expands beyond 9999)
+                $patient->upid = 'NJ-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }
             
             // Auto-set created_by

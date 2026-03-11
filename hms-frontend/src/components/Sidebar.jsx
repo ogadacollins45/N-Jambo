@@ -74,13 +74,13 @@ const Sidebar = () => {
     {
       name: "Dashboard",
       path: "/dashboard",
-      roles: ["admin", "doctor", "reception"],
+      roles: ["admin", "doctor", "reception", "nurse", "cashier"],
       icon: <LayoutDashboard className="w-5 h-5" />
     },
     {
       name: "Queue",
       path: "/queue",
-      roles: ["admin", "doctor", "reception", "facility_clerk"],
+      roles: ["admin", "doctor", "reception", "nurse", "facility_clerk"],
       icon: <ClipboardList className="w-5 h-5" />,
       badge: queueCount
     },
@@ -93,13 +93,13 @@ const Sidebar = () => {
     {
       name: "Patients",
       path: "/patients",
-      roles: ["admin", "doctor", "reception", "facility_clerk"],
+      roles: ["admin", "doctor", "reception", "nurse", "cashier", "facility_clerk"],
       icon: <Users className="w-5 h-5" />
     },
     {
       name: "Add Patient",
       path: "/patients/add",
-      roles: ["admin", "doctor", "reception", "facility_clerk"],
+      roles: ["admin", "doctor", "reception", "nurse", "facility_clerk"],
       icon: <UserPlus className="w-5 h-5" />
     },
     {
@@ -117,7 +117,7 @@ const Sidebar = () => {
     {
       name: "Billing",
       path: "/billing",
-      roles: ["admin", "facility_clerk", "pharmacist"],
+      roles: ["admin", "cashier", "facility_clerk", "pharmacist"],
       icon: <DollarSign className="w-5 h-5" />
     },
     {

@@ -133,7 +133,7 @@ const AddStaff = () => {
                   <InputField icon={<Mail className="w-5 h-5 text-gray-400" />} label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
                   <InputField icon={<Phone className="w-5 h-5 text-gray-400" />} label="Phone" name="phone" value={formData.phone} onChange={handleChange} />
                   <InputField icon={<Briefcase className="w-5 h-5 text-gray-400" />} label="Position / Title" name="position" value={formData.position} onChange={handleChange} />
-                  <SelectField icon={<ShieldCheck className="w-5 h-5 text-gray-400" />} label="Role" name="role" value={formData.role} onChange={handleChange} required options={[{ value: "admin", label: "Admin" }, { value: "doctor", label: "Doctor" }, { value: "reception", label: "Reception" }, { value: "pharmacist", label: "Pharmacist" }, { value: "labtech", label: "Lab Tech" }, { value: "facility_clerk", label: "Facility Clerk" }]} />
+                  <SelectField icon={<ShieldCheck className="w-5 h-5 text-gray-400" />} label="Role" name="role" value={formData.role} onChange={handleChange} required options={[{ value: "admin", label: "Admin" }, { value: "doctor", label: "Doctor" }, { value: "reception", label: "Reception" }, { value: "nurse", label: "Nurse" }, { value: "pharmacist", label: "Pharmacist" }, { value: "labtech", label: "Lab Tech" }, { value: "cashier", label: "Cashier" }, { value: "facility_clerk", label: "Facility Clerk" }]} />
                 </div>
               </div>
 

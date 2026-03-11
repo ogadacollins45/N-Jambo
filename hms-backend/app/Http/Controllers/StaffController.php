@@ -29,7 +29,7 @@ class StaffController extends Controller
             'last_name'  => 'required|string|max:255',
             'email'      => 'nullable|email|max:255|unique:staff,email',
             'phone'      => 'nullable|string|max:255',
-            'role'       => 'required|in:admin,doctor,reception,pharmacist,labtech,facility_clerk',
+            'role'       => 'required|in:admin,doctor,reception,pharmacist,labtech,facility_clerk,nurse,cashier',
             'password'   => 'required|string|min:6',
         ]);
 

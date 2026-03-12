@@ -90,7 +90,23 @@ class LabRequest extends Model
     public static function generateRequestNumber()
     {
         $date = now()->format('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
-        return "LAB-{$date}-" . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $prefix = "LAB-{$date}-";
+
+        // Find the highest sequence already used today to avoid reusing numbers
+        // when records have been deleted (count-based approach would re-issue used numbers).
+        $last = static::where('request_number', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(request_number, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('request_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+
+        // Retry loop: in case of concurrent inserts, keep incrementing until unique.
+        $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        while (static::where('request_number', $candidate)->exists()) {
+            $next++;
+            $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 }

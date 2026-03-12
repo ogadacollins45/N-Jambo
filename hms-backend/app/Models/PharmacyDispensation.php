@@ -112,8 +112,21 @@ class PharmacyDispensation extends Model
     public function generateDispensationNumber()
     {
         $date = now()->format('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
-        return "DISP-{$date}-" . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $prefix = "DISP-{$date}-";
+
+        $last = static::where('dispensation_number', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(dispensation_number, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('dispensation_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+
+        $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        while (static::where('dispensation_number', $candidate)->exists()) {
+            $next++;
+            $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 
     public function markAsCollected($collectorName = null, $collectorId = null, $relationship = null)

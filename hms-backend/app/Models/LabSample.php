@@ -41,7 +41,23 @@ class LabSample extends Model
     public static function generateSampleNumber()
     {
         $date = now()->format('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
-        return "SMP-{$date}-" . str_pad($count, 5, '0', STR_PAD_LEFT);
+        $prefix = "SMP-{$date}-";
+
+        // Find the highest sequence already used today to avoid reusing numbers
+        // when records have been deleted (count-based approach would re-issue used numbers).
+        $last = static::where('sample_number', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(sample_number, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('sample_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+
+        // Retry loop: in case of concurrent inserts, keep incrementing until unique.
+        $candidate = $prefix . str_pad($next, 5, '0', STR_PAD_LEFT);
+        while (static::where('sample_number', $candidate)->exists()) {
+            $next++;
+            $candidate = $prefix . str_pad($next, 5, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 }

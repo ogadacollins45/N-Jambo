@@ -64,7 +64,20 @@ class PharmacyPrescription extends Model
     public function generatePrescriptionNumber()
     {
         $date = now()->format('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
-        return "RX-{$date}-" . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $prefix = "RX-{$date}-";
+
+        $last = static::where('prescription_number', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(prescription_number, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('prescription_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+
+        $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        while (static::where('prescription_number', $candidate)->exists()) {
+            $next++;
+            $candidate = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 }

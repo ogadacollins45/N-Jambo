@@ -19,20 +19,29 @@ class LabRequestObserver
             Log::info("LabRequestObserver: Lab request #{$labRequest->id} completed - adding to bill");
 
             try {
-                if (!$labRequest->treatment_id) {
-                    Log::warning("LabRequestObserver: No treatment found for lab request #{$labRequest->id}");
+                if (!$labRequest->treatment_id && !$labRequest->admission_id) {
+                    Log::warning("LabRequestObserver: No treatment or admission found for lab request #{$labRequest->id}");
                     return;
                 }
 
                 $billingService = app(BillingService::class);
-                $bill = $billingService->getOrCreateBillForTreatment($labRequest->treatment_id);
-                
-                // Add consultation fee if this is the first bill activity
-                $billingService->addConsultationFee($bill);
-                
+
+                if ($labRequest->treatment_id) {
+                    $bill = $billingService->getOrCreateBillForTreatment($labRequest->treatment_id);
+                    // Add consultation fee for outpatients
+                    $billingService->addConsultationFee($bill);
+                } else {
+                    // For admissions, bill must already exist
+                    $bill = \App\Models\Bill::where('admission_id', $labRequest->admission_id)->first();
+                    if (!$bill) {
+                        Log::error("LabRequestObserver: Missing bill for admission_id {$labRequest->admission_id}");
+                        return;
+                    }
+                }
+
                 // Add the lab test items
                 $billingService->addLabTestItems($bill, $labRequest);
-                
+
                 // Recalculate totals
                 $billingService->recalculateBill($bill);
 
@@ -52,12 +61,19 @@ class LabRequestObserver
         Log::info("LabRequestObserver: Lab request #{$labRequest->id} deleted");
 
         try {
-            if (!$labRequest->treatment_id) {
+            if (!$labRequest->treatment_id && !$labRequest->admission_id) {
                 return;
             }
 
             $billingService = app(BillingService::class);
-            $bill = $billingService->getOrCreateBillForTreatment($labRequest->treatment_id);
+
+            if ($labRequest->treatment_id) {
+                $bill = $billingService->getOrCreateBillForTreatment($labRequest->treatment_id);
+            } else {
+                $bill = \App\Models\Bill::where('admission_id', $labRequest->admission_id)->first();
+                if (!$bill) return;
+            }
+
             $billingService->removeLabRequestItems($bill, $labRequest);
 
             Log::info("LabRequestObserver: Successfully removed items from bill #{$bill->id}");

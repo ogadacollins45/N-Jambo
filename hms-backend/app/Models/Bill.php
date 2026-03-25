@@ -12,6 +12,8 @@ class Bill extends Model
     protected $fillable = [
         'patient_id',
         'treatment_id',
+        'admission_id',
+        'bill_type',
         'doctor_id',
         'subtotal',
         'discount',
@@ -53,6 +55,12 @@ class Bill extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    // Link to inpatient admission (if this is an inpatient bill)
+    public function admission()
+    {
+        return $this->belongsTo(Admission::class);
     }
 
     // Get all treatments linked to this bill (for same-day visits, multiple treatments share one bill)

@@ -14,6 +14,7 @@ class LabRequest extends Model
         'patient_id',
         'doctor_id',
         'treatment_id',
+        'admission_id',
         'visit_id',
         'priority',
         'clinical_notes',

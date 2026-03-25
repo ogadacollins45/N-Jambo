@@ -311,4 +311,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/triages/{patientId}/latest', [TriageController::class, 'getLatest']);
     Route::get('/triages/{id}', [TriageController::class, 'show']);
     Route::put('/triages/{id}', [TriageController::class, 'update']);
+
+    // Admissions (Inpatient)
+    Route::get('/admissions', [\App\Http\Controllers\AdmissionController::class, 'index']);
+    Route::post('/admissions', [\App\Http\Controllers\AdmissionController::class, 'store']);
+    Route::get('/admissions/{id}', [\App\Http\Controllers\AdmissionController::class, 'show']);
+    Route::post('/admissions/{id}/entries', [\App\Http\Controllers\AdmissionController::class, 'addEntry']);
+    Route::post('/admissions/{id}/discharge', [\App\Http\Controllers\AdmissionController::class, 'discharge']);
+    Route::get('/admissions/{id}/bill', [\App\Http\Controllers\AdmissionController::class, 'getBill']);
+    Route::get('/patients/{patientId}/active-admission', [\App\Http\Controllers\AdmissionController::class, 'getActiveForPatient']);
 });

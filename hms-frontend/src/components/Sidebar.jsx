@@ -22,6 +22,7 @@ import {
   BarChart3,
   Microscope,
   Database,
+  BedDouble,
 } from "lucide-react";
 import logo from "../assets/logo.jpeg";
 
@@ -101,6 +102,12 @@ const Sidebar = () => {
       path: "/patients/add",
       roles: ["admin", "doctor", "reception", "nurse", "facility_clerk"],
       icon: <UserPlus className="w-5 h-5" />
+    },
+    {
+      name: "Admissions",
+      path: "/admissions",
+      roles: ["admin", "doctor", "nurse", "facility_clerk"],
+      icon: <BedDouble className="w-5 h-5" />
     },
     {
       name: "Item Store",

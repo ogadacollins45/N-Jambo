@@ -20,28 +20,39 @@ class PrescriptionObserver
         Log::info("PrescriptionObserver.updated() called for prescription #{$prescription->id}");
         Log::info("dispensed_at dirty: " . ($prescription->isDirty('dispensed_at') ? 'yes' : 'no'));
         Log::info("dispensed_at value: " . ($prescription->dispensed_at ?? 'null'));
-        
+
         // Only trigger when dispensed_at is set
         if ($prescription->isDirty('dispensed_at') && $prescription->dispensed_at) {
             Log::info("PrescriptionObserver: Prescription #{$prescription->id} dispensed - adding to bill");
 
             try {
-                if (!$prescription->treatment_id) {
-                    Log::warning("PrescriptionObserver: No treatment_id for prescription #{$prescription->id}");
+                $billingService = app(BillingService::class);
+                $bill = null;
+
+                if ($prescription->treatment_id) {
+                    $bill = $billingService->getOrCreateBillForTreatment($prescription->treatment_id);
+                    Log::info("PrescriptionObserver: Got/created bill #{$bill->id} for treatment #{$prescription->treatment_id}");
+                    // Add consultation fee (typically only applies to outpatients)
+                    $billingService->addConsultationFee($bill);
+                } elseif ($prescription->admission_id) {
+                    // Try to find the inpatient bill
+                    $bill = \App\Models\Bill::where('admission_id', $prescription->admission_id)
+                                ->where('bill_type', 'inpatient')
+                                ->first();
+
+                    if (!$bill) {
+                        Log::warning("PrescriptionObserver: No active inpatient bill found for admission #{$prescription->admission_id}");
+                        return;
+                    }
+                    Log::info("PrescriptionObserver: Found inpatient bill #{$bill->id} for admission #{$prescription->admission_id}");
+                } else {
+                    Log::warning("PrescriptionObserver: No treatment_id or admission_id for prescription #{$prescription->id}");
                     return;
                 }
 
-                $billingService = app(BillingService::class);
-                $bill = $billingService->getOrCreateBillForTreatment($prescription->treatment_id);
-                
-                Log::info("PrescriptionObserver: Got/created bill #{$bill->id} for treatment #{$prescription->treatment_id}");
-                
-                // Add consultation fee
-                $billingService->addConsultationFee($bill);
-                
                 // Add pharmacy items directly from prescription
                 $this->addPrescriptionItemsToBill($bill, $prescription, $billingService);
-                
+
                 // Recalculate
                 $billingService->recalculateBill($bill);
 
@@ -79,14 +90,14 @@ class PrescriptionObserver
             $amount = $quantity * $unitPrice;
 
             \App\Models\BillItem::create([
-                'bill_id' => $bill->id,
-                'category' => 'prescription', // FIX: Changed from 'pharmacy' to match enum
-                'description' => $item->drug_name_text . ' - ' . $item->dosage_text,
-                'prescription_id' => $prescription->id,
+                'bill_id'              => $bill->id,
+                'category'             => 'prescription',
+                'description'          => $item->drug_name_text . ' - ' . $item->dosage_text,
+                'prescription_id'      => $prescription->id,
                 'prescription_item_id' => $item->id,
-                'quantity' => $quantity, // FIXED: Use actual quantity, not static 1
-                'amount' => $unitPrice,
-                'subtotal' => $amount,
+                'quantity'             => $quantity,
+                'amount'               => $unitPrice,
+                'subtotal'             => $amount,
             ]);
 
             Log::info("PrescriptionObserver: Added prescription item '{$item->drug_name_text}' (qty: {$quantity}, unit: \${$unitPrice}) to bill #{$bill->id}");

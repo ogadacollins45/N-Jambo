@@ -25,6 +25,10 @@ import TreatmentPrint from "./pages/TreatmentPrint.jsx";
 import TodaysTreatments from "./pages/TodaysTreatments.jsx";
 import IncompletePatients from "./pages/IncompletePatients.jsx";
 
+// Admissions (Inpatient)
+import Admissions from "./pages/Admissions.jsx";
+import InpatientDetails from "./pages/InpatientDetails.jsx";
+
 import Inventory from "./pages/Inventory.jsx";
 import MainStoreDrugs from "./pages/MainStoreDrugs.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
@@ -122,6 +126,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
               {/* Incomplete Patients */}
               <Route path="/patients/incomplete" element={<IncompletePatients />} />
+
+              {/* Admissions (Inpatient) */}
+              <Route path="/admissions" element={<Admissions />} />
+              <Route path="/inpatient/:id" element={<InpatientDetails />} />
 
               {/* Inventory */}
               <Route path="/inventory" element={<Inventory />} />

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { MEDICATION_FREQUENCIES } from "../data/medicationFrequencies";
 
-const AddPrescriptionModal = ({ patientId, treatmentId, doctorId, onClose, onSaved }) => {
+const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, onClose, onSaved, onSuccess }) => {
   const [items, setItems] = useState([
     { drug_name: "", dosage: "", frequency: "", duration: "", instructions: "", drug_id: null, current_stock: null }
   ]);
@@ -144,7 +144,6 @@ const AddPrescriptionModal = ({ patientId, treatmentId, doctorId, onClose, onSav
     try {
       const payload = {
         patient_id: String(patientId),
-        treatment_id: Number(treatmentId),
         doctor_id: doctorId ?? null,
         send_to_pharmacy: sendToPharmacy,
         notes,
@@ -160,12 +159,20 @@ const AddPrescriptionModal = ({ patientId, treatmentId, doctorId, onClose, onSav
         })),
       };
 
+      // Link to admission (inpatient) or treatment (outpatient)
+      if (admissionId) {
+        payload.admission_id = Number(admissionId);
+      } else if (treatmentId) {
+        payload.treatment_id = Number(treatmentId);
+      }
+
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/prescriptions`, payload);
 
       flashMessage(setSuccess, sendToPharmacy
         ? "Prescription sent to pharmacy successfully!"
         : "Prescription saved as draft!");
       onSaved?.();
+      onSuccess?.();
       setTimeout(() => onClose?.(), 1000);
     } catch (error) {
       console.error("Error saving prescription:", error);

@@ -36,6 +36,7 @@ import {
   Printer,
   Trash2,
   CreditCard,
+  BedDouble,
 } from "lucide-react";
 
 const PatientDetails = () => {
@@ -124,6 +125,19 @@ const PatientDetails = () => {
   // Diagnosis mode state
   const [diagnosisMode, setDiagnosisMode] = useState('primary'); // 'primary' or 'additional'
 
+  // ===== INPATIENT ADMISSION STATE =====
+  const [activeAdmission, setActiveAdmission] = useState(null);
+  const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+  const [savingAdmission, setSavingAdmission] = useState(false);
+  const [admissionForm, setAdmissionForm] = useState({
+    ward: "",
+    bed: "",
+    admission_type: "general",
+    payment_type: "",
+    reason: "",
+    doctor_id: "",
+  });
+  // ======================================
 
   const [newAppointment, setNewAppointment] = useState({
     doctor_id: "",
@@ -173,6 +187,16 @@ const PatientDetails = () => {
       // Extract data from the optimized patient response
       const patientData = pRes.data;
       setPatient(patientData);
+
+      // Fetch active admission (inpatient check)
+      try {
+        const admRes = await axios.get(`${API_BASE_URL}/patients/${id}/active-admission`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setActiveAdmission(admRes.data.admission || null);
+      } catch {
+        setActiveAdmission(null);
+      }
 
       // Treatments are now included in the patient response with eager loading
       setTreatments(
@@ -856,6 +880,25 @@ const PatientDetails = () => {
                       >
                         <ClipboardPlus size={16} className="mr-2" /> Add to Queue
                       </button>
+                      
+                      {/* ==== INPATIENT ADMIT BUTTON ==== */}
+                      {activeAdmission ? (
+                        <button
+                          onClick={() => navigate(`/inpatient/${activeAdmission.id}`)}
+                          className="flex items-center px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-all duration-300 shadow-md"
+                        >
+                          <BedDouble size={16} className="mr-2" /> View Admission
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowAdmissionModal(true)}
+                          className="flex items-center px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-all duration-300 shadow-md"
+                        >
+                          <BedDouble size={16} className="mr-2" /> Admit
+                        </button>
+                      )}
+                      {/* =============================== */}
+
                     </>
                   )}
                   <button
@@ -2650,6 +2693,167 @@ const PatientDetails = () => {
         message={`Are you sure you want to delete ${patient.first_name} ${patient.last_name}? This will permanently remove their entire medical history, including all treatments, bills, and lab requests.`}
         confirmText="Yes, Delete Completely"
       />
+
+      {/* ===== ADMISSION MODAL ===== */}
+      {showAdmissionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="flex items-center justify-between p-5 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <BedDouble className="w-5 h-5 text-teal-600" />
+                <h2 className="text-xl font-bold text-gray-800">Admit Patient</h2>
+              </div>
+              <button
+                onClick={() => setShowAdmissionModal(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSavingAdmission(true);
+                try {
+                  const payload = {
+                    patient_id: id,
+                    ward: admissionForm.ward,
+                    bed: admissionForm.bed,
+                    admission_type: admissionForm.admission_type,
+                    payment_type: admissionForm.payment_type,
+                    reason: admissionForm.reason,
+                    doctor_id: admissionForm.doctor_id || undefined,
+                  };
+                  const res = await axios.post(`${API_BASE_URL}/admissions`, payload, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                  });
+                  const newAdmission = res.data.admission;
+                  setShowAdmissionModal(false);
+                  setAdmissionForm({ ward: "", bed: "", admission_type: "general", payment_type: "", reason: "", doctor_id: "" });
+                  
+                  flashMessage(setSuccess, "Patient Admitted successfully.");
+                  // After brief pause, navigate to inpatient view or refresh
+                  setTimeout(() => {
+                    navigate(`/inpatient/${newAdmission.id}`);
+                  }, 500);
+                } catch (err) {
+                  flashMessage(setError, err.response?.data?.message || "Failed to admit patient.");
+                } finally {
+                  setSavingAdmission(false);
+                }
+              }}
+              className="p-5 space-y-4"
+            >
+              {/* Ward */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ward <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    value={admissionForm.ward}
+                    onChange={(e) => setAdmissionForm(prev => ({ ...prev, ward: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
+                  >
+                    <option value="">Select ward...</option>
+                    {["Medical", "Surgical", "Maternity", "Pediatric", "ICU", "HDU", "Other"].map(w => (
+                      <option key={w} value={w}>{w}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bed / Room</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Bed 3, Room 5B"
+                    value={admissionForm.bed}
+                    onChange={(e) => setAdmissionForm(prev => ({ ...prev, bed: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Admission Type & Payment */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Admission Type <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    value={admissionForm.admission_type}
+                    onChange={(e) => setAdmissionForm(prev => ({ ...prev, admission_type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
+                  >
+                    <option value="general">General Inpatient</option>
+                    <option value="maternity">Maternity</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Type</label>
+                  <select
+                    value={admissionForm.payment_type}
+                    onChange={(e) => setAdmissionForm(prev => ({ ...prev, payment_type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
+                  >
+                    <option value="">Select...</option>
+                    <option value="Cash">Cash</option>
+                    <option value="SHA">SHA (Social Health Authority)</option>
+                    <option value="NHIF">NHIF</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Waiver">Waiver</option>
+                    <option value="Mobile Money">Mobile Money</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Doctor */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Admitting / Attending Doctor</label>
+                <select
+                  value={admissionForm.doctor_id}
+                  onChange={(e) => setAdmissionForm(prev => ({ ...prev, doctor_id: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
+                >
+                  <option value="">Select doctor...</option>
+                  {doctors.map(d => (
+                    <option key={d.id} value={d.id}>Dr. {d.first_name} {d.last_name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Reason */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reason / Provisional Diagnosis</label>
+                <textarea
+                  rows={3}
+                  placeholder="Chief complaint or provisional diagnosis..."
+                  value={admissionForm.reason}
+                  onChange={(e) => setAdmissionForm(prev => ({ ...prev, reason: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdmissionModal(false)}
+                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingAdmission}
+                  className="px-5 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 font-medium"
+                >
+                  {savingAdmission ? "Admitting..." : "Admit Patient"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout >
   );
 };

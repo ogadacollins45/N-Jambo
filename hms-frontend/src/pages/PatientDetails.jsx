@@ -4,6 +4,7 @@ import axios from "axios";
 import DashboardLayout from "../layout/DashboardLayout";
 import AddPrescriptionModal from "../components/AddPrescriptionModal";
 import AddDiagnosisModal from "../components/AddDiagnosisModal";
+import EditTreatmentNotesModal from "../components/EditTreatmentNotesModal";
 import TriageForm from "../components/TriageForm";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { AuthContext } from "../context/AuthContext";
@@ -113,6 +114,10 @@ const PatientDetails = () => {
   // Lab test modal states (for adding tests to existing treatment)
   const [showLabTestModal, setShowLabTestModal] = useState(false);
   const [selectedTreatmentForLab, setSelectedTreatmentForLab] = useState(null);
+  
+  // Edit treatment notes states
+  const [showEditNotesModal, setShowEditNotesModal] = useState(false);
+  const [selectedTreatmentForNotes, setSelectedTreatmentForNotes] = useState(null);
   const [modalSelectedTests, setModalSelectedTests] = useState([]);
   const [modalLabPriority, setModalLabPriority] = useState('routine');
 
@@ -1663,10 +1668,23 @@ const PatientDetails = () => {
 
                                       {/* Treatment Notes Section */}
                                       <div>
-                                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2 text-sm">
-                                          <FileText size={14} />
-                                          Treatment Notes
-                                        </h4>
+                                        <div className="flex justify-between items-center mb-2">
+                                          <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
+                                            <FileText size={14} />
+                                            Treatment Notes
+                                          </h4>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setSelectedTreatmentForNotes(t);
+                                              setShowEditNotesModal(true);
+                                            }}
+                                            title="Edit Treatment Notes"
+                                            className="flex items-center text-xs text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors"
+                                          >
+                                            <Edit size={14} className="mr-1" /> Edit Notes
+                                          </button>
+                                        </div>
                                         <div className="space-y-2">
                                           {/* Chief Complaint */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
@@ -2267,6 +2285,17 @@ const PatientDetails = () => {
               )?.id || null
             }
             onClose={() => setShowPrescriptionModal(false)}
+            onSaved={fetchAllData}
+          />
+        )}
+
+        {showEditNotesModal && selectedTreatmentForNotes && (
+          <EditTreatmentNotesModal
+            treatment={selectedTreatmentForNotes}
+            onClose={() => {
+              setShowEditNotesModal(false);
+              setSelectedTreatmentForNotes(null);
+            }}
             onSaved={fetchAllData}
           />
         )}

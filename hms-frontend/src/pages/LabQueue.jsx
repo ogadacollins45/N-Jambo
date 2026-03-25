@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DashboardLayout from '../layout/DashboardLayout';
-import { Microscope, Clock, AlertTriangle, ChevronRight, Search, Calendar, BarChart2, ClipboardList, Download } from 'lucide-react';
+import { Microscope, Clock, AlertTriangle, ChevronRight, Search, Calendar, BarChart2, ClipboardList, Download, Plus, Trash2 } from 'lucide-react';
+import AddManualLabRequestModal from '../components/AddManualLabRequestModal';
 
 const LabQueue = () => {
     const [activeTab, setActiveTab] = useState('queue');
@@ -15,6 +16,13 @@ const LabQueue = () => {
     const [priorityFilter, setPriorityFilter] = useState('');
     const [showTodayOnly, setShowTodayOnly] = useState(false);
     const [pageJumpValue, setPageJumpValue] = useState('');
+
+    // ─── Manual Request State ──────────────────────────────────────────────
+    const [showAddModal, setShowAddModal] = useState(false);
+    
+    // ─── Delete State ──────────────────────────────────────────────────────
+    const [requestToDelete, setRequestToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // ─── Reports Tab State ─────────────────────────────────────────────────
     const [reports, setReports] = useState({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 });
@@ -83,6 +91,23 @@ const LabQueue = () => {
             console.error('Error loading lab reports:', err);
         } finally {
             setReportsLoading(false);
+        }
+    };
+    
+    const deleteRequest = async () => {
+        if (!requestToDelete) return;
+        setIsDeleting(true);
+        try {
+            await axios.delete(`${API_BASE}/lab/requests/${requestToDelete.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setRequestToDelete(null);
+            loadRequests(requests.current_page); // Refresh
+        } catch (err) {
+            console.error('Error deleting request:', err);
+            alert(err.response?.data?.message || 'Failed to delete request');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -233,6 +258,13 @@ const LabQueue = () => {
                                 {showTodayOnly && (
                                     <button onClick={() => setShowTodayOnly(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all">Clear</button>
                                 )}
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition ml-auto"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Manual Request
+                                </button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
@@ -322,9 +354,12 @@ const LabQueue = () => {
                                                         <td className="px-4 py-3 text-sm text-gray-600">
                                                             <div className="flex items-center"><Clock className="w-4 h-4 mr-1" />{new Date(request.request_date).toLocaleString()}</div>
                                                         </td>
-                                                        <td className="px-4 py-3">
+                                                        <td className="px-4 py-3 flex gap-2">
                                                             <button onClick={() => window.location.href = `/lab/processing/${request.id}`} className="bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition flex items-center text-sm">
                                                                 Process<ChevronRight className="w-4 h-4 ml-1" />
+                                                            </button>
+                                                            <button onClick={() => setRequestToDelete(request)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition" title="Delete request">
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -453,6 +488,43 @@ const LabQueue = () => {
                             <PaginationBar data={reports} onPage={goToReportPage} jumpVal={reportPageJump} setJumpVal={setReportPageJump} onJump={handleReportPageJump} />
                         </div>
                     </>
+                )}
+
+                {/* Modals */}
+                {showAddModal && (
+                    <AddManualLabRequestModal
+                        isOpen={showAddModal}
+                        onClose={() => setShowAddModal(false)}
+                        onSuccess={() => {
+                            setShowAddModal(false);
+                            loadRequests(1);
+                        }}
+                    />
+                )}
+
+                {requestToDelete && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">Delete Lab Request?</h3>
+                            <p className="text-gray-600 mb-6">Are you sure you want to permanently delete request <span className="font-mono text-gray-800 font-semibold">{requestToDelete.request_number}</span> for patient {requestToDelete.patient?.first_name}? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-3 border-t pt-4">
+                                <button
+                                    onClick={() => setRequestToDelete(null)}
+                                    disabled={isDeleting}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={deleteRequest}
+                                    disabled={isDeleting}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center"
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </DashboardLayout>

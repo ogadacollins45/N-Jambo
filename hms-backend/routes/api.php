@@ -273,6 +273,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lab/requests', [\App\Http\Controllers\LabRequestController::class, 'index']);
     Route::get('/lab/requests/patient/{patient_id}', [\App\Http\Controllers\LabRequestController::class, 'getByPatient']);
     Route::get('/lab/requests/{id}', [\App\Http\Controllers\LabRequestController::class, 'show']);
+    Route::delete('/lab/requests/{id}', [\App\Http\Controllers\LabRequestController::class, 'destroy']);
     Route::delete('/lab/requests/{id}/cancel', [\App\Http\Controllers\LabRequestController::class, 'cancel']);
     Route::get('/lab/tests/available', [\App\Http\Controllers\LabRequestController::class, 'availableTests']);
     // Lab notifications (badge count and marking as reviewed)

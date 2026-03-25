@@ -23,6 +23,7 @@ class LabRequestController extends Controller
             'clinical_notes' => 'nullable|string',
             'test_ids' => 'required|array|min:1',
             'test_ids.*' => 'exists:lab_test_templates,id',
+            'is_manual_request' => 'nullable|boolean',
         ]);
 
         // Auto-resolve doctor_id for logged-in doctors (similar to TreatmentController)
@@ -37,7 +38,7 @@ class LabRequestController extends Controller
             }
         }
 
-        if (!$doctorId) {
+        if (!$doctorId && !$request->boolean('is_manual_request')) {
             return response()->json(['message' => 'Doctor assignment is required'], 422);
         }
 
@@ -177,6 +178,22 @@ class LabRequestController extends Controller
         $labRequest->update(['status' => 'cancelled']);
 
         return response()->json(['message' => 'Lab request cancelled successfully']);
+    }
+
+    /**
+     * Delete a lab request entirely
+     */
+    public function destroy($id)
+    {
+        $labRequest = LabRequest::findOrFail($id);
+        
+        // Delete associated tests manually in case no DB cascade is configured
+        LabRequestTest::where('lab_request_id', $id)->delete();
+        
+        // Delete request
+        $labRequest->delete();
+
+        return response()->json(['message' => 'Lab request deleted successfully']);
     }
 
     /**

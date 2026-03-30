@@ -164,6 +164,12 @@ const Sidebar = () => {
       icon: <Microscope className="w-5 h-5" />
     },
     {
+      name: "Reports",
+      path: "/reports",
+      roles: ["admin", "facility_clerk"],
+      icon: <BarChart3 className="w-5 h-5" />
+    },
+    {
       name: "System Settings",
       path: "/system-settings",
       roles: ["admin"],

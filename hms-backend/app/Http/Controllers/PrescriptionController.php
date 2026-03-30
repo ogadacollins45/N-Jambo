@@ -133,7 +133,8 @@ class PrescriptionController extends Controller
 
         $validated = $request->validate([
             'patient_id'           => 'required|exists:patients,id',
-            'treatment_id'         => 'required|exists:treatments,id',
+            'treatment_id'         => 'nullable|exists:treatments,id',
+            'admission_id'         => 'nullable|exists:admissions,id',
             'doctor_id'            => 'nullable|exists:doctors,id',
             'send_to_pharmacy'     => 'nullable|boolean',
             'items'                => 'required|array|min:1',
@@ -149,13 +150,22 @@ class PrescriptionController extends Controller
             'notes'                => 'nullable|string',
         ]);
 
+        // Require at least one of treatment_id or admission_id
+        if (empty($validated['treatment_id']) && empty($validated['admission_id'])) {
+            return response()->json([
+                'message' => 'Either a treatment ID or an admission ID is required.',
+                'errors'  => ['treatment_id' => ['Either treatment_id or admission_id must be provided.']],
+            ], 422);
+        }
+
         try {
             $prescription = DB::transaction(function () use ($validated) {
                 $sendToPharmacy = $validated['send_to_pharmacy'] ?? false;
                 
                 $prescription = Prescription::create([
                     'patient_id'   => $validated['patient_id'],
-                    'treatment_id' => $validated['treatment_id'],
+                    'treatment_id' => $validated['treatment_id'] ?? null,
+                    'admission_id' => $validated['admission_id'] ?? null,
                     'doctor_id'    => $validated['doctor_id'] ?? null,
                     'total_amount' => 0,
                     'notes'        => $validated['notes'] ?? null,
@@ -251,17 +261,20 @@ class PrescriptionController extends Controller
                 })
             ];
 
-            // 🔄 Refresh or generate the bill for this treatment
-            try {
-                app(\App\Http\Controllers\BillingController::class)
-                    ->store(new Request([
-                        'patient_id'   => $prescription->patient_id,
-                        'treatment_id' => $prescription->treatment_id,
-                        'doctor_id'    => $prescription->doctor_id ?? null,
-                        'auto'         => true,
-                    ]));
-            } catch (\Throwable $e) {
-                \Log::error('Auto billing update failed after prescription: ' . $e->getMessage());
+            // 🔄 Refresh or generate the bill for this treatment (outpatient only)
+            // Inpatient prescriptions are linked to the admission bill managed by AdmissionController
+            if ($prescription->treatment_id) {
+                try {
+                    app(\App\Http\Controllers\BillingController::class)
+                        ->store(new Request([
+                            'patient_id'   => $prescription->patient_id,
+                            'treatment_id' => $prescription->treatment_id,
+                            'doctor_id'    => $prescription->doctor_id ?? null,
+                            'auto'         => true,
+                        ]));
+                } catch (\Throwable $e) {
+                    \Log::error('Auto billing update failed after prescription: ' . $e->getMessage());
+                }
             }
 
             return response()->json([

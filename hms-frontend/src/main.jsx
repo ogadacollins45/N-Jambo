@@ -63,6 +63,7 @@ import LabProcessing from "./pages/LabProcessing.jsx";
 import LabCompleted from "./pages/LabCompleted.jsx";
 import Updates from "./pages/Updates.jsx";
 import DatabaseManagement from "./pages/DatabaseManagement.jsx";
+import Reports from "./pages/Reports.jsx";
 
 import "./index.css";
 
@@ -106,6 +107,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               {/* Admin-only routes */}
               <Route element={<RoleBasedRoute allowedRoles={["admin"]} />}>
                 <Route path="/database-management" element={<DatabaseManagement />} />
+                <Route path="/reports" element={<Reports />} />
               </Route>
 
               {/* Laboratory */}

@@ -216,18 +216,13 @@ class LabRequestController extends Controller
      */
     public function notificationsCount(Request $request)
     {
-        $user = $request->user();
+        // Both doctors and admins see the total count of all unreviewed completed requests,
+        // which is consistent with what the LabCompleted page displays.
+        $count = LabRequest::where('status', 'completed')
+            ->whereNull('reviewed_at')
+            ->count();
 
-        $query = LabRequest::where('status', 'completed')
-            ->whereNull('reviewed_at');
-
-        if ($user->role === 'doctor') {
-            // The authenticated user IS a Staff record; doctor_id in lab_requests references staff.id
-            $query->where('doctor_id', $user->id);
-        }
-        // Admin sees all unreviewed completed requests
-
-        return response()->json(['count' => $query->count()]);
+        return response()->json(['count' => $count]);
     }
 
     /**

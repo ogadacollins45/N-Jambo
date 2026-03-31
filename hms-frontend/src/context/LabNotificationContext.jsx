@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 export const LabNotificationContext = createContext({
     labCompletedCount: 0,
@@ -31,6 +31,14 @@ export const LabNotificationProvider = ({ children }) => {
             console.error('Error fetching lab notification count:', err);
         }
     }, []);
+
+    // Fetch immediately on mount, then poll every 30 seconds
+    useEffect(() => {
+        refreshLabCount();
+
+        const interval = setInterval(refreshLabCount, 30000);
+        return () => clearInterval(interval);
+    }, [refreshLabCount]);
 
     return (
         <LabNotificationContext.Provider value={{ labCompletedCount, refreshLabCount }}>

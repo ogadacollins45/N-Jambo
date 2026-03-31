@@ -2,20 +2,37 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 /**
  * DiseaseMapper
  *
  * Maps a treatment's diagnosis (free text) + diagnosis_category + diagnosis_subcategory
  * to one of the 73 official MOH disease rows.
  *
- * Strategy (in priority order):
- *  1. Subcategory exact/keyword match
- *  2. Category-level match
- *  3. Free-text keyword match on diagnosis string
- *  4. Fallback → 'other_diseases'
+ * Classification strategy (in priority order):
+ *  1. Cache lookup – return immediately if this exact text was classified before
+ *  2. AI microservice – call FastAPI/Sentence-Transformers service if available
+ *     (accepts result when confidence >= AI_DISEASE_CLASSIFIER_CONFIDENCE_THRESHOLD)
+ *  3. Keyword match on free-text  (original Tier-1)
+ *  4. Subcategory-based mapping   (original Tier-2)
+ *  5. Category-level broad match  (original Tier-3)
+ *  6. Fallback → 'other_diseases'
  */
 class DiseaseMapper
 {
+    /** Seconds to cache a classification result (24 hours) */
+    private const CACHE_TTL = 86400;
+
+    /** Cache key prefix */
+    private const CACHE_PREFIX = 'disease_map:';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Public API
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
      * Map a single diagnosis to a disease key.
      *
@@ -30,23 +47,102 @@ class DiseaseMapper
         $cat  = strtolower(trim($category ?? ''));
         $sub  = strtolower(trim($subcategory ?? ''));
 
-        // ── 1. Keyword match on free-text (most reliable since doctors type actual names) ──
+        if (empty($text) && empty($cat) && empty($sub)) {
+            return 'other_diseases';
+        }
+
+        // ── 1. Cache lookup ──────────────────────────────────────────────────
+        $cacheKey = self::CACHE_PREFIX . md5($text . '|' . $cat . '|' . $sub);
+        $cached   = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        // ── 2. AI microservice (primary, high-confidence path) ───────────────
+        $aiKey = self::classifyViaAI($text);
+        if ($aiKey !== null) {
+            Cache::put($cacheKey, $aiKey, self::CACHE_TTL);
+            return $aiKey;
+        }
+
+        // ── 3. Keyword match on free-text ────────────────────────────────────
         $textKey = self::matchText($text);
-        if ($textKey) return $textKey;
+        if ($textKey) {
+            Cache::put($cacheKey, $textKey, self::CACHE_TTL);
+            return $textKey;
+        }
 
-        // ── 2. Subcategory-based mapping ──────────────────────────────
+        // ── 4. Subcategory-based mapping ──────────────────────────────────────
         $subKey = self::matchSubcategory($sub, $cat);
-        if ($subKey) return $subKey;
+        if ($subKey) {
+            Cache::put($cacheKey, $subKey, self::CACHE_TTL);
+            return $subKey;
+        }
 
-        // ── 3. Category-level broad fallback ─────────────────────────
+        // ── 5. Category-level broad fallback ─────────────────────────────────
         $catKey = self::matchCategory($cat);
-        if ($catKey) return $catKey;
+        if ($catKey) {
+            Cache::put($cacheKey, $catKey, self::CACHE_TTL);
+            return $catKey;
+        }
 
+        // ── 6. Final fallback ─────────────────────────────────────────────────
+        Cache::put($cacheKey, 'other_diseases', self::CACHE_TTL);
         return 'other_diseases';
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Free-text keyword matching
+    // AI microservice call
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Call the local FastAPI AI classifier and return the disease key if confidence
+     * meets the configured threshold, or null if the service is unavailable / low confidence.
+     */
+    private static function classifyViaAI(string $text): ?string
+    {
+        if (empty($text)) {
+            return null;
+        }
+
+        $url       = config('services.ai_classifier.url', env('AI_DISEASE_CLASSIFIER_URL'));
+        $threshold = (float) config('services.ai_classifier.threshold', env('AI_DISEASE_CLASSIFIER_CONFIDENCE_THRESHOLD', 0.60));
+        $timeout   = (int)   config('services.ai_classifier.timeout',   env('AI_DISEASE_CLASSIFIER_TIMEOUT', 5));
+
+        if (empty($url)) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout($timeout)
+                ->post($url, ['text' => $text]);
+
+            if ($response->successful()) {
+                $data       = $response->json();
+                $aiCategory = $data['predicted_category'] ?? null;
+                $confidence = (float) ($data['confidence'] ?? 0.0);
+
+                if ($aiCategory && $confidence >= $threshold) {
+                    Log::debug("DiseaseMapper AI: '{$text}' → '{$aiCategory}' ({$confidence})");
+                    return $aiCategory;
+                }
+
+                Log::debug("DiseaseMapper AI low confidence ({$confidence}) for '{$text}', falling back.");
+            } else {
+                Log::warning("DiseaseMapper AI service returned HTTP {$response->status()} for '{$text}'");
+            }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // Service not running — silent fallback, no stack trace needed
+            Log::info('DiseaseMapper: AI classifier offline, using keyword fallback. (' . $e->getMessage() . ')');
+        } catch (\Throwable $e) {
+            Log::warning('DiseaseMapper: AI classifier error — ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Free-text keyword matching (Tier-1 fallback)
     // ─────────────────────────────────────────────────────────────────────────
     private static function matchText(string $t): ?string
     {
@@ -77,7 +173,7 @@ class DiseaseMapper
             'fevers'                  => ['fever', 'pyrexia', 'hyperthermia', 'feverish', 'bacteremia', 'bacterial infection', 'acute bacterial infection', 'severe bacterial infection'],
 
             // Infections
-            'tuberculosis'            => ['tuberculosis', 'tb ', ' tb', '^tb$', 'mycobacterium', 'koch', 'ptb', 'eptb', 'pulmonary tb'],
+            'tuberculosis'            => ['tuberculosis', 'tb ', ' tb', 'mycobacterium', 'koch', 'ptb', 'eptb', 'pulmonary tb'],
             'meningococcal_meningitis'=> ['meningococcal meningitis', 'neisseria meningitidis', 'meningococcal'],
             'other_meningitis'        => ['meningitis', 'bacterial meningitis', 'viral meningitis', 'cryptococcal meningitis'],
             'tetanus'                 => ['tetanus', 'lockjaw', 'clostridium tetani'],
@@ -144,9 +240,8 @@ class DiseaseMapper
             'other_bites'             => ['bite', 'insect bite', 'bee sting', 'scorpion sting', 'human bite'],
             'sexual_assault'          => ['sexual assault', 'rape', 'defilement', 'gender based violence', 'gbv'],
             'violence_injuries'       => ['assault', 'violence', 'stab', 'gunshot', 'domestic violence', 'fight'],
-            
-            // Other Diseases explicitly mapped to prevent fallback to generic categories if not needed, 
-            // though fall-through happens naturally, putting them here assures tracking
+
+            // Explicitly map common "others" to avoid losing them
             'other_diseases'          => ['gastritis', 'abdominal upset', 'pud', 'haemoroids', 'hormonal imbalance', 'dysmenorrhea', 'menstrual cramping', 'allergy', 'alergic reaction', 'allergic reaction'],
         ];
 
@@ -162,53 +257,57 @@ class DiseaseMapper
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Subcategory → disease key
+    // Subcategory → disease key (Tier-2 fallback)
     // ─────────────────────────────────────────────────────────────────────────
     private static function matchSubcategory(string $sub, string $cat): ?string
     {
         $subMap = [
-            'parasitic'       => 'suspected_malaria',
-            'viral'           => 'fevers',
-            'bacterial'       => 'other_diseases',
-            'trauma'          => 'other_injuries',
-            'poisoning'       => 'poisoning',
-            'burns'           => 'burns',
-            'diabetes & metabolic' => 'diabetes',
-            'cardiovascular chronic' => 'cardiovascular',
-            'respiratory chronic'  => 'asthma',
-            'mood disorders'  => 'mental_disorders',
-            'anxiety disorders' => 'mental_disorders',
-            'psychotic disorders' => 'mental_disorders',
+            'parasitic'               => 'suspected_malaria',
+            'viral'                   => 'fevers',
+            'bacterial'               => 'other_diseases',
+            'trauma'                  => 'other_injuries',
+            'poisoning'               => 'poisoning',
+            'burns'                   => 'burns',
+            'diabetes & metabolic'    => 'diabetes',
+            'cardiovascular chronic'  => 'cardiovascular',
+            'respiratory chronic'     => 'asthma',
+            'mood disorders'          => 'mental_disorders',
+            'anxiety disorders'       => 'mental_disorders',
+            'psychotic disorders'     => 'mental_disorders',
             'substance use disorders' => 'mental_disorders',
-            'obstetrics'      => 'puerperium',
-            'neonatal'        => 'malnutrition',
-            'solid tumors'    => 'neoplasms',
-            'hematologic malignancies' => 'neoplasms',
-            'fractures'       => 'muscular_skeletal',
-            'soft tissue injury' => 'other_injuries',
-            'head injury'     => 'other_injuries',
+            'obstetrics'              => 'puerperium',
+            'neonatal'                => 'malnutrition',
+            'solid tumors'            => 'neoplasms',
+            'hematologic malignancies'=> 'neoplasms',
+            'fractures'               => 'muscular_skeletal',
+            'soft tissue injury'      => 'other_injuries',
+            'head injury'             => 'other_injuries',
         ];
 
         return $subMap[$sub] ?? null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Broad category→ disease group fallback
+    // Broad category → disease group fallback (Tier-3 fallback)
     // ─────────────────────────────────────────────────────────────────────────
     private static function matchCategory(string $cat): ?string
     {
         $catMap = [
-            'infectious'                => 'fevers',
-            'mental health'             => 'mental_disorders',
-            'cancer / oncology'         => 'neoplasms',
-            'injury'                    => 'other_injuries',
-            'emergency'                 => 'other_injuries',
-            'maternal & child health'   => 'puerperium',
-            'chronic conditions'        => 'cardiovascular',
+            'infectious'              => 'fevers',
+            'mental health'           => 'mental_disorders',
+            'cancer / oncology'       => 'neoplasms',
+            'injury'                  => 'other_injuries',
+            'emergency'               => 'other_injuries',
+            'maternal & child health' => 'puerperium',
+            'chronic conditions'      => 'cardiovascular',
         ];
 
         return $catMap[$cat] ?? null;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Static helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * All 73 disease keys in order + summary keys

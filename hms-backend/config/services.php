@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Disease Classifier Microservice
+    |--------------------------------------------------------------------------
+    | Local FastAPI service powered by Sentence-Transformers.
+    | Start with: cd ai-service && uvicorn app:app --reload
+    */
+    'ai_classifier' => [
+        'url'       => env('AI_DISEASE_CLASSIFIER_URL', 'http://localhost:8001/classify'),
+        'threshold' => (float) env('AI_DISEASE_CLASSIFIER_CONFIDENCE_THRESHOLD', 0.50),
+        'timeout'   => (int) env('AI_DISEASE_CLASSIFIER_TIMEOUT', 5),
+    ],
+
 ];
+

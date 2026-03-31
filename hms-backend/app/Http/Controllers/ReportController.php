@@ -25,10 +25,13 @@ class ReportController extends Controller
      */
     public function getMoh717(Request $request)
     {
+        // First time processing may take a while if querying the AI service for un-cached diagnoses
+        set_time_limit(300);
+
         $month = (int) $request->input('month', Carbon::now()->month);
         $year  = (int) $request->input('year',  Carbon::now()->year);
 
-        $treatments = Treatment::with('patient')
+        $treatments = Treatment::with(['patient', 'diagnoses'])
             ->whereYear('visit_date', $year)
             ->whereMonth('visit_date', $month)
             ->get();
@@ -38,19 +41,15 @@ class ReportController extends Controller
             'a2'             => $this->initDemographics(),
             'a3'             => $this->initSpecialClinics(),
             'a4'             => $this->initMch(),
-            'a5'             => ['attendances' => 0, 'fillings' => 0, 'extractions' => 0],
+            'a5'             => ['attendances' => 0, 'fillings' => 0, 'extractions' => 0, 'patients' => []],
             'a6_total'       => 0,
-            'other_services' => ['a7' => 0, 'a8' => 0, 'a9' => 0, 'a10' => 0, 'a11' => 0, 'a12' => 0],
+            'other_services' => ['a7' => 0, 'a8' => 0, 'a9' => 0, 'a10' => 0, 'a11' => 0, 'a12' => 0, 'patients' => []],
         ];
 
         foreach ($treatments as $treatment) {
             $patient = $treatment->patient;
             if (!$patient) continue;
 
-            // ── Age ──────────────────────────────────────────────────────────
-            // age_years is the precise field added in migration.
-            // age is the legacy integer column (still in use).
-            // age_years = 0 can mean < 1 year (infant) → still under 5.
             $age    = $patient->age_years ?? $patient->age ?? 0;
             $gender = strtoupper($patient->gender ?? '');
 
@@ -60,64 +59,98 @@ class ReportController extends Controller
             } elseif ($age >= 5) {
                 $demoKey = ($gender === 'M') ? 'over_5_m' : 'over_5_f';
             } else {
-                // Under 5 (0 to 4 years 11 months inclusive)
                 $demoKey = ($gender === 'M') ? 'under_5_m' : 'under_5_f';
             }
 
             // ── Visit type key (NEW vs RE-ATT) ────────────────────────────────
-            // treatment_type is set by TreatmentController: 'new' first visit of day, 'revisit' otherwise
             $visitKey = (strtolower($treatment->treatment_type ?? '') === 'revisit') ? 'reatt' : 'new';
 
-            // ── Clinic routing ────────────────────────────────────────────────
-            $encounter = $treatment->encounter_type; // NULL for all current records
-            $dept      = strtolower(trim($treatment->department ?? '')); // NULL → '' for all current records
+            $patientPayload = [
+                'patient_id'   => $patient->id,
+                'upid'         => $patient->upid,
+                'name'         => trim($patient->first_name . ' ' . $patient->last_name),
+                'age'          => $age,
+                'gender'       => $gender,
+                'visit_date'   => $treatment->visit_date,
+                'visit_type'   => $treatment->treatment_type,
+                'diagnosis'    => $treatment->diagnosis,
+                'category'     => $treatment->diagnosis_category,
+                'subcategory'  => $treatment->diagnosis_subcategory,
+                'treatment_id' => $treatment->id,
+            ];
 
-            if (
-                $encounter === 'Emergency'
-                || str_contains($dept, 'casualty')
-                || str_contains($dept, 'emergency')
-            ) {
-                // A.2 Casualty
+            // ── Extract all relevant text fields ──────────────────────────────
+            $chiefComplaint = strtolower($treatment->chief_complaint ?? '');
+            $notes          = strtolower($treatment->treatment_notes ?? '');
+            
+            // Collect all diagnoses strings for AI Mapping
+            $diagnosesTexts = [];
+            if (!empty($treatment->diagnosis)) $diagnosesTexts[] = $treatment->diagnosis;
+            foreach ($treatment->diagnoses as $diag) {
+                if (!empty($diag->diagnosis)) $diagnosesTexts[] = $diag->diagnosis;
+            }
+            
+            // Run AI mapping on the primary diagnosis to detect special clinics
+            $primaryDiagnosisText = $diagnosesTexts[0] ?? '';
+            $diseaseGroup = 'other_diseases';
+            if (!empty($primaryDiagnosisText)) {
+                $diseaseGroup = DiseaseMapper::map($primaryDiagnosisText, $treatment->diagnosis_category, $treatment->diagnosis_subcategory);
+            }
+
+            // ── 1. A.2 Casualty / Emergency (Regex check) ─────────────────────
+            if (preg_match('/\b(rta|accident|bleeding|unconscious|collapse|burns|assault|emergency|casualty)\b/i', $chiefComplaint . ' ' . $notes)) {
                 $result['a2'][$demoKey][$visitKey]++;
                 $result['a2'][$demoKey]['total']++;
+                $result['a2'][$demoKey]['patients'][] = $patientPayload;
+                continue;
+            }
 
-            } elseif (
-                in_array($encounter, ['MCH', 'Immunisation'])
-                || str_contains($dept, 'mch')
-                || str_contains($dept, 'antenatal')
-                || str_contains($dept, 'postnatal')
-                || str_contains($dept, 'maternity')
-                || str_contains($dept, 'child welfare')
-                || str_contains($dept, 'family planning')
-            ) {
-                // A.4 MCH/FP
-                $mchKey = $this->mapMchClinic($dept, $age, $patient->pregnancy_status ?? null);
-                $result['a4'][$mchKey][$visitKey]++;
-                $result['a4'][$mchKey]['total']++;
+            // ── 2. A.4 MCH / Family Planning / CWC ────────────────────────────
+            if ($age < 5 && preg_match('/\b(vaccin|immuniz|polio|measles|bcp|bcg|growth monitoring|cwc)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
+                $result['a4']['cwc'][$visitKey]++;
+                $result['a4']['cwc']['total']++;
+                $result['a4']['cwc']['patients'][] = $patientPayload;
+                continue;
+            }
+            if (preg_match('/\b(family planning|fp|implant|iucd|depo|jadelle|pill|condom)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
+                $result['a4']['fp'][$visitKey]++;
+                $result['a4']['fp']['total']++;
+                $result['a4']['fp']['patients'][] = $patientPayload;
+                continue;
+            }
+            if ($gender === 'F' && ($patient->pregnancy_status === 'pregnant' || preg_match('/\b(anc|antenatal|pregnancy)\b/i', $notes))) {
+                $result['a4']['anc'][$visitKey]++;
+                $result['a4']['anc']['total']++;
+                $result['a4']['anc']['patients'][] = $patientPayload;
+                continue;
+            }
 
-            } elseif (str_contains($dept, 'dental')) {
-                // A.5 Dental
+            // ── 3. A.5 Dental Procedures ──────────────────────────────────────
+            if ($diseaseGroup === 'dental_disorders' || preg_match('/\b(dental|tooth|teeth)\b/i', $primaryDiagnosisText)) {
                 $result['a5']['attendances']++;
-                $notes = strtolower($treatment->treatment_notes ?? '');
-                if (str_contains($notes, 'filling') || str_contains($notes, 'restoration')) {
+                $result['a5']['patients'][] = $patientPayload;
+                if (preg_match('/\b(filling|amalgam|composite|restor)\b/i', $notes)) {
                     $result['a5']['fillings']++;
                 }
-                if (str_contains($notes, 'extraction') || str_contains($notes, 'extracted')) {
+                if (preg_match('/\b(extract|xla|pulled)\b/i', $notes)) {
                     $result['a5']['extractions']++;
                 }
-
-            } else {
-                // Check A.3 Special Clinics (only when dept is non-empty)
-                $specialKey = $this->mapSpecialClinic($dept, $encounter);
-                if ($specialKey) {
-                    $result['a3'][$specialKey][$visitKey]++;
-                    $result['a3'][$specialKey]['total']++;
-                } else {
-                    // A.1 General Outpatients — default for all OPD / NULL records
-                    $result['a1'][$demoKey][$visitKey]++;
-                    $result['a1'][$demoKey]['total']++;
-                }
+                continue; // Processed
             }
+
+            // ── 4. A.3 Special Clinics (Based on AI Disease Mapping) ──────────
+            $specialKey = $this->mapDiseaseToSpecialClinic($diseaseGroup);
+            if ($specialKey) {
+                $result['a3'][$specialKey][$visitKey]++;
+                $result['a3'][$specialKey]['total']++;
+                $result['a3'][$specialKey]['patients'][] = $patientPayload;
+                continue;
+            }
+
+            // ── 5. Fallback -> A.1 General Outpatients ────────────────────────
+            $result['a1'][$demoKey][$visitKey]++;
+            $result['a1'][$demoKey]['total']++;
+            $result['a1'][$demoKey]['patients'][] = $patientPayload;
         }
 
         // ── A.6 Total Outpatient Services ─────────────────────────────────────
@@ -140,11 +173,11 @@ class ReportController extends Controller
     private function initDemographics(): array
     {
         return [
-            'over_5_m'  => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'over_5_f'  => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'under_5_m' => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'under_5_f' => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'over_60'   => ['new' => 0, 'reatt' => 0, 'total' => 0],
+            'over_5_m'  => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'over_5_f'  => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'under_5_m' => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'under_5_f' => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'over_60'   => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
         ];
     }
 
@@ -157,7 +190,7 @@ class ReportController extends Controller
         ];
         $res = [];
         foreach ($keys as $k) {
-            $res[$k] = ['new' => 0, 'reatt' => 0, 'total' => 0];
+            $res[$k] = ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []];
         }
         return $res;
     }
@@ -165,55 +198,55 @@ class ReportController extends Controller
     private function initMch(): array
     {
         return [
-            'cwc' => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'anc' => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'pnc' => ['new' => 0, 'reatt' => 0, 'total' => 0],
-            'fp'  => ['new' => 0, 'reatt' => 0, 'total' => 0],
+            'cwc' => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'anc' => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'pnc' => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
+            'fp'  => ['new' => 0, 'reatt' => 0, 'total' => 0, 'patients' => []],
         ];
     }
 
-    private function mapMchClinic(string $dept, int $age, ?string $pregnancyStatus): string
-    {
-        if (str_contains($dept, 'antenatal') || str_contains($dept, 'anc')) return 'anc';
-        if (str_contains($dept, 'postnatal')  || str_contains($dept, 'pnc')) return 'pnc';
-        if (str_contains($dept, 'family planning') || str_contains($dept, 'fp')) return 'fp';
-        if (str_contains($dept, 'cwc') || str_contains($dept, 'child welfare')) return 'cwc';
-        if ($pregnancyStatus === 'pregnant') return 'anc';
-        if ($age < 5) return 'cwc';
-        return 'fp';
-    }
-
     /**
-     * Returns an A.3 special clinic key, or null if the dept doesn't match.
-     * Returning null signals "use A.1 General OPD" as the fallback.
+     * Map the AI disease output to an A.3 Special Clinic.
+     * Returns null if it doesn't belong to a special clinic (meaning A.1 fallback).
      */
-    private function mapSpecialClinic(string $dept, ?string $encounter): ?string
+    private function mapDiseaseToSpecialClinic(string $diseaseGroup): ?string
     {
-        // Empty dept + no special encounter type → General OPD (A.1)
-        if ($dept === '' && $encounter === null) return null;
-        if ($dept === '' && $encounter === 'OPD') return null;
-        if ($dept === '' && $encounter === 'Follow-up') return null;
-        if ($dept === '' && $encounter === 'Lab Only') return null;
-        if ($dept === '' && $encounter === 'Pharmacy Only') return null;
-
-        if (str_contains($dept, 'ent') || str_contains($dept, 'ear') || str_contains($dept, 'nose') || str_contains($dept, 'throat')) return 'ent';
-        if (str_contains($dept, 'eye') || str_contains($dept, 'ophthal')) return 'eye';
-        if (str_contains($dept, 'tb') || str_contains($dept, 'tuberculosis') || str_contains($dept, 'leprosy')) return 'tb_leprosy';
-        if (str_contains($dept, 'ccc') || str_contains($dept, 'comprehensive care') || str_contains($dept, 'hiv') || str_contains($dept, 'art')) return 'ccc';
-        if (str_contains($dept, 'psych') || str_contains($dept, 'mental')) return 'psychiatry';
-        if (str_contains($dept, 'ortho')) return 'orthopaedic';
-        if (str_contains($dept, 'occupational')) return 'occupational';
-        if (str_contains($dept, 'physio')) return 'physiotherapy';
-        if (str_contains($dept, 'medical')) return 'medical';
-        if (str_contains($dept, 'surgical') || str_contains($dept, 'surgery')) return 'surgical';
-        if (str_contains($dept, 'paediatric') || str_contains($dept, 'pediatric')) return 'paediatrics';
-        if (str_contains($dept, 'obs') || str_contains($dept, 'gyn')) return 'obs_gyn';
-        if (str_contains($dept, 'nutrition') || str_contains($dept, 'dietit')) return 'nutrition';
-        if (str_contains($dept, 'onco') || str_contains($dept, 'cancer')) return 'oncology';
-        if (str_contains($dept, 'renal') || str_contains($dept, 'kidney') || str_contains($dept, 'nephro')) return 'renal';
-
-        // Has a non-empty dept string that didn't match above → "Other special clinic"
-        return 'other';
+        switch ($diseaseGroup) {
+            case 'eye_infections':
+            case 'other_eye':
+                return 'eye';
+            case 'tuberculosis':
+                return 'tb_leprosy';
+            case 'mental_disorders':
+            case 'epilepsy':
+                return 'psychiatry';
+            case 'muscular_skeletal':
+            case 'road_traffic_injuries':
+            case 'other_injuries':
+            case 'fractures':
+                return 'orthopaedic';
+            case 'newly_diagnosed_hiv':
+            case 'sti':
+                return 'ccc';
+            case 'hypertension':
+            case 'diabetes':
+            case 'cardiovascular':
+            case 'cns_conditions':
+            case 'neoplasms':
+            case 'asthma':
+                return 'medical';
+            case 'abortion':
+            case 'fistula':
+            case 'puerperium':
+            case 'post_abortion':
+                return 'obs_gyn';
+            case 'malnutrition':
+                return 'nutrition';
+            case 'dental_disorders': // Should be handled in A.5, but just in case
+                return null;
+            default:
+                return null;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -235,6 +268,10 @@ class ReportController extends Controller
      */
     public function getDiseaseReport(Request $request)
     {
+        // Generating for a large month for the first time before AI results are cached 
+        // can exceed the default 30s limit due to sequential HTTP calls.
+        set_time_limit(300); 
+
         $month = (int) $request->input('month', Carbon::now()->month);
         $year  = (int) $request->input('year',  Carbon::now()->year);
 

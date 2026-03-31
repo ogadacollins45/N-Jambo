@@ -188,6 +188,46 @@ class AdmissionController extends Controller
     }
 
     /**
+     * Update an existing Cardex / timeline entry.
+     */
+    public function updateEntry(Request $request, $id, $entryId)
+    {
+        $admission = Admission::findOrFail($id);
+
+        if (!$admission->isActive()) {
+            return response()->json([
+                'message' => 'Cannot edit entries for a non-active admission.',
+            ], 422);
+        }
+
+        $entry = $admission->entries()->where('id', $entryId)->firstOrFail();
+
+        $validated = $request->validate([
+            'bp'          => 'nullable|string|max:20',
+            'pulse'       => 'nullable|string|max:20',
+            'temp'        => 'nullable|string|max:20',
+            'spo2'        => 'nullable|string|max:20',
+            'note'        => 'nullable|string',
+            'recorded_at' => 'nullable|date',
+        ]);
+
+        $entry->update([
+            'bp'          => $validated['bp'] ?? null,
+            'pulse'       => $validated['pulse'] ?? null,
+            'temp'        => $validated['temp'] ?? null,
+            'spo2'        => $validated['spo2'] ?? null,
+            'note'        => $validated['note'] ?? null,
+            'recorded_at' => $validated['recorded_at'] ?? $entry->recorded_at ?? now(),
+            'user_id'     => auth()->id() ?? $entry->user_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Entry updated successfully.',
+            'entry'   => $entry->fresh()->load('user'),
+        ]);
+    }
+
+    /**
      * Discharge a patient. Closes the admission and optionally creates a bill.
      */
     public function discharge(Request $request, $id)

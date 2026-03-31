@@ -7,7 +7,7 @@ import AddPrescriptionModal from "../components/AddPrescriptionModal";
 import {
   ChevronLeft, Loader, AlertCircle, CheckCircle, X,
   BedDouble, User, Clock, Stethoscope, Activity,
-  PlusCircle, ClipboardList, LogOut, CreditCard, Pill, Trash2, Microscope,
+  PlusCircle, ClipboardList, LogOut, CreditCard, Pill, Trash2, Microscope, Pencil,
 } from "lucide-react";
 
 const InpatientDetails = () => {
@@ -24,6 +24,7 @@ const InpatientDetails = () => {
   // Cardex entry form
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [entryForm, setEntryForm] = useState({ bp: "", pulse: "", temp: "", spo2: "", note: "", recorded_at: "" });
+  const [editingEntryId, setEditingEntryId] = useState(null);
   const [savingEntry, setSavingEntry] = useState(false);
 
   // Discharge form
@@ -97,11 +98,18 @@ const InpatientDetails = () => {
     e.preventDefault();
     setSavingEntry(true);
     try {
-      await axios.post(`${API_BASE}/admissions/${id}/entries`, entryForm, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      flashMessage(setSuccess, "Entry recorded successfully.");
+      if (editingEntryId) {
+        await axios.put(`${API_BASE}/admissions/${id}/entries/${editingEntryId}`, entryForm, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+      } else {
+        await axios.post(`${API_BASE}/admissions/${id}/entries`, entryForm, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+      }
+      flashMessage(setSuccess, editingEntryId ? "Entry updated successfully." : "Entry recorded successfully.");
       setEntryForm({ bp: "", pulse: "", temp: "", spo2: "", note: "", recorded_at: "" });
+      setEditingEntryId(null);
       setShowEntryForm(false);
       await fetchAdmission();
     } catch (err) {
@@ -109,6 +117,40 @@ const InpatientDetails = () => {
     } finally {
       setSavingEntry(false);
     }
+  };
+
+  const resetEntryForm = () => {
+    setEntryForm({ bp: "", pulse: "", temp: "", spo2: "", note: "", recorded_at: "" });
+    setEditingEntryId(null);
+    setShowEntryForm(false);
+  };
+
+  const toDateTimeLocal = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
+
+  const openNewEntryForm = () => {
+    const now = new Date();
+    const localISOTime = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    setEditingEntryId(null);
+    setEntryForm({ bp: "", pulse: "", temp: "", spo2: "", note: "", recorded_at: localISOTime });
+    setShowEntryForm(true);
+  };
+
+  const handleEditEntry = (entry) => {
+    setEditingEntryId(entry.id);
+    setEntryForm({
+      bp: entry.bp || "",
+      pulse: entry.pulse || "",
+      temp: entry.temp || "",
+      spo2: entry.spo2 || "",
+      note: entry.note || "",
+      recorded_at: toDateTimeLocal(entry.recorded_at),
+    });
+    setShowEntryForm(true);
   };
 
   const handleDischarge = async () => {
@@ -375,12 +417,11 @@ const InpatientDetails = () => {
                     <div className="mb-5 flex flex-wrap gap-3">
                       <button
                         onClick={() => {
-                          if (!showEntryForm) {
-                            const now = new Date();
-                            const localISOTime = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                            setEntryForm((prev) => ({ ...prev, recorded_at: localISOTime }));
+                          if (showEntryForm) {
+                            resetEntryForm();
+                          } else {
+                            openNewEntryForm();
                           }
-                          setShowEntryForm((v) => !v);
                         }}
                         className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-medium shadow-sm"
                       >
@@ -398,7 +439,9 @@ const InpatientDetails = () => {
 
                   {showEntryForm && (
                     <form onSubmit={handleAddEntry} className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-6">
-                      <h4 className="text-sm font-semibold text-indigo-800 mb-4">New Cardex Entry</h4>
+                      <h4 className="text-sm font-semibold text-indigo-800 mb-4">
+                        {editingEntryId ? "Edit Cardex Entry" : "New Cardex Entry"}
+                      </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         {[
                           { name: "bp", label: "Blood Pressure", placeholder: "120/80" },
@@ -443,11 +486,11 @@ const InpatientDetails = () => {
                         />
                       </div>
                       <div className="flex justify-end gap-3">
-                        <button type="button" onClick={() => setShowEntryForm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <button type="button" onClick={resetEntryForm} className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
                           Cancel
                         </button>
                         <button type="submit" disabled={savingEntry} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
-                          {savingEntry ? "Saving..." : "Save Entry"}
+                          {savingEntry ? "Saving..." : editingEntryId ? "Update Entry" : "Save Entry"}
                         </button>
                       </div>
                     </form>
@@ -471,11 +514,23 @@ const InpatientDetails = () => {
                                 <Clock size={12} />
                                 <span className="font-medium text-gray-700">{formatDateTime(entry.recorded_at)}</span>
                               </div>
-                              {entry.user && (
-                                <div className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                  {entry.user.name}
-                                </div>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {entry.user && (
+                                  <div className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                    {entry.user.name}
+                                  </div>
+                                )}
+                                {isActive && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditEntry(entry)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full hover:bg-indigo-100"
+                                  >
+                                    <Pencil size={12} />
+                                    Edit
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             {(entry.bp || entry.pulse || entry.temp || entry.spo2) && (
                               <div className="flex flex-wrap gap-3 mb-3">

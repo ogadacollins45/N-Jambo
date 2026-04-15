@@ -6,46 +6,46 @@ import { Link } from "react-router-dom";
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 const MONTHS = [
-  { value: 1,  label: "January"   }, { value: 2,  label: "February"  },
-  { value: 3,  label: "March"     }, { value: 4,  label: "April"     },
-  { value: 5,  label: "May"       }, { value: 6,  label: "June"      },
-  { value: 7,  label: "July"      }, { value: 8,  label: "August"    },
-  { value: 9,  label: "September" }, { value: 10, label: "October"   },
-  { value: 11, label: "November"  }, { value: 12, label: "December"  },
+  { value: 1, label: "January" }, { value: 2, label: "February" },
+  { value: 3, label: "March" }, { value: 4, label: "April" },
+  { value: 5, label: "May" }, { value: 6, label: "June" },
+  { value: 7, label: "July" }, { value: 8, label: "August" },
+  { value: 9, label: "September" }, { value: 10, label: "October" },
+  { value: 11, label: "November" }, { value: 12, label: "December" },
 ];
 
 /** Human-readable column header labels */
 const COLUMN_LABELS = {
-  total_exam:                  "Total Exam",
-  number_positive:             "No. Positive",
-  low:                         "Low",
-  high:                        "High",
-  number_of_specimens:         "No. of Specimens",
-  number_of_results_received:  "No. of Results Received",
-  hb_lt_5_g_dl:                "HB <5 g/dl",
-  hb_5_to_10_g_dl:             "HB 5–10 g/dl",
-  pre_diabetes:                "Pre-Diabetes",
-  diabetes:                    "Diabetes",
-  number_lt_500:               "Number <500",
-  number:                      "Number",
-  total_cultures:              "Total Cultures",
-  culture_positive:            "No. Culture +ve",
-  malignant:                   "Malignant",
-  tnm_stage:                   "TNM Stage",
-  number_contaminated:         "Contaminated",
+  total_exam: "Total Exam",
+  number_positive: "No. Positive",
+  low: "Low",
+  high: "High",
+  number_of_specimens: "No. of Specimens",
+  number_of_results_received: "No. of Results Received",
+  hb_lt_5_g_dl: "HB <5 g/dl",
+  hb_5_to_10_g_dl: "HB 5–10 g/dl",
+  pre_diabetes: "Pre-Diabetes",
+  diabetes: "Diabetes",
+  number_lt_500: "Number <500",
+  number: "Number",
+  total_cultures: "Total Cultures",
+  culture_positive: "No. Culture +ve",
+  malignant: "Malignant",
+  tnm_stage: "TNM Stage",
+  number_contaminated: "Contaminated",
 };
 
 /** Phase 1 section tabs (1, 7, 8) */
 const SECTION_TABS = [
-  { id: "1", emoji: "🧪", label: "S1 — Urine Analysis"  },
-  { id: "2", emoji: "🩸", label: "S2 — Blood Chemistry"  },
-  { id: "3", emoji: "🦟", label: "S3 — Parasitology"    },
-  { id: "4", emoji: "💉", label: "S4 — Haematology"     },
-  { id: "5", emoji: "🧫", label: "S5 — Bacteriology"    },
-  { id: "6", emoji: "🔬", label: "S6 — Histology"       },
-  { id: "7", emoji: "🩺", label: "S7 — Serology"        },
-  { id: "8", emoji: "📤", label: "S8 — Referrals"       },
-  { id: "9", emoji: "💊", label: "S9 — Susceptibility"  },
+  { id: "1", emoji: "🧪", label: "S1 — Urine Analysis" },
+  { id: "2", emoji: "🩸", label: "S2 — Blood Chemistry" },
+  { id: "3", emoji: "🦟", label: "S3 — Parasitology" },
+  { id: "4", emoji: "💉", label: "S4 — Haematology" },
+  { id: "5", emoji: "🧫", label: "S5 — Bacteriology" },
+  { id: "6", emoji: "🔬", label: "S6 — Histology" },
+  { id: "7", emoji: "🩺", label: "S7 — Serology" },
+  { id: "8", emoji: "📤", label: "S8 — Referrals" },
+  { id: "9", emoji: "💊", label: "S9 — Susceptibility" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,15 +60,15 @@ function cellColor(colName, value) {
   switch (colName) {
     case "total_exam":
     case "total_cultures":
-    case "number_of_specimens":          return "text-blue-700 font-semibold";
+    case "number_of_specimens": return "text-blue-700 font-semibold";
     case "number_positive":
     case "culture_positive":
-    case "high":                         return "text-amber-700 font-bold";
-    case "number_contaminated":          return "text-orange-700 font-bold";
-    case "number_of_results_received":   return "text-indigo-700 font-semibold";
-    case "low":                          return "text-sky-700 font-bold";
-    case "malignant":                    return "text-rose-700 font-bold";
-    default:                             return "text-gray-700 font-semibold";
+    case "high": return "text-amber-700 font-bold";
+    case "number_contaminated": return "text-orange-700 font-bold";
+    case "number_of_results_received": return "text-indigo-700 font-semibold";
+    case "low": return "text-sky-700 font-bold";
+    case "malignant": return "text-rose-700 font-bold";
+    default: return "text-gray-700 font-semibold";
   }
 }
 
@@ -85,21 +85,21 @@ const SectionSummaryBar = ({ subsections }) => {
 
   subsections.forEach((sub) => {
     sub.rows.forEach((row) => {
-      totalTests    += row.total_exam            ?? 0;
-      totalPositive += row.number_positive       ?? 0;
-      totalSpecimens+= row.number_of_specimens   ?? 0;
+      totalTests += row.total_exam ?? 0;
+      totalPositive += row.number_positive ?? 0;
+      totalSpecimens += row.number_of_specimens ?? 0;
       totalReceived += row.number_of_results_received ?? 0;
     });
   });
 
   const pills = [];
   if (totalTests > 0 || totalPositive > 0) {
-    pills.push({ label: "Total Exams",  value: totalTests,    color: "blue"    });
-    pills.push({ label: "Positive",     value: totalPositive, color: "amber"   });
+    pills.push({ label: "Total Exams", value: totalTests, color: "blue" });
+    pills.push({ label: "Positive", value: totalPositive, color: "amber" });
   }
   if (totalSpecimens > 0 || totalReceived > 0) {
-    pills.push({ label: "Specimens Sent",     value: totalSpecimens, color: "blue"    });
-    pills.push({ label: "Results Received",   value: totalReceived,  color: "indigo" });
+    pills.push({ label: "Specimens Sent", value: totalSpecimens, color: "blue" });
+    pills.push({ label: "Results Received", value: totalReceived, color: "indigo" });
   }
   if (pills.length === 0) return null;
 
@@ -125,7 +125,7 @@ const PatientTable = ({ patients, label }) => {
   ) : (
     <span className="px-1.5 py-0.5 text-xs bg-pink-100 text-pink-700 rounded font-medium">F</span>
   );
-  
+
   return (
     <tr className="print:hidden">
       <td colSpan={100} className="bg-blue-50/50 px-6 py-3 border-b border-blue-100">
@@ -233,9 +233,8 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
               return (
                 <React.Fragment key={row.code}>
                   <tr
-                    className={`border-b border-gray-100 transition-colors ${
-                      idx % 2 === 0 ? "" : "bg-gray-50/40"
-                    } ${hasData ? "hover:bg-blue-50/20" : "text-gray-400"} ${hasPatients ? "cursor-pointer" : ""}`}
+                    className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? "" : "bg-gray-50/40"
+                      } ${hasData ? "hover:bg-blue-50/20" : "text-gray-400"} ${hasPatients ? "cursor-pointer" : ""}`}
                     onClick={() => hasPatients && toggle(subsection.code, row.code)}
                   >
                     <td className="py-2.5 px-3 text-center print:hidden">
@@ -325,9 +324,8 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
               return (
                 <React.Fragment key={row.code}>
                   <tr
-                    className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? "" : "bg-gray-50/40"} ${
-                      hasData ? "hover:bg-blue-50/20 text-gray-800 font-medium" : "text-gray-400"
-                    } ${hasPatients ? "cursor-pointer" : ""}`}
+                    className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? "" : "bg-gray-50/40"} ${hasData ? "hover:bg-blue-50/20 text-gray-800 font-medium" : "text-gray-400"
+                      } ${hasPatients ? "cursor-pointer" : ""}`}
                     onClick={() => hasPatients && toggle(subsection.code, row.code)}
                   >
                     <td className="py-2.5 px-3 sticky left-0 z-10 bg-inherit print:hidden">
@@ -344,9 +342,8 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
                       return (
                         <td
                           key={col.name}
-                          className={`py-2.5 px-1 text-center tabular-nums border-r border-gray-100 print:border-black ${
-                            val > 0 ? "font-bold text-amber-700 bg-amber-50/30" : ""
-                          }`}
+                          className={`py-2.5 px-1 text-center tabular-nums border-r border-gray-100 print:border-black ${val > 0 ? "font-bold text-amber-700 bg-amber-50/30" : ""
+                            }`}
                         >
                           {val > 0 ? val : <span className="text-gray-300">—</span>}
                         </td>
@@ -386,13 +383,13 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 const MOH706 = () => {
-  const [month, setMonth]       = useState(new Date().getMonth() + 1);
-  const [year,  setYear]        = useState(new Date().getFullYear());
-  const [loading, setLoading]   = useState(false);
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState(null);
   const [activeSection, setActiveSection] = useState("1");
   const [fetchedPeriod, setFetchedPeriod] = useState(null);
-  const [error, setError]       = useState(null);
+  const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState({});
 
   const toggle = useCallback((sectionCode, rowCode) => {
@@ -401,10 +398,10 @@ const MOH706 = () => {
   }, []);
 
   const [facilityInfo] = useState({
-    county:     "Bungoma",
-    subCounty:  "Bungoma North",
-    facility:   "Naitiri Jambo Medical Centre",
-    kmhfl:      "30952",
+    county: "Bungoma",
+    subCounty: "Bungoma North",
+    facility: "Naitiri Jambo Medical Centre",
+    kmhfl: "30952",
   });
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
@@ -506,7 +503,7 @@ const MOH706 = () => {
             Processing lab records…
           </p>
           <p className="text-xs text-gray-400">
-            AI-assisted test mapping may take a moment on first run.
+            Test mapping may take a moment on first run.
           </p>
         </div>
       )}
@@ -575,11 +572,11 @@ const MOH706 = () => {
                           border-b border-gray-100 bg-gray-50/60
                           print:bg-transparent print:border-black print:border-2 print:p-4">
             {[
-              ["County",        facilityInfo.county    ],
-              ["Sub-County",    facilityInfo.subCounty ],
-              ["Facility",      facilityInfo.facility  ],
-              ["Month / Year",  `${monthLabel(month)} ${year}`],
-              ["KMHFL Code",    facilityInfo.kmhfl     ],
+              ["County", facilityInfo.county],
+              ["Sub-County", facilityInfo.subCounty],
+              ["Facility", facilityInfo.facility],
+              ["Month / Year", `${monthLabel(month)} ${year}`],
+              ["KMHFL Code", facilityInfo.kmhfl],
             ].map(([label, value]) => (
               <div key={label} className="flex flex-col">
                 <span className="text-blue-500 text-[10px] font-semibold uppercase tracking-wider print:text-gray-500">
@@ -599,13 +596,11 @@ const MOH706 = () => {
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
                 className={`flex items-center gap-2 px-6 py-3.5 text-sm font-semibold
-                            whitespace-nowrap transition-all duration-200 outline-none border-b-2 ${
-                  activeSection === tab.id
+                            whitespace-nowrap transition-all duration-200 outline-none border-b-2 ${activeSection === tab.id
                     ? "text-blue-700 border-blue-500 bg-blue-50"
                     : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-gray-700"
-                }`}
+                  }`}
               >
-                <span className="text-base">{tab.emoji}</span>
                 {tab.label}
               </button>
             ))}
@@ -635,7 +630,7 @@ const MOH706 = () => {
 
                 {/* Subsection tables */}
                 {currentSection.subsections.map((sub) => (
-                  currentSection.type === 'matrix_table' 
+                  currentSection.type === 'matrix_table'
                     ? <MatrixSubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
                     : <SubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
                 ))}

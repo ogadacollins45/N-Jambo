@@ -1,0 +1,692 @@
+{
+  "document_title": "MOH 706 Laboratory Reporting Form",
+  "description": "Structural JSON specification of sections 1 to 9. Includes section headings, subsection headings, column definitions, row definitions, and structural notes. Excludes entered values.",
+  "source": "Uploaded document",
+  "sections": [
+    {
+      "section_number": "1",
+      "section_title": "URINE ANALYSIS",
+      "type": "grouped_tables",
+      "subsections": [
+        {
+          "subsection_code": "1.1",
+          "subsection_title": "Urine Chemistry",
+          "table_type": "standard",
+          "description": "Records urine chemistry investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "1.2", "label": "Glucose", "order": 1 },
+            { "code": "1.3", "label": "Ketones", "order": 2 },
+            { "code": "1.4", "label": "Proteins", "order": 3 }
+          ],
+          "notes": [
+            "The subsection heading is 1.1, but the listed data rows begin at 1.2."
+          ]
+        },
+        {
+          "subsection_code": "1.5",
+          "subsection_title": "Urine Microscopy",
+          "table_type": "standard",
+          "description": "Records urine microscopy findings.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "1.6", "label": "Pus cells (p/s/hpf)", "order": 1 },
+            { "code": "1.7", "label": "S. haematobium", "order": 2 },
+            { "code": "1.8", "label": "T. vaginalis", "order": 3 },
+            { "code": "1.9", "label": "Yeast cells", "order": 4 },
+            { "code": "1.10", "label": "Bacteria", "order": 5 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "2",
+      "section_title": "BLOOD CHEMISTRY",
+      "type": "grouped_tables",
+      "subsections": [
+        {
+          "subsection_code": "2.1",
+          "subsection_title": "Blood Sugar Test",
+          "table_type": "standard",
+          "description": "Records blood sugar investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.1", "label": "Blood sugar", "order": 1 },
+            { "code": "2.2", "label": "OGTT", "order": 2 }
+          ]
+        },
+        {
+          "subsection_code": "2.3",
+          "subsection_title": "Renal Function Test",
+          "table_type": "standard",
+          "description": "Records renal function investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.4", "label": "Creatinine", "order": 1 },
+            { "code": "2.5", "label": "Urea", "order": 2 },
+            { "code": "2.6", "label": "Sodium", "order": 3 },
+            { "code": "2.7", "label": "Potassium", "order": 4 },
+            { "code": "2.8", "label": "Chlorides", "order": 5 }
+          ]
+        },
+        {
+          "subsection_code": "2.8",
+          "subsection_title": "Liver Function Test",
+          "table_type": "standard",
+          "description": "Records liver function investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.9", "label": "Direct bilirubin", "order": 1 },
+            { "code": "2.10", "label": "Total bilirubin", "order": 2 },
+            { "code": "2.11", "label": "ASAT (SGOT)", "order": 3 },
+            { "code": "2.12", "label": "ALAT (SGPT)", "order": 4 },
+            { "code": "2.13", "label": "Serum Protein", "order": 5 },
+            { "code": "2.14", "label": "Albumin", "order": 6 },
+            { "code": "2.15", "label": "Alkaline Phosphatase", "order": 7 }
+          ]
+        },
+        {
+          "subsection_code": "2.16",
+          "subsection_title": "Lipid Profile",
+          "table_type": "standard",
+          "description": "Records lipid profile investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.17", "label": "Total cholesterol", "order": 1 },
+            { "code": "2.18", "label": "Triglycerides", "order": 2 },
+            { "code": "2.19", "label": "LDL", "order": 3 }
+          ]
+        },
+        {
+          "subsection_code": "2.20",
+          "subsection_title": "Hormonal Test",
+          "table_type": "standard",
+          "description": "Records hormonal investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.20", "label": "T3", "order": 1 },
+            { "code": "2.21", "label": "T4", "order": 2 },
+            { "code": "2.22", "label": "TSH", "order": 3 }
+          ]
+        },
+        {
+          "subsection_code": "2.23",
+          "subsection_title": "Tumor Markers",
+          "table_type": "standard",
+          "description": "Records tumor marker investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "2.23", "label": "PSA", "order": 1 },
+            { "code": "2.24", "label": "CA 15-3", "order": 2 },
+            { "code": "2.25", "label": "CA 19-9", "order": 3 },
+            { "code": "2.26", "label": "CA 125", "order": 4 },
+            { "code": "2.27", "label": "CEA", "order": 5 },
+            { "code": "2.28", "label": "AFP", "order": 6 }
+          ]
+        },
+        {
+          "subsection_code": "2.29",
+          "subsection_title": "CSF Chemistry",
+          "table_type": "standard",
+          "description": "Records CSF chemistry investigations.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "low", "label": "Low", "type": "numeric", "position": 4 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "2.29", "label": "Proteins", "order": 1 },
+            { "code": "2.30", "label": "Glucose", "order": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "3",
+      "section_title": "SECTION 3",
+      "type": "missing_section",
+      "description": "Section number reserved but content not present in the extracted material.",
+      "subsections": [],
+      "notes": [
+        "The source document appears to skip visible Section 3 content.",
+        "Implementations should allow section numbering gaps."
+      ]
+    },
+    {
+      "section_number": "4",
+      "section_title": "HAEMATOLOGY",
+      "type": "grouped_tables",
+      "subsections": [
+        {
+          "subsection_code": "4.1",
+          "subsection_title": "Haematology Tests",
+          "table_type": "standard",
+          "description": "Records general haematology tests and hemoglobin classification.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "hb_lt_5_g_dl", "label": "HB <5 g/dl", "type": "numeric", "position": 4 },
+            { "name": "hb_5_to_10_g_dl", "label": "HB between 5 and 10 g/dl", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "4.1", "label": "Full blood count", "order": 1 },
+            { "code": "4.2", "label": "HB estimation tests (other techniques)", "order": 2 }
+          ]
+        },
+        {
+          "subsection_code": "4.3",
+          "subsection_title": "HbA1c",
+          "table_type": "standard",
+          "description": "Records HbA1c screening results.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "pre_diabetes", "label": "Pre-diabetes", "type": "numeric", "position": 4 },
+            { "name": "diabetes", "label": "Diabetes", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "4.3", "label": "Hemoglobin A1c (HbA1c)", "order": 1 }
+          ]
+        },
+        {
+          "subsection_code": "4.4",
+          "subsection_title": "CD4 Count",
+          "table_type": "standard",
+          "description": "Records CD4 count testing.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_lt_500", "label": "Number <500", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "4.4", "label": "CD4 count", "order": 1 }
+          ]
+        },
+        {
+          "subsection_code": "4.5",
+          "subsection_title": "Other Haematology Tests",
+          "table_type": "standard",
+          "description": "Records other haematology investigations where positivity is tracked.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "4.5", "label": "Sickling test", "order": 1 },
+            { "code": "4.6", "label": "Peripheral blood films", "order": 2 },
+            { "code": "4.7", "label": "BMA", "order": 3 },
+            { "code": "4.8", "label": "Coagulation profile", "order": 4 },
+            { "code": "4.9", "label": "Reticulocyte Count", "order": 5 }
+          ]
+        },
+        {
+          "subsection_code": "4.10",
+          "subsection_title": "ESR",
+          "table_type": "standard",
+          "description": "Records erythrocyte sedimentation rate results.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "high", "label": "High", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "4.10", "label": "Erythrocyte Sedimentation Rate", "order": 1 }
+          ]
+        },
+        {
+          "subsection_code": "4.11",
+          "subsection_title": "Blood Grouping",
+          "table_type": "standard",
+          "description": "Records blood grouping activity.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "number", "label": "Number", "type": "numeric", "position": 3 }
+          ],
+          "rows": [
+            { "code": "4.11", "label": "Total blood group tests", "order": 1 },
+            { "code": "4.12", "label": "Blood units grouped", "order": 2 }
+          ],
+          "notes": [
+            "In the scan, 4.11 may appear as a heading-style row and 4.12 as the visible populated row."
+          ]
+        },
+        {
+          "subsection_code": "4.13",
+          "subsection_title": "Blood Safety",
+          "table_type": "standard",
+          "description": "Records blood safety and transfusion-related activities.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "number", "label": "Number", "type": "numeric", "position": 3 }
+          ],
+          "rows": [
+            { "code": "4.13", "label": "Blood units received from blood transfusion centres", "order": 1 },
+            { "code": "4.14", "label": "Blood units collected at facility", "order": 2 },
+            { "code": "4.15", "label": "Blood units transfused", "order": 3 },
+            { "code": "4.16", "label": "Transfusion reactions reported and investigated", "order": 4 },
+            { "code": "4.17", "label": "Blood grouping and cross matched", "order": 5 },
+            { "code": "4.18", "label": "Blood units discarded", "order": 6 }
+          ]
+        },
+        {
+          "subsection_code": "4.19",
+          "subsection_title": "Blood Screening at Facility",
+          "table_type": "standard",
+          "description": "Records screening results for transfusion-related infections.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 3 }
+          ],
+          "rows": [
+            { "code": "4.19", "label": "HIV", "order": 1 },
+            { "code": "4.20", "label": "Hepatitis B", "order": 2 },
+            { "code": "4.21", "label": "Hepatitis C", "order": 3 },
+            { "code": "4.22", "label": "Syphilis", "order": 4 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "5",
+      "section_title": "BACTERIOLOGY",
+      "type": "grouped_tables",
+      "subsections": [
+        {
+          "subsection_code": "5.1",
+          "subsection_title": "Bacteriological Samples",
+          "table_type": "standard",
+          "description": "Records bacteriological specimen processing and culture results.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "sample_name", "label": "Sample Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "total_cultures", "label": "Total Cultures", "type": "numeric", "position": 4 },
+            { "name": "culture_positive", "label": "No. Culture Positive", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "5.1", "label": "Urine", "order": 1 },
+            { "code": "5.2", "label": "Pus swab", "order": 2 },
+            { "code": "5.3", "label": "High Vaginal Swab (HVS)", "order": 3 },
+            { "code": "5.4", "label": "Throat swab", "order": 4 },
+            { "code": "5.5", "label": "Rectal swab", "order": 5 },
+            { "code": "5.6", "label": "Blood", "order": 6 },
+            { "code": "5.7", "label": "Water", "order": 7 },
+            { "code": "5.8", "label": "Food", "order": 8 },
+            { "code": "5.9", "label": "Urethral swabs", "order": 9 }
+          ]
+        },
+        {
+          "subsection_code": "5.10",
+          "subsection_title": "Bacterial Enteric Pathogens / Stool Isolates",
+          "table_type": "hybrid_grouped",
+          "description": "Contains a stool culture summary row and isolate-specific organism rows.",
+          "group_headers": [
+            {
+              "label": "Bacterial enteric pathogens",
+              "summary_columns": [
+                { "name": "total_exam", "label": "Total exam", "type": "numeric" },
+                { "name": "number_positive", "label": "Number Positive", "type": "numeric" }
+              ]
+            },
+            {
+              "label": "Stool Isolates"
+            }
+          ],
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1, "optional": true },
+            { "name": "organism", "label": "Organism", "type": "string", "position": 2 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 3 }
+          ],
+          "rows": [
+            { "code": "5.10", "label": "Stool cultures", "order": 1, "row_type": "summary" },
+            { "code": "5.11", "label": "Salmonella typhi", "order": 2, "row_type": "organism" },
+            { "code": "5.12", "label": "Shigella dysenteriae type 1", "order": 3, "row_type": "organism" },
+            { "code": "5.13", "label": "E. coli O157:H7", "order": 4, "row_type": "organism" },
+            { "code": "5.14", "label": "Vibrio cholerae O1", "order": 5, "row_type": "organism" },
+            { "code": "5.15", "label": "Vibrio cholerae O139", "order": 6, "row_type": "organism" }
+          ]
+        },
+        {
+          "subsection_code": "5.16",
+          "subsection_title": "Bacterial Meningitis",
+          "table_type": "standard",
+          "description": "Records CSF bacteriological meningitis testing.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number positive", "type": "numeric", "position": 4 },
+            { "name": "number_contaminated", "label": "Number Contaminated", "type": "numeric", "position": 5 }
+          ],
+          "rows": [
+            { "code": "5.16", "label": "CSF", "order": 1 }
+          ]
+        },
+        {
+          "subsection_code": "5.17",
+          "subsection_title": "Bacterial Meningitis Serotypes",
+          "table_type": "standard",
+          "description": "Records meningitis pathogen serotypes and related organisms.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "organism", "label": "Organism", "type": "string", "position": 2 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 3 }
+          ],
+          "rows": [
+            { "code": "5.17", "label": "Neisseria meningitidis A", "order": 1 },
+            { "code": "5.18", "label": "Neisseria meningitidis B", "order": 2 },
+            { "code": "5.19", "label": "Neisseria meningitidis C", "order": 3 },
+            { "code": "5.20", "label": "Neisseria meningitidis W135", "order": 4 },
+            { "code": "5.21", "label": "Neisseria meningitidis X", "order": 5 },
+            { "code": "5.22", "label": "Neisseria meningitidis Y", "order": 6 },
+            { "code": "5.23", "label": "N. meningitidis (indeterminate)", "order": 7 },
+            { "code": "5.24", "label": "Streptococcus pneumoniae", "order": 8 },
+            { "code": "5.25", "label": "Haemophilus influenzae (type b)", "order": 9 },
+            { "code": "5.26", "label": "Cryptococcal meningitis", "order": 10 }
+          ]
+        },
+        {
+          "subsection_code": "5.27",
+          "subsection_title": "Bacterial Pathogens from Other Types of Specimen",
+          "table_type": "minimal",
+          "description": "Records selected bacterial pathogens from other specimen types.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "organism", "label": "Organism", "type": "string", "position": 2 },
+            { "name": "result_field", "label": "Associated Result Field", "type": "numeric_or_text", "position": 3, "optional": true }
+          ],
+          "rows": [
+            { "code": "5.27", "label": "B. anthracis", "order": 1 },
+            { "code": "5.28", "label": "Y. pestis", "order": 2 }
+          ]
+        },
+        {
+          "subsection_code": "5.29",
+          "subsection_title": "Sputum",
+          "table_type": "standard",
+          "description": "Records sputum-based TB testing and TB case tracking.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "5.29", "label": "Total TB smears", "order": 1 },
+            { "code": "5.30", "label": "New presumptive TB cases", "order": 2 },
+            { "code": "5.31", "label": "TB Follow up", "order": 3 },
+            { "code": "5.32", "label": "Rifampicin Resistant TB", "order": 4 },
+            { "code": "5.33", "label": "MDR TB", "order": 5 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "6",
+      "section_title": "HISTOLOGY AND CYTOLOGY",
+      "type": "grouped_tables_with_shared_schema",
+      "shared_columns": [
+        { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+        { "name": "item_name", "label": "Item / Specimen / Site", "type": "string", "position": 2 },
+        { "name": "total_exam", "label": "Total exam", "type": "numeric", "position": 3 },
+        { "name": "malignant", "label": "Malignant", "type": "numeric", "position": 4 },
+        { "name": "tnm_stage", "label": "TNM Stage", "type": "string", "position": 5, "optional": true }
+      ],
+      "subsections": [
+        {
+          "subsection_code": "6.1",
+          "subsection_title": "Smears",
+          "table_type": "standard",
+          "rows": [
+            { "code": "6.1", "label": "PAP smear", "order": 1 },
+            { "code": "6.2", "label": "Touch preparations", "order": 2 },
+            { "code": "6.3", "label": "Tissue imprints", "order": 3 }
+          ]
+        },
+        {
+          "subsection_code": "6.4",
+          "subsection_title": "Fine Needle Aspirates",
+          "table_type": "standard",
+          "rows": [
+            { "code": "6.4", "label": "Thyroid", "order": 1 },
+            { "code": "6.5", "label": "Lymph nodes", "order": 2 },
+            { "code": "6.6", "label": "Liver", "order": 3 },
+            { "code": "6.7", "label": "Breast", "order": 4 },
+            { "code": "6.8", "label": "Soft tissue masses", "order": 5 }
+          ]
+        },
+        {
+          "subsection_code": "6.9",
+          "subsection_title": "Fluid Cytology",
+          "table_type": "standard",
+          "rows": [
+            { "code": "6.9", "label": "Ascitic fluid", "order": 1 },
+            { "code": "6.10", "label": "CSF", "order": 2 },
+            { "code": "6.11", "label": "Pleural fluid", "order": 3 },
+            { "code": "6.12", "label": "Urine", "order": 4 }
+          ]
+        },
+        {
+          "subsection_code": "6.13",
+          "subsection_title": "Tissue Histology",
+          "table_type": "standard",
+          "rows": [
+            { "code": "6.13", "label": "Prostate", "order": 1 },
+            { "code": "6.14", "label": "Breast tissue", "order": 2 },
+            { "code": "6.15", "label": "Ovary", "order": 3 },
+            { "code": "6.16", "label": "Uterus (Cervix)", "order": 4 },
+            { "code": "6.17", "label": "Uterus (Endometrium)", "order": 5 },
+            { "code": "6.18", "label": "Skin", "order": 6 },
+            { "code": "6.19", "label": "Head and Neck", "order": 7 },
+            { "code": "6.20", "label": "Oral", "order": 8 },
+            { "code": "6.21", "label": "Esophagus", "order": 9 },
+            { "code": "6.22", "label": "Colorectal", "order": 10 },
+            { "code": "6.23", "label": "Hepatobiliary", "order": 11 },
+            { "code": "6.24", "label": "Soft tissue and bone", "order": 12 },
+            { "code": "6.25", "label": "Lymph nodes tissue", "order": 13 }
+          ]
+        },
+        {
+          "subsection_code": "6.26",
+          "subsection_title": "Bone Marrow Studies",
+          "table_type": "standard",
+          "rows": [
+            { "code": "6.26", "label": "Bone marrow aspirate", "order": 1 },
+            { "code": "6.27", "label": "Trephine biopsy", "order": 2 }
+          ]
+        }
+      ],
+      "notes": [
+        "All subsections in Section 6 generally share the same column pattern.",
+        "TNM Stage may be applicable mainly to some tissue histology items."
+      ]
+    },
+    {
+      "section_number": "7",
+      "section_title": "SEROLOGY",
+      "type": "single_table",
+      "subsections": [
+        {
+          "subsection_code": "7",
+          "subsection_title": "Serology",
+          "table_type": "standard",
+          "description": "Main serology table.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "test_name", "label": "Serological Test Name", "type": "string", "position": 2 },
+            { "name": "total_exam", "label": "Total Exam", "type": "numeric", "position": 3 },
+            { "name": "number_positive", "label": "Number Positive", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "7.1", "label": "VDRL", "order": 1 },
+            { "code": "7.2", "label": "TPHA", "order": 2 },
+            { "code": "7.3", "label": "ASOT", "order": 3 },
+            { "code": "7.4", "label": "HIV", "order": 4 },
+            { "code": "7.5", "label": "Brucella", "order": 5 },
+            { "code": "7.6", "label": "Rheumatoid factor", "order": 6 },
+            { "code": "7.7", "label": "Helicobacter pylori", "order": 7 },
+            { "code": "7.8", "label": "Hepatitis A test", "order": 8 },
+            { "code": "7.9", "label": "Hepatitis B test", "order": 9 },
+            { "code": "7.10", "label": "Hepatitis C test", "order": 10 },
+            { "code": "7.11", "label": "HCG", "order": 11 },
+            { "code": "7.12", "label": "CRAG Test", "order": 12 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "8",
+      "section_title": "SPECIMEN REFERRAL TO HIGHER LEVELS",
+      "type": "single_table",
+      "subsections": [
+        {
+          "subsection_code": "8",
+          "subsection_title": "Specimen Referral to Higher Levels",
+          "table_type": "standard",
+          "description": "Main referral tracking table.",
+          "columns": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "referral_type", "label": "Specimen referral type", "type": "string", "position": 2 },
+            { "name": "number_of_specimens", "label": "No. of specimens", "type": "numeric", "position": 3 },
+            { "name": "number_of_results_received", "label": "No. of results received", "type": "numeric", "position": 4 }
+          ],
+          "rows": [
+            { "code": "8.1", "label": "CD4", "order": 1 },
+            { "code": "8.2", "label": "Viral load", "order": 2 },
+            { "code": "8.3", "label": "EID", "order": 3 },
+            { "code": "8.4", "label": "Discordant/seroconvert", "order": 4 },
+            { "code": "8.5", "label": "TB Culture", "order": 5 },
+            { "code": "8.6", "label": "Virological", "order": 6 },
+            { "code": "8.7", "label": "Clinical Chemistry", "order": 7 },
+            { "code": "8.8", "label": "Histology/Cytology", "order": 8 },
+            { "code": "8.9", "label": "Haematological", "order": 9 },
+            { "code": "8.10", "label": "Parasitological", "order": 10 },
+            { "code": "8.11", "label": "Blood samples for transfusion screening", "order": 11 }
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": "9",
+      "section_title": "Drug susceptibility testing",
+      "type": "matrix_table",
+      "description": "Matrix of organisms by antimicrobial resistance pattern.",
+      "matrix_definition": {
+        "row_axis": {
+          "label": "Organisms",
+          "fields": [
+            { "name": "test_code", "label": "Test Code", "type": "string", "position": 1 },
+            { "name": "organism", "label": "Organism", "type": "string", "position": 2 }
+          ],
+          "rows": [
+            { "code": "9.1", "label": "E. coli O157:H7", "order": 1 },
+            { "code": "9.2", "label": "Proteus spp", "order": 2 },
+            { "code": "9.3", "label": "Salmonella spp", "order": 3 },
+            { "code": "9.4", "label": "Shigella spp", "order": 4 },
+            { "code": "9.5", "label": "Klebsiella pneumoniae", "order": 5 },
+            { "code": "9.6", "label": "Pseudomonas spp", "order": 6 },
+            { "code": "9.7", "label": "Staphylococcus aureus", "order": 7 },
+            { "code": "9.8", "label": "Vibrio cholerae spp", "order": 8 },
+            { "code": "9.9", "label": "Neisseria meningitidis", "order": 9 },
+            { "code": "9.10", "label": "Neisseria gonorrhoeae", "order": 10 },
+            { "code": "9.11", "label": "Streptococcus pneumoniae", "order": 11 },
+            { "code": "9.12", "label": "Haemophilus influenzae", "order": 12 },
+            { "code": "9.13", "label": "Haemophilus parainfluenzae", "order": 13 },
+            { "code": "9.14", "label": "Bacterial vaginosis", "order": 14 }
+          ]
+        },
+        "column_axis": {
+  "label": "Drug Resistance Pattern",
+  "value_label": "Number Resistant",
+  "columns": [
+    { "code": "a", "name": "ciprofloxacin", "label": "Ciprofloxacin", "position": 1 },
+    { "code": "b", "name": "levofloxacin", "label": "Levofloxacin", "position": 2 },
+    { "code": "c", "name": "gentamicin_c", "label": "Gentamicin", "position": 3 },
+    { "code": "e", "name": "ceftazidime", "label": "Ceftazidime", "position": 4 },
+    { "code": "f", "name": "cefuroxime", "label": "Cefuroxime", "position": 5 },
+    { "code": "g", "name": "cefotaxime", "label": "Cefotaxime", "position": 6 },
+    { "code": "h", "name": "ampicillin", "label": "Ampicillin", "position": 7 },
+    { "code": "i", "name": "cefazolin", "label": "Cefazolin", "position": 8 },
+    { "code": "k", "name": "amikacin", "label": "Amikacin", "position": 9 },
+    { "code": "l", "name": "cefoxitin_oxacillin", "label": "Cefoxitin/Oxacillin", "position": 10 },
+    { "code": "m", "name": "chloramphenicol", "label": "Chloramphenicol", "position": 11 },
+    { "code": "n", "name": "cefepime", "label": "Cefepime", "position": 12 },
+    { "code": "q", "name": "obramycin", "label": "obramycin", "position": 13 },
+    { "code": "r", "name": "ampicillin_sulbactam", "label": "Ampicillin Sulbactam", "position": 14 },
+    { "code": "s", "name": "trimethoprim_sulfamethoxazole", "label": "Trimethoprim Sulfamethoxazole", "position": 15 },
+    { "code": "u", "name": "vancomycin", "label": "Vancomycin", "position": 16 },
+    { "code": "v", "name": "meropenem", "label": "Meropenem", "position": 17 },
+    { "code": "w", "name": "clindamycin", "label": "Clindamycin", "position": 18 },
+    { "code": "x", "name": "doxycycline_tetracycline", "label": "Doxycycline/Tetracyclin", "position": 19 },
+    { "code": "y", "name": "ceftazidime_avibactam", "label": "Ceftazidime avibactam", "position": 20 },
+    { "code": "z", "name": "erythromycin", "label": "Erythromycin", "position": 21 },
+    { "code": "aa", "name": "gentamicin_aa", "label": "Gentamicin", "position": 22 }
+  ]
+}
+      }
+    }
+  ],
+  "global_notes": [
+    "This JSON describes structure only and excludes entered values.",
+    "Each subsection should be treated as a separate logical table unless marked as matrix_table or hybrid_grouped.",
+    "Numbering should be preserved exactly as displayed in the form.",
+    "Some sections use subsection headings that are not themselves data rows.",
+    "Some numbering in the source document may be visually inconsistent; the schema preserves the intended logical structure."
+  ]
+}

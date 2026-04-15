@@ -1,0 +1,1131 @@
+{
+    "document_title": "Laboratory Data Reporting Structure",
+    "sections": [
+        {
+            "section_number": 1,
+            "section_title": "URINE ANALYSIS",
+            "subsections": [
+                {
+                    "subsection_code": "1.1",
+                    "subsection_title": "Urine Chemistry",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "1.2",
+                            "test_name": "Glucose"
+                        },
+                        {
+                            "code": "1.3",
+                            "test_name": "Ketones"
+                        },
+                        {
+                            "code": "1.4",
+                            "test_name": "Proteins"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "1.5",
+                    "subsection_title": "Urine Microscopy",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "1.6",
+                            "test_name": "Pus cells (p/s/hpf)"
+                        },
+                        {
+                            "code": "1.7",
+                            "test_name": "S. haematobium"
+                        },
+                        {
+                            "code": "1.8",
+                            "test_name": "T. vaginalis"
+                        },
+                        {
+                            "code": "1.9",
+                            "test_name": "Yeast cells"
+                        },
+                        {
+                            "code": "1.10",
+                            "test_name": "Bacteria"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 2,
+            "section_title": "BLOOD CHEMISTRY",
+            "subsections": [
+                {
+                    "subsection_code": "2.1",
+                    "subsection_title": "Blood Sugar Test",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.1",
+                            "test_name": "Blood sugar"
+                        },
+                        {
+                            "code": "2.2",
+                            "test_name": "OGTT"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.3",
+                    "subsection_title": "Renal Function Test",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.4",
+                            "test_name": "Creatinine"
+                        },
+                        {
+                            "code": "2.5",
+                            "test_name": "Urea"
+                        },
+                        {
+                            "code": "2.6",
+                            "test_name": "Sodium"
+                        },
+                        {
+                            "code": "2.7",
+                            "test_name": "Potassium"
+                        },
+                        {
+                            "code": "2.8",
+                            "test_name": "Chlorides"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.8",
+                    "subsection_title": "Liver Function Test",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.9",
+                            "test_name": "Direct bilirubin"
+                        },
+                        {
+                            "code": "2.10",
+                            "test_name": "Total bilirubin"
+                        },
+                        {
+                            "code": "2.11",
+                            "test_name": "ASAT (SGOT)"
+                        },
+                        {
+                            "code": "2.12",
+                            "test_name": "ALAT (SGPT)"
+                        },
+                        {
+                            "code": "2.13",
+                            "test_name": "Serum Protein"
+                        },
+                        {
+                            "code": "2.14",
+                            "test_name": "Albumin"
+                        },
+                        {
+                            "code": "2.15",
+                            "test_name": "Alkaline Phosphatase"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.16",
+                    "subsection_title": "Lipid Profile",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.17",
+                            "test_name": "Total cholesterol"
+                        },
+                        {
+                            "code": "2.18",
+                            "test_name": "Triglycerides"
+                        },
+                        {
+                            "code": "2.19",
+                            "test_name": "LDL"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.20",
+                    "subsection_title": "Hormonal Test",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.20",
+                            "test_name": "T3"
+                        },
+                        {
+                            "code": "2.21",
+                            "test_name": "T4"
+                        },
+                        {
+                            "code": "2.22",
+                            "test_name": "TSH"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.23",
+                    "subsection_title": "Tumor Markers",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.23",
+                            "test_name": "PSA"
+                        },
+                        {
+                            "code": "2.24",
+                            "test_name": "CA 15-3"
+                        },
+                        {
+                            "code": "2.25",
+                            "test_name": "CA 19-9"
+                        },
+                        {
+                            "code": "2.26",
+                            "test_name": "CA 125"
+                        },
+                        {
+                            "code": "2.27",
+                            "test_name": "CEA"
+                        },
+                        {
+                            "code": "2.28",
+                            "test_name": "AFP"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "2.29",
+                    "subsection_title": "CSF Chemistry",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Low",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "2.29",
+                            "test_name": "Proteins"
+                        },
+                        {
+                            "code": "2.30",
+                            "test_name": "Glucose"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 3,
+            "section_title": "SECTION 3",
+            "note": "Section number reserved but content unavailable or missing from available pages. Section numbering may include gaps.",
+            "subsections": []
+        },
+        {
+            "section_number": 4,
+            "section_title": "HAEMATOLOGY",
+            "subsections": [
+                {
+                    "subsection_code": "4.1",
+                    "subsection_title": "Haematology Tests",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "HB <5 g/dl",
+                        "HB between 5 and 10 g/dl"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.1",
+                            "test_name": "Full blood count"
+                        },
+                        {
+                            "code": "4.2",
+                            "test_name": "HB estimation tests (other techniques)"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.3",
+                    "subsection_title": "HbA1c",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Pre-diabetes",
+                        "Diabetes"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.3",
+                            "test_name": "Hemoglobin A1c (HbA1c)"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.4",
+                    "subsection_title": "CD4 Count",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number <500"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.4",
+                            "test_name": "CD4 count"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.5",
+                    "subsection_title": "Other Haematology Tests",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.5",
+                            "test_name": "Sickling test"
+                        },
+                        {
+                            "code": "4.6",
+                            "test_name": "Peripheral blood films"
+                        },
+                        {
+                            "code": "4.7",
+                            "test_name": "BMA"
+                        },
+                        {
+                            "code": "4.8",
+                            "test_name": "Coagulation profile"
+                        },
+                        {
+                            "code": "4.9",
+                            "test_name": "Reticulocyte Count"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.10",
+                    "subsection_title": "ESR",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "High"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.10",
+                            "test_name": "Erythrocyte Sedimentation Rate"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.11",
+                    "subsection_title": "Blood Grouping",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Number"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.11",
+                            "test_name": "Total blood group tests"
+                        },
+                        {
+                            "code": "4.12",
+                            "test_name": "Blood units grouped"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.13",
+                    "subsection_title": "Blood Safety",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Number"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.13",
+                            "test_name": "Blood units received from blood transfusion centres"
+                        },
+                        {
+                            "code": "4.14",
+                            "test_name": "Blood units collected at facility"
+                        },
+                        {
+                            "code": "4.15",
+                            "test_name": "Blood units transfused"
+                        },
+                        {
+                            "code": "4.16",
+                            "test_name": "Transfusion reactions reported and investigated"
+                        },
+                        {
+                            "code": "4.17",
+                            "test_name": "Blood grouping and cross matched"
+                        },
+                        {
+                            "code": "4.18",
+                            "test_name": "Blood units discarded"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "4.19",
+                    "subsection_title": "Blood Screening at Facility",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "4.19",
+                            "test_name": "HIV"
+                        },
+                        {
+                            "code": "4.20",
+                            "test_name": "Hepatitis B"
+                        },
+                        {
+                            "code": "4.21",
+                            "test_name": "Hepatitis C"
+                        },
+                        {
+                            "code": "4.22",
+                            "test_name": "Syphilis"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 5,
+            "section_title": "BACTERIOLOGY",
+            "subsections": [
+                {
+                    "subsection_code": "5.1",
+                    "subsection_title": "Bacteriological Samples",
+                    "columns": [
+                        "Test Code",
+                        "Sample Name",
+                        "Total Exam",
+                        "Total Cultures",
+                        "No. Culture Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.1",
+                            "test_name": "Urine"
+                        },
+                        {
+                            "code": "5.2",
+                            "test_name": "Pus swab"
+                        },
+                        {
+                            "code": "5.3",
+                            "test_name": "High Vaginal Swab (HVS)"
+                        },
+                        {
+                            "code": "5.4",
+                            "test_name": "Throat swab"
+                        },
+                        {
+                            "code": "5.5",
+                            "test_name": "Rectal swab"
+                        },
+                        {
+                            "code": "5.6",
+                            "test_name": "Blood"
+                        },
+                        {
+                            "code": "5.7",
+                            "test_name": "Water"
+                        },
+                        {
+                            "code": "5.8",
+                            "test_name": "Food"
+                        },
+                        {
+                            "code": "5.9",
+                            "test_name": "Urethral swabs"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "5.10",
+                    "subsection_title": "Bacterial Enteric Pathogens / Stool Isolates",
+                    "note": "Visually split in the form; treated as one subsection containing a stool culture summary row and isolate-specific organism rows.",
+                    "summary_columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "isolate_columns": [
+                        "Test Code",
+                        "Organism",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.10",
+                            "test_name": "Stool cultures",
+                            "row_type": "summary"
+                        },
+                        {
+                            "code": "5.11",
+                            "test_name": "Salmonella typhi",
+                            "row_type": "isolate"
+                        },
+                        {
+                            "code": "5.12",
+                            "test_name": "Shigella dysenteriae type 1",
+                            "row_type": "isolate"
+                        },
+                        {
+                            "code": "5.13",
+                            "test_name": "E. coli O157:H7",
+                            "row_type": "isolate"
+                        },
+                        {
+                            "code": "5.14",
+                            "test_name": "Vibrio cholerae O1",
+                            "row_type": "isolate"
+                        },
+                        {
+                            "code": "5.15",
+                            "test_name": "Vibrio cholerae O139",
+                            "row_type": "isolate"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "5.16",
+                    "subsection_title": "Bacterial Meningitis",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive",
+                        "Number Contaminated"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.16",
+                            "test_name": "CSF"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "5.17",
+                    "subsection_title": "Bacterial Meningitis Serotypes",
+                    "columns": [
+                        "Test Code",
+                        "Organism",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.17",
+                            "test_name": "Neisseria meningitidis A"
+                        },
+                        {
+                            "code": "5.18",
+                            "test_name": "Neisseria meningitidis B"
+                        },
+                        {
+                            "code": "5.19",
+                            "test_name": "Neisseria meningitidis C"
+                        },
+                        {
+                            "code": "5.20",
+                            "test_name": "Neisseria meningitidis W135"
+                        },
+                        {
+                            "code": "5.21",
+                            "test_name": "Neisseria meningitidis X"
+                        },
+                        {
+                            "code": "5.22",
+                            "test_name": "Neisseria meningitidis Y"
+                        },
+                        {
+                            "code": "5.23",
+                            "test_name": "N. meningitidis (indeterminate)"
+                        },
+                        {
+                            "code": "5.24",
+                            "test_name": "Streptococcus pneumoniae"
+                        },
+                        {
+                            "code": "5.25",
+                            "test_name": "Haemophilus influenzae (type b)"
+                        },
+                        {
+                            "code": "5.26",
+                            "test_name": "Cryptococcal meningitis"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "5.27",
+                    "subsection_title": "Bacterial Pathogens from Other Types of Specimen",
+                    "columns": [
+                        "Test Code",
+                        "Organism",
+                        "Result"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.27",
+                            "test_name": "B. anthracis"
+                        },
+                        {
+                            "code": "5.28",
+                            "test_name": "Y. pestis"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "5.29",
+                    "subsection_title": "Sputum",
+                    "columns": [
+                        "Test Code",
+                        "Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "5.29",
+                            "test_name": "Total TB smears"
+                        },
+                        {
+                            "code": "5.30",
+                            "test_name": "New presumptive TB cases"
+                        },
+                        {
+                            "code": "5.31",
+                            "test_name": "TB Follow up"
+                        },
+                        {
+                            "code": "5.32",
+                            "test_name": "Rifampicin Resistant TB"
+                        },
+                        {
+                            "code": "5.33",
+                            "test_name": "MDR TB"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 6,
+            "section_title": "HISTOLOGY AND CYTOLOGY",
+            "note": "Common columns across this section: Test Code, Item/Specimen/Site, Total Exam, Malignant, TNM Stage (where applicable). Not every subsection uses all columns identically.",
+            "subsections": [
+                {
+                    "subsection_code": "6.1",
+                    "subsection_title": "Smears",
+                    "columns": [
+                        "Test Code",
+                        "Item / Specimen / Site",
+                        "Total Exam",
+                        "Malignant"
+                    ],
+                    "rows": [
+                        {
+                            "code": "6.1",
+                            "test_name": "PAP smear"
+                        },
+                        {
+                            "code": "6.2",
+                            "test_name": "Touch preparations"
+                        },
+                        {
+                            "code": "6.3",
+                            "test_name": "Tissue imprints"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "6.4",
+                    "subsection_title": "Fine Needle Aspirates",
+                    "columns": [
+                        "Test Code",
+                        "Item / Specimen / Site",
+                        "Total Exam",
+                        "Malignant"
+                    ],
+                    "rows": [
+                        {
+                            "code": "6.4",
+                            "test_name": "Thyroid"
+                        },
+                        {
+                            "code": "6.5",
+                            "test_name": "Lymph nodes"
+                        },
+                        {
+                            "code": "6.6",
+                            "test_name": "Liver"
+                        },
+                        {
+                            "code": "6.7",
+                            "test_name": "Breast"
+                        },
+                        {
+                            "code": "6.8",
+                            "test_name": "Soft tissue masses"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "6.9",
+                    "subsection_title": "Fluid Cytology",
+                    "columns": [
+                        "Test Code",
+                        "Item / Specimen / Site",
+                        "Total Exam",
+                        "Malignant"
+                    ],
+                    "rows": [
+                        {
+                            "code": "6.9",
+                            "test_name": "Ascitic fluid"
+                        },
+                        {
+                            "code": "6.10",
+                            "test_name": "CSF"
+                        },
+                        {
+                            "code": "6.11",
+                            "test_name": "Pleural fluid"
+                        },
+                        {
+                            "code": "6.12",
+                            "test_name": "Urine"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "6.13",
+                    "subsection_title": "Tissue Histology",
+                    "columns": [
+                        "Test Code",
+                        "Item / Specimen / Site",
+                        "Total Exam",
+                        "Malignant",
+                        "TNM Stage"
+                    ],
+                    "rows": [
+                        {
+                            "code": "6.13",
+                            "test_name": "Prostate"
+                        },
+                        {
+                            "code": "6.14",
+                            "test_name": "Breast tissue"
+                        },
+                        {
+                            "code": "6.15",
+                            "test_name": "Ovary"
+                        },
+                        {
+                            "code": "6.16",
+                            "test_name": "Uterus (Cervix)"
+                        },
+                        {
+                            "code": "6.17",
+                            "test_name": "Uterus (Endometrium)"
+                        },
+                        {
+                            "code": "6.18",
+                            "test_name": "Skin"
+                        },
+                        {
+                            "code": "6.19",
+                            "test_name": "Head and Neck"
+                        },
+                        {
+                            "code": "6.20",
+                            "test_name": "Oral"
+                        },
+                        {
+                            "code": "6.21",
+                            "test_name": "Esophagus"
+                        },
+                        {
+                            "code": "6.22",
+                            "test_name": "Colorectal"
+                        },
+                        {
+                            "code": "6.23",
+                            "test_name": "Hepatobiliary"
+                        },
+                        {
+                            "code": "6.24",
+                            "test_name": "Soft tissue and bone"
+                        },
+                        {
+                            "code": "6.25",
+                            "test_name": "Lymph nodes tissue"
+                        }
+                    ]
+                },
+                {
+                    "subsection_code": "6.26",
+                    "subsection_title": "Bone Marrow Studies",
+                    "columns": [
+                        "Test Code",
+                        "Item / Specimen / Site",
+                        "Total Exam",
+                        "Malignant"
+                    ],
+                    "rows": [
+                        {
+                            "code": "6.26",
+                            "test_name": "Bone marrow aspirate"
+                        },
+                        {
+                            "code": "6.27",
+                            "test_name": "Trephine biopsy"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 7,
+            "section_title": "SEROLOGY",
+            "subsections": [
+                {
+                    "subsection_code": "7.1",
+                    "subsection_title": "Serological Tests",
+                    "columns": [
+                        "Test Code",
+                        "Serological Test Name",
+                        "Total Exam",
+                        "Number Positive"
+                    ],
+                    "rows": [
+                        {
+                            "code": "7.1",
+                            "test_name": "VDRL"
+                        },
+                        {
+                            "code": "7.2",
+                            "test_name": "TPHA"
+                        },
+                        {
+                            "code": "7.3",
+                            "test_name": "ASOT"
+                        },
+                        {
+                            "code": "7.4",
+                            "test_name": "HIV"
+                        },
+                        {
+                            "code": "7.5",
+                            "test_name": "Brucella"
+                        },
+                        {
+                            "code": "7.6",
+                            "test_name": "Rheumatoid factor"
+                        },
+                        {
+                            "code": "7.7",
+                            "test_name": "Helicobacter pylori"
+                        },
+                        {
+                            "code": "7.8",
+                            "test_name": "Hepatitis A test"
+                        },
+                        {
+                            "code": "7.9",
+                            "test_name": "Hepatitis B test"
+                        },
+                        {
+                            "code": "7.10",
+                            "test_name": "Hepatitis C test"
+                        },
+                        {
+                            "code": "7.11",
+                            "test_name": "HCG"
+                        },
+                        {
+                            "code": "7.12",
+                            "test_name": "CRAG Test"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 8,
+            "section_title": "SPECIMEN REFERRAL TO HIGHER LEVELS",
+            "subsections": [
+                {
+                    "subsection_code": "8.1",
+                    "subsection_title": "Specimen Referral Tracking",
+                    "columns": [
+                        "Test Code",
+                        "Specimen Referral Type",
+                        "No. of Specimens",
+                        "No. of Results Received"
+                    ],
+                    "rows": [
+                        {
+                            "code": "8.1",
+                            "test_name": "CD4"
+                        },
+                        {
+                            "code": "8.2",
+                            "test_name": "Viral load"
+                        },
+                        {
+                            "code": "8.3",
+                            "test_name": "EID"
+                        },
+                        {
+                            "code": "8.4",
+                            "test_name": "Discordant/seroconvert"
+                        },
+                        {
+                            "code": "8.5",
+                            "test_name": "TB Culture"
+                        },
+                        {
+                            "code": "8.6",
+                            "test_name": "Virological"
+                        },
+                        {
+                            "code": "8.7",
+                            "test_name": "Clinical Chemistry"
+                        },
+                        {
+                            "code": "8.8",
+                            "test_name": "Histology/Cytology"
+                        },
+                        {
+                            "code": "8.9",
+                            "test_name": "Haematological"
+                        },
+                        {
+                            "code": "8.10",
+                            "test_name": "Parasitological"
+                        },
+                        {
+                            "code": "8.11",
+                            "test_name": "Blood samples for transfusion screening"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "section_number": 9,
+            "section_title": "DRUG SUSCEPTIBILITY TESTING",
+            "note": "This section is a two-dimensional matrix. Rows represent organisms; columns represent antimicrobial drug resistance patterns. Each cell stores the Number Resistant for that organism-drug combination.",
+            "subsections": [
+                {
+                    "subsection_code": "9",
+                    "subsection_title": "Antimicrobial Resistance Matrix",
+                    "row_identifier_columns": [
+                        "Test Code",
+                        "Organism"
+                    ],
+                    "drug_resistance_columns": [
+                        {
+                            "column_key": "l",
+                            "drug_name": "Cefoxitin/Oxacillin"
+                        },
+                        {
+                            "column_key": "m",
+                            "drug_name": "Chloramphenicol"
+                        },
+                        {
+                            "column_key": "n",
+                            "drug_name": "Cefepime"
+                        },
+                        {
+                            "column_key": "p",
+                            "drug_name": "Piperacillin-tazobactam"
+                        },
+                        {
+                            "column_key": "q",
+                            "drug_name": "Tobramycin"
+                        },
+                        {
+                            "column_key": "r",
+                            "drug_name": "Ampicillin Sulbactam"
+                        },
+                        {
+                            "column_key": "s",
+                            "drug_name": "Trimethoprim Sulfamethoxazole"
+                        },
+                        {
+                            "column_key": "t",
+                            "drug_name": "Penicillin"
+                        },
+                        {
+                            "column_key": "u",
+                            "drug_name": "Vancomycin"
+                        },
+                        {
+                            "column_key": "v",
+                            "drug_name": "Meropenem"
+                        },
+                        {
+                            "column_key": "w",
+                            "drug_name": "Clindamycin"
+                        },
+                        {
+                            "column_key": "x",
+                            "drug_name": "Doxycycline/Tetracycline"
+                        },
+                        {
+                            "column_key": "y",
+                            "drug_name": "Ceftazidime-avibactam"
+                        },
+                        {
+                            "column_key": "z",
+                            "drug_name": "Erythromycin"
+                        },
+                        {
+                            "column_key": "aa",
+                            "drug_name": "Gentamicin"
+                        }
+                    ],
+                    "organism_rows": [
+                        {
+                            "code": "9.1",
+                            "organism": "E. coli O157:H7"
+                        },
+                        {
+                            "code": "9.2",
+                            "organism": "Proteus spp"
+                        },
+                        {
+                            "code": "9.3",
+                            "organism": "Salmonella spp"
+                        },
+                        {
+                            "code": "9.4",
+                            "organism": "Shigella spp"
+                        },
+                        {
+                            "code": "9.5",
+                            "organism": "Klebsiella pneumoniae"
+                        },
+                        {
+                            "code": "9.6",
+                            "organism": "Pseudomonas spp"
+                        },
+                        {
+                            "code": "9.7",
+                            "organism": "Staphylococcus aureus"
+                        },
+                        {
+                            "code": "9.8",
+                            "organism": "Vibrio cholerae spp"
+                        },
+                        {
+                            "code": "9.9",
+                            "organism": "Neisseria meningitidis"
+                        },
+                        {
+                            "code": "9.10",
+                            "organism": "Neisseria gonorrhoeae"
+                        },
+                        {
+                            "code": "9.11",
+                            "organism": "Streptococcus pneumoniae"
+                        },
+                        {
+                            "code": "9.12",
+                            "organism": "Haemophilus influenzae"
+                        },
+                        {
+                            "code": "9.13",
+                            "organism": "Haemophilus parainfluenzae"
+                        },
+                        {
+                            "code": "9.14",
+                            "organism": "Bacterial vaginosis"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

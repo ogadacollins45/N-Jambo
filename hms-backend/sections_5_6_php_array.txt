@@ -1,0 +1,5 @@
+
+Fatal error: Uncaught TypeError: Cannot access offset of type string on string in E:\G\Code\NaitiriJamboHMS\NJ2\Nj2\N-Jambo\hms-backend\temp_parser.php:37
+Stack trace:
+#0 {main}
+  thrown in E:\G\Code\NaitiriJamboHMS\NJ2\Nj2\N-Jambo\hms-backend\temp_parser.php on line 37

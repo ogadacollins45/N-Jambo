@@ -9,11 +9,12 @@ import {
   Legend,
   ArcElement
 } from "chart.js";
-import { BarChart2, FileText, Activity, Users, Bed, AlertTriangle, PieChart } from "lucide-react";
+import { BarChart2, FileText, Activity, Users, Bed, AlertTriangle, PieChart, FlaskConical } from "lucide-react";
 import DashboardLayout from "../layout/DashboardLayout";
 
 import MOH717 from "../components/reports/MOH717";
 import DiseaseReport from "../components/reports/DiseaseReport";
+import MOH706 from "../components/reports/MOH706";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
@@ -115,6 +116,17 @@ export default function Reports() {
                 <Activity className={`w-4 h-4 transition-colors duration-300 ${activeTab === 'disease' ? 'text-white' : 'text-gray-400'}`} />
                 Disease Surveillance
               </button>
+              <button
+                onClick={() => setActiveTab('moh706')}
+                className={`flex items-center gap-2 px-8 py-4 text-sm font-semibold transition-all duration-300 outline-none ${
+                  activeTab === 'moh706'
+                    ? 'bg-teal-600 text-white shadow-inner'
+                    : 'text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:bg-gray-200'
+                }`}
+              >
+                <FlaskConical className={`w-4 h-4 transition-colors duration-300 ${activeTab === 'moh706' ? 'text-white' : 'text-gray-400'}`} />
+                MOH 706
+              </button>
             </div>
 
             {/* Tab content */}
@@ -172,6 +184,7 @@ export default function Reports() {
               )}
               {activeTab === 'moh717' && <div className="animate-in fade-in duration-500"><MOH717 /></div>}
               {activeTab === 'disease' && <div className="animate-in fade-in duration-500"><DiseaseReport /></div>}
+              {activeTab === 'moh706' && <div className="animate-in fade-in duration-500"><MOH706 /></div>}
             </div>
           </div>
 

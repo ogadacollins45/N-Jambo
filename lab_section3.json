@@ -1,0 +1,130 @@
+{
+    "section_number": "3",
+    "section_title": "PARASITOLOGY",
+    "type": "grouped_tables",
+    "subsections": [
+        {
+            "subsection_code": "3.1",
+            "subsection_title": "Malaria Test",
+            "table_type": "standard",
+            "description": "Records malaria investigations.",
+            "columns": [
+                {
+                    "name": "test_code",
+                    "label": "Test Code",
+                    "type": "string",
+                    "position": 1
+                },
+                {
+                    "name": "test_name",
+                    "label": "Test Name",
+                    "type": "string",
+                    "position": 2
+                },
+                {
+                    "name": "total_exam",
+                    "label": "Total Exam",
+                    "type": "numeric",
+                    "position": 3
+                },
+                {
+                    "name": "number_positive",
+                    "label": "Number Positive",
+                    "type": "numeric",
+                    "position": 4
+                }
+            ],
+            "rows": [
+                {
+                    "code": "3.1",
+                    "label": "Malaria BS (Under five years)",
+                    "order": 1
+                },
+                {
+                    "code": "3.2",
+                    "label": "Malaria BS (5 years and above)",
+                    "order": 2
+                },
+                {
+                    "code": "3.3",
+                    "label": "Malaria Rapid Diagnostic Tests (Under five years)",
+                    "order": 3
+                },
+                {
+                    "code": "3.4",
+                    "label": "Malaria Rapid Diagnostic Tests (5 years and above)",
+                    "order": 4
+                }
+            ]
+        },
+        {
+            "subsection_code": "3.5",
+            "subsection_title": "Stool Examination",
+            "table_type": "standard",
+            "description": "Records stool examination investigations.",
+            "columns": [
+                {
+                    "name": "test_code",
+                    "label": "Test Code",
+                    "type": "string",
+                    "position": 1
+                },
+                {
+                    "name": "test_name",
+                    "label": "Test Name",
+                    "type": "string",
+                    "position": 2
+                },
+                {
+                    "name": "total_exam",
+                    "label": "Total Exam",
+                    "type": "numeric",
+                    "position": 3
+                },
+                {
+                    "name": "number_positive",
+                    "label": "Number Positive",
+                    "type": "numeric",
+                    "position": 4
+                }
+            ],
+            "rows": [
+                {
+                    "code": "3.5",
+                    "label": "Taenia spp.",
+                    "order": 1
+                },
+                {
+                    "code": "3.6",
+                    "label": "Hymenolepis nana",
+                    "order": 2
+                },
+                {
+                    "code": "3.7",
+                    "label": "Hookworm",
+                    "order": 3
+                },
+                {
+                    "code": "3.8",
+                    "label": "Roundworms",
+                    "order": 4
+                },
+                {
+                    "code": "3.9",
+                    "label": "S. mansoni",
+                    "order": 5
+                },
+                {
+                    "code": "3.10",
+                    "label": "Trichuris trichiura",
+                    "order": 6
+                },
+                {
+                    "code": "3.11",
+                    "label": "Amoeba",
+                    "order": 7
+                }
+            ]
+        }
+    ]
+}

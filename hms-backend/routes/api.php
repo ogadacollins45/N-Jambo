@@ -153,6 +153,7 @@ Route::middleware('auth:sanctum')->group(function () {
     /** Reports */
     Route::get('/reports/moh-717', [ReportController::class, 'getMoh717']);
     Route::get('/reports/disease-report', [ReportController::class, 'getDiseaseReport']);
+    Route::get('/reports/moh-706', [ReportController::class, 'getMoh706']);
 
     /** Queue Management - Protected Routes */
     Route::get('/queue', [QueueController::class, 'index']);

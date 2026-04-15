@@ -459,6 +459,24 @@ class ReportController extends Controller
             }
         }
 
+        $addPatient = function(&$row, $patient, $testName, $requestDate) {
+            if (!$patient) return;
+            $pid = $patient->id;
+            foreach ($row['patients'] as $p) {
+                if ($p['patient_id'] === $pid) return;
+            }
+            $row['patients'][] = [
+                'upid'       => $patient->upid ?? ('PT-'.$pid),
+                'name'       => trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? '')),
+                'age'        => $patient->age_years ?? ($patient->age ?? 0),
+                'gender'     => $patient->gender ?? 'U',
+                'diagnosis'  => $testName,
+                'visit_date' => $requestDate,
+                'visit_type' => 'unknown', // not always available in lab context easily
+                'patient_id' => $pid
+            ];
+        };
+
         // ── 2. Query completed lab results (all sections except 8) ─────────────
         // NOTE: lab_results status enum is ('draft','submitted','verified') — no 'completed'.
         $labResults = LabResult::with([
@@ -635,50 +653,57 @@ class ReportController extends Controller
             }
 
             // ── Accumulate into the data structure ─────────────────────────────
+            $rowRef = &$sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx];
+            $hasIncremented = false;
+
             if (in_array('total_exam', $columns, true)) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['total_exam']++;
+                $rowRef['total_exam']++; $hasIncremented = true;
             }
             if (in_array('total_cultures', $columns, true)) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['total_cultures']++;
+                $rowRef['total_cultures']++; $hasIncremented = true;
             }
             if (in_array('number', $columns, true)) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number']++;
+                $rowRef['number']++; $hasIncremented = true;
             }
             if (in_array('number_positive', $columns, true) && $isPositive) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number_positive']++;
+                $rowRef['number_positive']++; $hasIncremented = true;
             }
             if (in_array('culture_positive', $columns, true) && ($isPositive || $culturePositive)) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['culture_positive']++;
+                $rowRef['culture_positive']++; $hasIncremented = true;
             }
             if (in_array('malignant', $columns, true) && $isMalignant) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['malignant']++;
+                $rowRef['malignant']++; $hasIncremented = true;
             }
             if (in_array('number_contaminated', $columns, true) && $isContaminated) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number_contaminated']++;
+                $rowRef['number_contaminated']++; $hasIncremented = true;
             }
             if (in_array('low', $columns, true) && $isLow) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['low']++;
+                $rowRef['low']++; $hasIncremented = true;
             }
             if (in_array('high', $columns, true) && $isHigh) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['high']++;
+                $rowRef['high']++; $hasIncremented = true;
             }
             // HbA1c-specific columns
             if (in_array('pre_diabetes', $columns, true) && $isPreDiabetes) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['pre_diabetes']++;
+                $rowRef['pre_diabetes']++; $hasIncremented = true;
             }
             if (in_array('diabetes', $columns, true) && $isDiabetes) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['diabetes']++;
+                $rowRef['diabetes']++; $hasIncremented = true;
             }
             // HB range classification
             if (in_array('hb_lt_5_g_dl', $columns, true) && $hbValue !== null && $hbValue < 5) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['hb_lt_5_g_dl']++;
+                $rowRef['hb_lt_5_g_dl']++; $hasIncremented = true;
             }
             if (in_array('hb_5_to_10_g_dl', $columns, true) && $hbValue !== null && $hbValue >= 5 && $hbValue <= 10) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['hb_5_to_10_g_dl']++;
+                $rowRef['hb_5_to_10_g_dl']++; $hasIncremented = true;
             }
             // CD4 <500 threshold
             if (in_array('number_lt_500', $columns, true) && $cd4Value !== null && $cd4Value < 500) {
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number_lt_500']++;
+                $rowRef['number_lt_500']++; $hasIncremented = true;
+            }
+
+            if ($hasIncremented) {
+                $addPatient($rowRef, $patient, $testName, $result->labRequest?->request_date);
             }
 
             // ── Increment secondary organism rows (Isolates from parameters) ───────
@@ -688,7 +713,9 @@ class ReportController extends Controller
                 $oCols = $sections[$oSNum]['subsections'][$oSubIdx]['columns'];
                 
                 if (in_array('number_positive', $oCols, true)) {
-                    $sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx]['number_positive']++;
+                    $oRowRef = &$sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx];
+                    $oRowRef['number_positive']++;
+                    $addPatient($oRowRef, $patient, $testName, $result->labRequest?->request_date);
                 }
             }
 
@@ -698,10 +725,16 @@ class ReportController extends Controller
             foreach ($foundSection9Organisms as $orgCode) {
                 if (!isset($codeIndex[$orgCode])) continue;
                 [$oSNum, $oSubIdx, $oRowIdx] = $codeIndex[$orgCode];
+                $oRowRef = &$sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx];
+                $oHasIncremented = false;
                 foreach ($resistantAntibiotics as $antiCol) {
-                    if (isset($sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx][$antiCol])) {
-                        $sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx][$antiCol]++;
+                    if (isset($oRowRef[$antiCol])) {
+                        $oRowRef[$antiCol]++;
+                        $oHasIncremented = true;
                     }
+                }
+                if ($oHasIncremented) {
+                    $addPatient($oRowRef, $patient, $testName, $result->labRequest?->request_date);
                 }
             }
         }
@@ -725,13 +758,18 @@ class ReportController extends Controller
                 $code = LabTestMapper::map($tName);
                 if (!str_starts_with((string) $code, '8.') || !isset($codeIndex[$code])) continue;
 
-                [$sNum, $subIdx, $rowIdx] = $codeIndex[$code];
-                $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number_of_specimens']++;
+                $s8RowRef = &$sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx];
+                $s8RowRef['number_of_specimens']++;
+
+                $s8Patient = $req->patient;
+                $s8RequestDate = $req->request_date;
 
                 $res = $reqTest->result;
-                if ($res && in_array($res->status, ['completed', 'verified'], true)) {
-                    $sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx]['number_of_results_received']++;
+                if ($res && in_array($res->status, ['submitted', 'verified'], true)) {
+                    $s8RowRef['number_of_results_received']++;
                 }
+
+                $addPatient($s8RowRef, $s8Patient, $tName, $s8RequestDate);
             }
         }
 
@@ -751,38 +789,38 @@ class ReportController extends Controller
     {
         // Row builder helpers
         $r   = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_positive' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_positive' => 0, 'patients' => [],
         ];
         $rlh = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'low' => 0, 'high' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'low' => 0, 'high' => 0, 'patients' => [],
         ];
         $rn  = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'number' => 0,
+            'code' => $code, 'label' => $label, 'number' => 0, 'patients' => [],
         ];
         $rnp = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'number_positive' => 0,
+            'code' => $code, 'label' => $label, 'number_positive' => 0, 'patients' => [],
         ];
         $rhb = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'hb_lt_5_g_dl' => 0, 'hb_5_to_10_g_dl' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'hb_lt_5_g_dl' => 0, 'hb_5_to_10_g_dl' => 0, 'patients' => [],
         ];
         $ra1c = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'pre_diabetes' => 0, 'diabetes' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'pre_diabetes' => 0, 'diabetes' => 0, 'patients' => [],
         ];
         $rcd4 = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_lt_500' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_lt_500' => 0, 'patients' => [],
         ];
         $ref  = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'number_of_specimens' => 0, 'number_of_results_received' => 0,
+            'code' => $code, 'label' => $label, 'number_of_specimens' => 0, 'number_of_results_received' => 0, 'patients' => [],
         ];
         // Section 5/6 specific helpers
         $rcult = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'total_cultures' => 0, 'culture_positive' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'total_cultures' => 0, 'culture_positive' => 0, 'patients' => [],
         ];
         $rcsf = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_positive' => 0, 'number_contaminated' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'number_positive' => 0, 'number_contaminated' => 0, 'patients' => [],
         ];
         $rmal = fn(string $code, string $label) => [
-            'code' => $code, 'label' => $label, 'total_exam' => 0, 'malignant' => 0,
+            'code' => $code, 'label' => $label, 'total_exam' => 0, 'malignant' => 0, 'patients' => [],
         ];
 
         return [
@@ -1192,7 +1230,7 @@ class ReportController extends Controller
                             ['name' => 'gentamicin_aa',                 'label' => 'Gentamicin']
                         ],
                         'rows'    => array_map(function($code, $label) {
-                            $row = ['code' => $code, 'label' => $label];
+                            $row = ['code' => $code, 'label' => $label, 'patients' => []];
                             $drugs = [
                                 'ciprofloxacin', 'levofloxacin', 'gentamicin_c', 'ceftazidime',
                                 'cefuroxime', 'cefotaxime', 'ampicillin', 'cefazolin', 'amikacin',

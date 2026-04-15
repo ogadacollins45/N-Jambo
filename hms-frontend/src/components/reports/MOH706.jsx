@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Printer, FlaskConical, Info } from "lucide-react";
+import { RefreshCw, Printer, FlaskConical, Info, ChevronDown, ChevronRight, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -117,8 +118,58 @@ const SectionSummaryBar = ({ subsections }) => {
   );
 };
 
+const PatientTable = ({ patients, label }) => {
+  const fmt = (d) => d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  const genderBadge = (g) => g === "M" ? (
+    <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 rounded font-medium">M</span>
+  ) : (
+    <span className="px-1.5 py-0.5 text-xs bg-pink-100 text-pink-700 rounded font-medium">F</span>
+  );
+  
+  return (
+    <tr className="print:hidden">
+      <td colSpan={100} className="bg-teal-50/50 px-6 py-3 border-b border-teal-100">
+        <div className="text-xs font-semibold text-teal-700 mb-2 flex items-center gap-2">
+          <User className="w-3.5 h-3.5" />
+          {patients.length} patient{patients.length !== 1 ? "s" : ""} — {label}
+        </div>
+        <table className="w-full text-xs bg-white rounded-lg overflow-hidden shadow-sm">
+          <thead>
+            <tr className="bg-gray-100 text-gray-600">
+              <th className="px-3 py-2 text-left">UPID</th>
+              <th className="px-3 py-2 text-left">Name</th>
+              <th className="px-3 py-2 text-center">Age</th>
+              <th className="px-3 py-2 text-center">Sex</th>
+              <th className="px-3 py-2 text-left">Primary Diagnosis</th>
+              <th className="px-3 py-2 text-center">Visit Date</th>
+              <th className="px-3 py-2 text-center">View</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((p, pi) => (
+              <tr key={pi} className="border-t border-gray-100 hover:bg-teal-50 transition-colors">
+                <td className="px-3 py-2 font-mono text-teal-600">{p.upid}</td>
+                <td className="px-3 py-2 font-medium text-gray-800">{p.name}</td>
+                <td className="px-3 py-2 text-center">{p.age}</td>
+                <td className="px-3 py-2 text-center">{genderBadge(p.gender)}</td>
+                <td className="px-3 py-2 text-gray-700 max-w-[200px] truncate" title={p.diagnosis}>
+                  {p.diagnosis || "—"}
+                </td>
+                <td className="px-3 py-2 text-center text-gray-500">{fmt(p.visit_date)}</td>
+                <td className="px-3 py-2 text-center">
+                  <Link to={`/patients/${p.patient_id}`} className="text-teal-600 hover:underline font-medium">View</Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  );
+};
+
 /** Generic subsection table — columns and rows are driven by the API response */
-const SubsectionTable = ({ subsection }) => {
+const SubsectionTable = ({ subsection, expanded, toggle }) => {
   // Compute column totals
   const totals = {};
   subsection.columns.forEach((col) => { totals[col] = 0; });
@@ -154,6 +205,7 @@ const SubsectionTable = ({ subsection }) => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 print:border-black">
+              <th className="py-2.5 px-3 w-8 print:hidden" />
               <th className="py-2.5 px-3 text-left text-xs font-semibold text-gray-400 w-16 print:text-black">
                 Code
               </th>
@@ -174,31 +226,41 @@ const SubsectionTable = ({ subsection }) => {
           <tbody>
             {subsection.rows.map((row, idx) => {
               const hasData = subsection.columns.some((col) => (row[col] ?? 0) > 0);
+              const patients = row.patients || [];
+              const hasPatients = patients.length > 0;
+              const isExpanded = expanded[`${subsection.code}_${row.code}`];
+
               return (
-                <tr
-                  key={row.code}
-                  className={`border-b border-gray-100 transition-colors ${
-                    idx % 2 === 0 ? "" : "bg-gray-50/40"
-                  } ${hasData ? "hover:bg-teal-50/20" : "text-gray-400"}`}
-                >
-                  <td className="py-2.5 px-3 font-mono text-xs text-gray-400">
-                    {row.code}
-                  </td>
-                  <td className={`py-2.5 px-4 font-medium ${hasData ? "text-gray-800" : "text-gray-400"}`}>
-                    {row.label}
-                  </td>
-                  {subsection.columns.map((col) => {
-                    const val = row[col] ?? 0;
-                    return (
-                      <td
-                        key={col}
-                        className={`py-2.5 px-4 text-center tabular-nums ${cellColor(col, val)}`}
-                      >
-                        {val > 0 ? val : <span className="text-gray-300">—</span>}
-                      </td>
-                    );
-                  })}
-                </tr>
+                <React.Fragment key={row.code}>
+                  <tr
+                    className={`border-b border-gray-100 transition-colors ${
+                      idx % 2 === 0 ? "" : "bg-gray-50/40"
+                    } ${hasData ? "hover:bg-teal-50/20" : "text-gray-400"} ${hasPatients ? "cursor-pointer" : ""}`}
+                    onClick={() => hasPatients && toggle(subsection.code, row.code)}
+                  >
+                    <td className="py-2.5 px-3 text-center print:hidden">
+                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-teal-500" /> : <ChevronRight className="w-4 h-4 text-teal-400" />) : null}
+                    </td>
+                    <td className="py-2.5 px-3 font-mono text-xs text-gray-400">
+                      {row.code}
+                    </td>
+                    <td className={`py-2.5 px-4 font-medium ${hasData ? "text-gray-800" : "text-gray-400"}`}>
+                      {row.label}
+                    </td>
+                    {subsection.columns.map((col) => {
+                      const val = row[col] ?? 0;
+                      return (
+                        <td
+                          key={col}
+                          className={`py-2.5 px-4 text-center tabular-nums ${cellColor(col, val)}`}
+                        >
+                          {val > 0 ? val : <span className="text-gray-300">—</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  {isExpanded && hasPatients && <PatientTable patients={patients} label={row.label} />}
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -206,6 +268,7 @@ const SubsectionTable = ({ subsection }) => {
           {/* Totals footer */}
           <tfoot>
             <tr className="bg-teal-600 text-white font-bold print:bg-gray-200 print:text-black">
+              <td className="px-3 py-2.5 print:hidden" />
               <td className="px-3 py-2.5 text-xs" />
               <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black">
                 Subsection Total
@@ -224,7 +287,7 @@ const SubsectionTable = ({ subsection }) => {
 };
 
 /** Matrix generic rendering for Section 9 */
-const MatrixSubsectionTable = ({ subsection }) => {
+const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
   const columns = subsection.matrix_columns || [];
 
   return (
@@ -240,8 +303,9 @@ const MatrixSubsectionTable = ({ subsection }) => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 print:border-black">
-              <th className="py-2.5 px-3 text-left text-xs font-semibold text-gray-400 w-12 sticky left-0 z-10 bg-gray-50 print:bg-transparent print:text-black">Code</th>
-              <th className="py-2.5 px-4 text-left text-xs font-semibold text-gray-500 w-48 sticky left-12 z-10 bg-gray-50 print:bg-transparent print:text-black">Organism</th>
+              <th className="py-2.5 px-3 w-8 sticky left-0 z-10 bg-gray-50 print:hidden" />
+              <th className="py-2.5 px-3 text-left text-xs font-semibold text-gray-400 w-12 sticky left-8 z-10 bg-gray-50 print:bg-transparent print:text-black">Code</th>
+              <th className="py-2.5 px-4 text-left text-xs font-semibold text-gray-500 w-48 sticky left-20 z-10 bg-gray-50 print:bg-transparent print:text-black">Organism</th>
               {columns.map((col) => (
                 <th key={col.name} className="py-2 px-1 font-semibold text-gray-500 text-center w-12 align-bottom print:text-black">
                   <div className="text-[10px] transform -rotate-45 origin-bottom-left w-6 translate-x-3 translate-y-3 whitespace-nowrap">
@@ -254,33 +318,54 @@ const MatrixSubsectionTable = ({ subsection }) => {
           <tbody>
             {subsection.rows.map((row, idx) => {
               const hasData = columns.some((col) => (row[col.name] ?? 0) > 0);
+              const patients = row.patients || [];
+              const hasPatients = patients.length > 0;
+              const isExpanded = expanded[`${subsection.code}_${row.code}`];
+
               return (
-                <tr key={row.code} className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? '' : 'bg-gray-50/40'} ${hasData ? 'hover:bg-teal-50/20' : ''}`}>
-                  <td className={`py-2.5 px-3 font-mono text-xs text-gray-400 sticky left-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} shadow-[inset_-1px_0_0_rgba(0,0,0,0.04)] print:bg-transparent`}>
-                    {row.code}
-                  </td>
-                  <td className={`py-2.5 px-4 font-medium text-sm sticky left-12 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} shadow-[inset_-1px_0_0_rgba(0,0,0,0.04)] print:bg-transparent ${hasData ? 'text-gray-800 print:text-black' : 'text-gray-400'}`}>
-                    {row.label}
-                  </td>
-                  {columns.map((col) => {
-                    const val = row[col.name] ?? 0;
-                    return (
-                      <td key={col.name} className={`py-2.5 px-1 text-center tabular-nums text-xs ${
-                        val > 0 ? 'text-amber-700 font-bold' : ''
-                      }`}>
-                        {val > 0 ? val : <span className="text-gray-300">—</span>}
-                      </td>
-                    );
-                  })}
-                </tr>
+                <React.Fragment key={row.code}>
+                  <tr
+                    className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? "" : "bg-gray-50/40"} ${
+                      hasData ? "hover:bg-teal-50/20 text-gray-800 font-medium" : "text-gray-400"
+                    } ${hasPatients ? "cursor-pointer" : ""}`}
+                    onClick={() => hasPatients && toggle(subsection.code, row.code)}
+                  >
+                    <td className="py-2.5 px-3 sticky left-0 z-10 bg-inherit print:hidden">
+                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-teal-500" /> : <ChevronRight className="w-4 h-4 text-teal-400" />) : null}
+                    </td>
+                    <td className="py-2.5 px-3 font-mono text-xs text-gray-400 sticky left-8 z-10 bg-inherit border-r border-gray-100 print:border-black">
+                      {row.code}
+                    </td>
+                    <td className="py-2.5 px-4 sticky left-20 z-10 bg-inherit border-r border-gray-200 print:border-black text-sm">
+                      {row.label}
+                    </td>
+                    {columns.map((col) => {
+                      const val = row[col.name] ?? 0;
+                      return (
+                        <td
+                          key={col.name}
+                          className={`py-2.5 px-1 text-center tabular-nums border-r border-gray-100 print:border-black ${
+                            val > 0 ? "font-bold text-amber-700 bg-amber-50/30" : ""
+                          }`}
+                        >
+                          {val > 0 ? val : <span className="text-gray-300">—</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  {isExpanded && hasPatients && <PatientTable patients={patients} label={row.label} />}
+                </React.Fragment>
               );
             })}
           </tbody>
           {/* Totals footer — matches SubsectionTable style */}
           <tfoot>
             <tr className="bg-teal-600 text-white font-bold print:bg-gray-200 print:text-black">
-              <td className="px-3 py-2.5 text-xs" />
-              <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black">Section Total</td>
+              <td className="px-3 py-2.5 sticky left-0 z-10 bg-teal-600 print:bg-transparent print:hidden" />
+              <td className="px-3 py-2.5 text-xs sticky left-8 z-10 bg-teal-600 print:bg-transparent" />
+              <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black sticky left-20 z-10 bg-teal-600 print:bg-transparent">
+                Section Total
+              </td>
               {columns.map((col) => {
                 const total = subsection.rows.reduce((sum, row) => sum + (row[col.name] ?? 0), 0);
                 return (
@@ -308,6 +393,12 @@ const MOH706 = () => {
   const [activeSection, setActiveSection] = useState("1");
   const [fetchedPeriod, setFetchedPeriod] = useState(null);
   const [error, setError]       = useState(null);
+  const [expanded, setExpanded] = useState({});
+
+  const toggle = useCallback((sectionCode, rowCode) => {
+    const key = `${sectionCode}_${rowCode}`;
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   const [facilityInfo] = useState({
     county:     "Bungoma",
@@ -320,6 +411,7 @@ const MOH706 = () => {
   const fetchReport = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setExpanded({});
     const fm = month;
     const fy = year;
     try {
@@ -544,8 +636,8 @@ const MOH706 = () => {
                 {/* Subsection tables */}
                 {currentSection.subsections.map((sub) => (
                   currentSection.type === 'matrix_table' 
-                    ? <MatrixSubsectionTable key={sub.code} subsection={sub} />
-                    : <SubsectionTable key={sub.code} subsection={sub} />
+                    ? <MatrixSubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
+                    : <SubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
                 ))}
               </div>
             )}
@@ -557,11 +649,13 @@ const MOH706 = () => {
                   <h2 className="text-base font-black text-black mb-4 uppercase border-b border-black pb-1">
                     Section {secNum}: {section.title}
                   </h2>
-                  {section.subsections.map((sub) => (
-                    section.type === 'matrix_table'
-                      ? <MatrixSubsectionTable key={sub.code} subsection={sub} />
-                      : <SubsectionTable key={sub.code} subsection={sub} />
-                  ))}
+                  {section.subsections.map((sub) =>
+                    section.type === 'matrix_table' ? (
+                      <MatrixSubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
+                    ) : (
+                      <SubsectionTable key={sub.code} subsection={sub} expanded={expanded} toggle={toggle} />
+                    )
+                  )}
                 </div>
               ))}
             </div>

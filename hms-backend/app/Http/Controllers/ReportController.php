@@ -508,7 +508,7 @@ class ReportController extends Controller
             if (str_starts_with($code, '8.')) continue;
 
             [$sNum, $subIdx, $rowIdx] = $codeIndex[$code];
-            $columns = $sections[$sNum]['subsections'][$subIdx]['columns'];
+            $columns = $sections[$sNum]['subsections'][$subIdx]['columns'] ?? [];
             $patient   = $result->labRequest?->patient;
             $patientAge = $patient ? ($patient->age_years ?? $patient->age ?? 0) : 0;
 
@@ -657,49 +657,49 @@ class ReportController extends Controller
             $hasIncremented = false;
 
             if (in_array('total_exam', $columns, true)) {
-                $rowRef['total_exam']++; $hasIncremented = true;
+                $rowRef['total_exam'] = ($rowRef['total_exam'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('total_cultures', $columns, true)) {
-                $rowRef['total_cultures']++; $hasIncremented = true;
+                $rowRef['total_cultures'] = ($rowRef['total_cultures'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('number', $columns, true)) {
-                $rowRef['number']++; $hasIncremented = true;
+                $rowRef['number'] = ($rowRef['number'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('number_positive', $columns, true) && $isPositive) {
-                $rowRef['number_positive']++; $hasIncremented = true;
+                $rowRef['number_positive'] = ($rowRef['number_positive'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('culture_positive', $columns, true) && ($isPositive || $culturePositive)) {
-                $rowRef['culture_positive']++; $hasIncremented = true;
+                $rowRef['culture_positive'] = ($rowRef['culture_positive'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('malignant', $columns, true) && $isMalignant) {
-                $rowRef['malignant']++; $hasIncremented = true;
+                $rowRef['malignant'] = ($rowRef['malignant'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('number_contaminated', $columns, true) && $isContaminated) {
-                $rowRef['number_contaminated']++; $hasIncremented = true;
+                $rowRef['number_contaminated'] = ($rowRef['number_contaminated'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('low', $columns, true) && $isLow) {
-                $rowRef['low']++; $hasIncremented = true;
+                $rowRef['low'] = ($rowRef['low'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('high', $columns, true) && $isHigh) {
-                $rowRef['high']++; $hasIncremented = true;
+                $rowRef['high'] = ($rowRef['high'] ?? 0) + 1; $hasIncremented = true;
             }
             // HbA1c-specific columns
             if (in_array('pre_diabetes', $columns, true) && $isPreDiabetes) {
-                $rowRef['pre_diabetes']++; $hasIncremented = true;
+                $rowRef['pre_diabetes'] = ($rowRef['pre_diabetes'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('diabetes', $columns, true) && $isDiabetes) {
-                $rowRef['diabetes']++; $hasIncremented = true;
+                $rowRef['diabetes'] = ($rowRef['diabetes'] ?? 0) + 1; $hasIncremented = true;
             }
             // HB range classification
             if (in_array('hb_lt_5_g_dl', $columns, true) && $hbValue !== null && $hbValue < 5) {
-                $rowRef['hb_lt_5_g_dl']++; $hasIncremented = true;
+                $rowRef['hb_lt_5_g_dl'] = ($rowRef['hb_lt_5_g_dl'] ?? 0) + 1; $hasIncremented = true;
             }
             if (in_array('hb_5_to_10_g_dl', $columns, true) && $hbValue !== null && $hbValue >= 5 && $hbValue <= 10) {
-                $rowRef['hb_5_to_10_g_dl']++; $hasIncremented = true;
+                $rowRef['hb_5_to_10_g_dl'] = ($rowRef['hb_5_to_10_g_dl'] ?? 0) + 1; $hasIncremented = true;
             }
             // CD4 <500 threshold
             if (in_array('number_lt_500', $columns, true) && $cd4Value !== null && $cd4Value < 500) {
-                $rowRef['number_lt_500']++; $hasIncremented = true;
+                $rowRef['number_lt_500'] = ($rowRef['number_lt_500'] ?? 0) + 1; $hasIncremented = true;
             }
 
             if ($hasIncremented) {
@@ -714,7 +714,7 @@ class ReportController extends Controller
                 
                 if (in_array('number_positive', $oCols, true)) {
                     $oRowRef = &$sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx];
-                    $oRowRef['number_positive']++;
+                    $oRowRef['number_positive'] = ($oRowRef['number_positive'] ?? 0) + 1;
                     $addPatient($oRowRef, $patient, $testName, $result->labRequest?->request_date);
                 }
             }
@@ -728,8 +728,9 @@ class ReportController extends Controller
                 $oRowRef = &$sections[$oSNum]['subsections'][$oSubIdx]['rows'][$oRowIdx];
                 $oHasIncremented = false;
                 foreach ($resistantAntibiotics as $antiCol) {
-                    if (isset($oRowRef[$antiCol])) {
-                        $oRowRef[$antiCol]++;
+                    if (in_array($antiCol, $sections[$oSNum]['subsections'][$oSubIdx]['columns'] ?? []) || isset($sections[$oSNum]['subsections'][$oSubIdx]['matrix_columns'])) {
+                        // For matrix grid, any valid antibiotic code gets incremented
+                        $oRowRef[$antiCol] = ($oRowRef[$antiCol] ?? 0) + 1;
                         $oHasIncremented = true;
                     }
                 }
@@ -759,14 +760,14 @@ class ReportController extends Controller
                 if (!str_starts_with((string) $code, '8.') || !isset($codeIndex[$code])) continue;
 
                 $s8RowRef = &$sections[$sNum]['subsections'][$subIdx]['rows'][$rowIdx];
-                $s8RowRef['number_of_specimens']++;
+                $s8RowRef['number_of_specimens'] = ($s8RowRef['number_of_specimens'] ?? 0) + 1;
 
                 $s8Patient = $req->patient;
                 $s8RequestDate = $req->request_date;
 
                 $res = $reqTest->result;
                 if ($res && in_array($res->status, ['submitted', 'verified'], true)) {
-                    $s8RowRef['number_of_results_received']++;
+                    $s8RowRef['number_of_results_received'] = ($s8RowRef['number_of_results_received'] ?? 0) + 1;
                 }
 
                 $addPatient($s8RowRef, $s8Patient, $tName, $s8RequestDate);

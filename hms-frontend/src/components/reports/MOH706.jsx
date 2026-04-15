@@ -60,12 +60,12 @@ function cellColor(colName, value) {
   switch (colName) {
     case "total_exam":
     case "total_cultures":
-    case "number_of_specimens":          return "text-teal-700 font-semibold";
+    case "number_of_specimens":          return "text-blue-700 font-semibold";
     case "number_positive":
     case "culture_positive":
     case "high":                         return "text-amber-700 font-bold";
     case "number_contaminated":          return "text-orange-700 font-bold";
-    case "number_of_results_received":   return "text-emerald-700 font-semibold";
+    case "number_of_results_received":   return "text-indigo-700 font-semibold";
     case "low":                          return "text-sky-700 font-bold";
     case "malignant":                    return "text-rose-700 font-bold";
     default:                             return "text-gray-700 font-semibold";
@@ -94,12 +94,12 @@ const SectionSummaryBar = ({ subsections }) => {
 
   const pills = [];
   if (totalTests > 0 || totalPositive > 0) {
-    pills.push({ label: "Total Exams",  value: totalTests,    color: "teal"    });
+    pills.push({ label: "Total Exams",  value: totalTests,    color: "blue"    });
     pills.push({ label: "Positive",     value: totalPositive, color: "amber"   });
   }
   if (totalSpecimens > 0 || totalReceived > 0) {
-    pills.push({ label: "Specimens Sent",     value: totalSpecimens, color: "teal"    });
-    pills.push({ label: "Results Received",   value: totalReceived,  color: "emerald" });
+    pills.push({ label: "Specimens Sent",     value: totalSpecimens, color: "blue"    });
+    pills.push({ label: "Results Received",   value: totalReceived,  color: "indigo" });
   }
   if (pills.length === 0) return null;
 
@@ -128,8 +128,8 @@ const PatientTable = ({ patients, label }) => {
   
   return (
     <tr className="print:hidden">
-      <td colSpan={100} className="bg-teal-50/50 px-6 py-3 border-b border-teal-100">
-        <div className="text-xs font-semibold text-teal-700 mb-2 flex items-center gap-2">
+      <td colSpan={100} className="bg-blue-50/50 px-6 py-3 border-b border-blue-100">
+        <div className="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-2">
           <User className="w-3.5 h-3.5" />
           {patients.length} patient{patients.length !== 1 ? "s" : ""} — {label}
         </div>
@@ -147,8 +147,8 @@ const PatientTable = ({ patients, label }) => {
           </thead>
           <tbody>
             {patients.map((p, pi) => (
-              <tr key={pi} className="border-t border-gray-100 hover:bg-teal-50 transition-colors">
-                <td className="px-3 py-2 font-mono text-teal-600">{p.upid}</td>
+              <tr key={pi} className="border-t border-gray-100 hover:bg-blue-50 transition-colors">
+                <td className="px-3 py-2 font-mono text-blue-600">{p.upid}</td>
                 <td className="px-3 py-2 font-medium text-gray-800">{p.name}</td>
                 <td className="px-3 py-2 text-center">{p.age}</td>
                 <td className="px-3 py-2 text-center">{genderBadge(p.gender)}</td>
@@ -157,7 +157,7 @@ const PatientTable = ({ patients, label }) => {
                 </td>
                 <td className="px-3 py-2 text-center text-gray-500">{fmt(p.visit_date)}</td>
                 <td className="px-3 py-2 text-center">
-                  <Link to={`/patients/${p.patient_id}`} className="text-teal-600 hover:underline font-medium">View</Link>
+                  <Link to={`/patients/${p.patient_id}`} className="text-blue-600 hover:underline font-medium">View</Link>
                 </td>
               </tr>
             ))}
@@ -186,11 +186,11 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
   return (
     <div className="mb-5 border border-gray-200 rounded-2xl overflow-hidden shadow-sm print:border-black print:rounded-none print:mb-4">
       {/* Subsection header bar */}
-      <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 print:bg-gray-100 print:border-black">
-        <span className="text-xs font-mono font-bold text-teal-500 bg-teal-100 px-2 py-0.5 rounded print:bg-gray-200 print:text-black">
+      <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 print:bg-gray-100 print:border-black">
+        <span className="text-xs font-mono font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded print:bg-gray-200 print:text-black">
           {subsection.code}
         </span>
-        <h3 className="font-bold text-teal-800 text-sm print:text-black">
+        <h3 className="font-bold text-blue-800 text-sm print:text-black">
           {subsection.title}
         </h3>
         {!sectionHasData && (
@@ -235,11 +235,11 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
                   <tr
                     className={`border-b border-gray-100 transition-colors ${
                       idx % 2 === 0 ? "" : "bg-gray-50/40"
-                    } ${hasData ? "hover:bg-teal-50/20" : "text-gray-400"} ${hasPatients ? "cursor-pointer" : ""}`}
+                    } ${hasData ? "hover:bg-blue-50/20" : "text-gray-400"} ${hasPatients ? "cursor-pointer" : ""}`}
                     onClick={() => hasPatients && toggle(subsection.code, row.code)}
                   >
                     <td className="py-2.5 px-3 text-center print:hidden">
-                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-teal-500" /> : <ChevronRight className="w-4 h-4 text-teal-400" />) : null}
+                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-blue-500" /> : <ChevronRight className="w-4 h-4 text-blue-400" />) : null}
                     </td>
                     <td className="py-2.5 px-3 font-mono text-xs text-gray-400">
                       {row.code}
@@ -267,7 +267,7 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
 
           {/* Totals footer */}
           <tfoot>
-            <tr className="bg-teal-600 text-white font-bold print:bg-gray-200 print:text-black">
+            <tr className="bg-blue-600 text-white font-bold print:bg-gray-200 print:text-black">
               <td className="px-3 py-2.5 print:hidden" />
               <td className="px-3 py-2.5 text-xs" />
               <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black">
@@ -293,11 +293,11 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
   return (
     <div className="mb-5 border border-gray-200 rounded-2xl overflow-hidden shadow-sm print:border-black print:rounded-none">
       {/* Subsection header bar — matches SubsectionTable */}
-      <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 print:bg-gray-100 print:border-black">
-        <span className="text-xs font-mono font-bold text-teal-500 bg-teal-100 px-2 py-0.5 rounded print:bg-gray-200 print:text-black">
+      <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 print:bg-gray-100 print:border-black">
+        <span className="text-xs font-mono font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded print:bg-gray-200 print:text-black">
           {subsection.code}
         </span>
-        <h3 className="font-bold text-teal-800 text-sm print:text-black">{subsection.title}</h3>
+        <h3 className="font-bold text-blue-800 text-sm print:text-black">{subsection.title}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -326,12 +326,12 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
                 <React.Fragment key={row.code}>
                   <tr
                     className={`border-b border-gray-100 transition-colors ${idx % 2 === 0 ? "" : "bg-gray-50/40"} ${
-                      hasData ? "hover:bg-teal-50/20 text-gray-800 font-medium" : "text-gray-400"
+                      hasData ? "hover:bg-blue-50/20 text-gray-800 font-medium" : "text-gray-400"
                     } ${hasPatients ? "cursor-pointer" : ""}`}
                     onClick={() => hasPatients && toggle(subsection.code, row.code)}
                   >
                     <td className="py-2.5 px-3 sticky left-0 z-10 bg-inherit print:hidden">
-                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-teal-500" /> : <ChevronRight className="w-4 h-4 text-teal-400" />) : null}
+                      {hasPatients ? (isExpanded ? <ChevronDown className="w-4 h-4 text-blue-500" /> : <ChevronRight className="w-4 h-4 text-blue-400" />) : null}
                     </td>
                     <td className="py-2.5 px-3 font-mono text-xs text-gray-400 sticky left-8 z-10 bg-inherit border-r border-gray-100 print:border-black">
                       {row.code}
@@ -360,10 +360,10 @@ const MatrixSubsectionTable = ({ subsection, expanded, toggle }) => {
           </tbody>
           {/* Totals footer — matches SubsectionTable style */}
           <tfoot>
-            <tr className="bg-teal-600 text-white font-bold print:bg-gray-200 print:text-black">
-              <td className="px-3 py-2.5 sticky left-0 z-10 bg-teal-600 print:bg-transparent print:hidden" />
-              <td className="px-3 py-2.5 text-xs sticky left-8 z-10 bg-teal-600 print:bg-transparent" />
-              <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black sticky left-20 z-10 bg-teal-600 print:bg-transparent">
+            <tr className="bg-blue-600 text-white font-bold print:bg-gray-200 print:text-black">
+              <td className="px-3 py-2.5 sticky left-0 z-10 bg-blue-600 print:bg-transparent print:hidden" />
+              <td className="px-3 py-2.5 text-xs sticky left-8 z-10 bg-blue-600 print:bg-transparent" />
+              <td className="px-4 py-2.5 text-xs text-right uppercase tracking-wider font-black sticky left-20 z-10 bg-blue-600 print:bg-transparent">
                 Section Total
               </td>
               {columns.map((col) => {
@@ -417,7 +417,7 @@ const MOH706 = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/reports/moh-706?month=${fm}&year=${fy}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/reports/moh-706?month=${fm}&year=${fy}&_t=${Date.now()}`,
         { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -446,15 +446,15 @@ const MOH706 = () => {
 
       {/* ── Controls ────────────────────────────────────────────────────── */}
       <div className="print:hidden flex flex-col md:flex-row gap-4 items-end
-                      bg-gradient-to-r from-teal-50 to-emerald-50
-                      p-4 rounded-2xl border border-teal-100 shadow-sm">
+                      bg-gradient-to-r from-blue-50 to-indigo-50
+                      p-4 rounded-2xl border border-blue-100 shadow-sm">
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Month</label>
           <select
             value={month}
             onChange={(e) => setMonth(+e.target.value)}
             className="border border-gray-300 rounded-xl shadow-sm bg-white px-3 py-2
-                       text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                       text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
           >
             {MONTHS.map((m) => (
               <option key={m.value} value={m.value}>{m.label}</option>
@@ -469,14 +469,14 @@ const MOH706 = () => {
             value={year}
             onChange={(e) => setYear(+e.target.value)}
             className="border border-gray-300 rounded-xl shadow-sm bg-white px-3 py-2
-                       w-28 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                       w-28 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
           />
         </div>
 
         <button
           onClick={fetchReport}
           disabled={loading}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2
                      rounded-xl text-sm font-semibold flex items-center gap-2
                      disabled:opacity-50 transition-all shadow-sm"
         >
@@ -499,10 +499,10 @@ const MOH706 = () => {
       {loading && (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="relative">
-            <div className="w-14 h-14 rounded-full border-4 border-teal-100" />
-            <div className="absolute inset-0 w-14 h-14 rounded-full border-4 border-teal-500 border-t-transparent animate-spin" />
+            <div className="w-14 h-14 rounded-full border-4 border-blue-100" />
+            <div className="absolute inset-0 w-14 h-14 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
           </div>
-          <p className="text-sm font-medium text-teal-600">
+          <p className="text-sm font-medium text-blue-600">
             Processing lab records…
           </p>
           <p className="text-xs text-gray-400">
@@ -527,9 +527,9 @@ const MOH706 = () => {
       {/* ── Empty state ──────────────────────────────────────────────────── */}
       {!loading && !error && !reportData && (
         <div className="flex flex-col items-center py-20 gap-4 text-gray-400">
-          <FlaskConical className="w-14 h-14 text-teal-100" />
+          <FlaskConical className="w-14 h-14 text-blue-100" />
           <p className="font-medium text-gray-500">
-            Click <span className="text-teal-600 font-bold">Generate</span> to load the MOH 706 report.
+            Click <span className="text-blue-600 font-bold">Generate</span> to load the MOH 706 report.
           </p>
         </div>
       )}
@@ -542,13 +542,13 @@ const MOH706 = () => {
           {/* ── Report Header ─────────────────────────────────────────── */}
           <div className="relative overflow-hidden">
             {/* gradient banner */}
-            <div className="bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 px-8 py-7 print:bg-white">
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500 px-8 py-7 print:bg-white">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm print:hidden">
                   <FlaskConical className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-teal-100 text-xs font-semibold uppercase tracking-widest print:text-gray-500 print:text-sm">
+                  <p className="text-blue-100 text-xs font-semibold uppercase tracking-widest print:text-gray-500 print:text-sm">
                     Republic of Kenya — Ministry of Health
                   </p>
                   <h1 className="text-white text-2xl font-black leading-tight print:text-black print:text-xl">
@@ -560,7 +560,7 @@ const MOH706 = () => {
                 </div>
                 {fetchedPeriod && (
                   <div className="ml-auto text-right print:hidden">
-                    <p className="text-teal-100 text-xs">Reporting Period</p>
+                    <p className="text-blue-100 text-xs">Reporting Period</p>
                     <p className="text-white text-lg font-black">
                       {monthLabel(fetchedPeriod.month)} {fetchedPeriod.year}
                     </p>
@@ -582,7 +582,7 @@ const MOH706 = () => {
               ["KMHFL Code",    facilityInfo.kmhfl     ],
             ].map(([label, value]) => (
               <div key={label} className="flex flex-col">
-                <span className="text-teal-500 text-[10px] font-semibold uppercase tracking-wider print:text-gray-500">
+                <span className="text-blue-500 text-[10px] font-semibold uppercase tracking-wider print:text-gray-500">
                   {label}
                 </span>
                 <span className="font-semibold text-gray-800 text-sm print:text-black">
@@ -601,7 +601,7 @@ const MOH706 = () => {
                 className={`flex items-center gap-2 px-6 py-3.5 text-sm font-semibold
                             whitespace-nowrap transition-all duration-200 outline-none border-b-2 ${
                   activeSection === tab.id
-                    ? "text-teal-700 border-teal-500 bg-teal-50"
+                    ? "text-blue-700 border-blue-500 bg-blue-50"
                     : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-gray-700"
                 }`}
               >
@@ -619,9 +619,9 @@ const MOH706 = () => {
               <div key={activeSection} className="animate-in fade-in duration-300">
                 {/* Section heading */}
                 <div className="flex items-center gap-3 mb-5 print:mb-3">
-                  <div className="w-1 h-10 bg-gradient-to-b from-teal-400 to-emerald-400 rounded-full print:hidden" />
+                  <div className="w-1 h-10 bg-gradient-to-b from-blue-400 to-indigo-400 rounded-full print:hidden" />
                   <div>
-                    <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest print:text-gray-500">
+                    <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest print:text-gray-500">
                       Section {activeSection}
                     </p>
                     <h2 className="text-lg font-black text-gray-800 print:text-black">
@@ -666,7 +666,7 @@ const MOH706 = () => {
                           flex items-center justify-between text-xs text-gray-400
                           print:hidden">
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
               MOH 706 — AI-assisted lab test mapping
             </span>
             {reportData?.generated_at && (

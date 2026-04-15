@@ -26,6 +26,22 @@ class LabTestMapper
      * Ordered with more-specific phrases first where overlap is likely.
      */
     private static array $keywordMap = [
+        // ─── SECTION 9 — DRUG SUSCEPTIBILITY MATRIX ORGANISMS (Exact Cultures) ───
+        'culture - e. coli o157'        => '9.1', 'culture - escherichia coli' => '9.1',
+        'culture - proteus'             => '9.2',
+        'culture - salmonella'          => '9.3',
+        'culture - shigella'            => '9.4',
+        'culture - klebsiella'          => '9.5',
+        'culture - pseudomonas'         => '9.6',
+        'culture - staphylococcus'      => '9.7', 'culture - s aureus' => '9.7', 'culture - s. aureus' => '9.7',
+        'culture - vibrio cholerae'     => '9.8',
+        'culture - neisseria menin'     => '9.9',
+        'culture - neisseria gonor'     => '9.10',
+        'culture - streptococcus pneu'  => '9.11',
+        'culture - haemophilus influ'   => '9.12',
+        'culture - haemophilus para'    => '9.13',
+        'culture - bacterial vaginosis' => '9.14',
+
         // ─── SECTION 3 — PARASITOLOGY (placed first: order drives match priority) ────
         // Note: 3.1/3.2 (BS) and 3.3/3.4 (RDT) are age-gated in getMoh706().
         // The mapper returns 3.1 (BS) or 3.3 (RDT); controller reroutes by patient age.

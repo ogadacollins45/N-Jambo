@@ -31,8 +31,11 @@ class LabTestMapper
         // The mapper returns 3.1 (BS) or 3.3 (RDT); controller reroutes by patient age.
         'malaria bs'             => '3.1', 'malaria blood smear'     => '3.1',
         'malaria film'           => '3.1', 'malaria thick'           => '3.1',
+        'bs for mps'             => '3.1', 'blood smear for mps'     => '3.1',
+        'bs for malaria'         => '3.1', 'mps'                     => '3.1',
         'malaria rdt'            => '3.3', 'malaria rapid'           => '3.3',
         'malaria antigen'        => '3.3', 'hrp2'                    => '3.3',
+        'malaria rapid diagnostic' => '3.3',
         'malaria test'           => '3.1', // generic BS fallback
         'malaria'                => '3.1', // widest fallback — must be last malaria entry
         // Stool parasites — organism-specific if template names carry organism names
@@ -45,8 +48,16 @@ class LabTestMapper
         'amoeba'                 => '3.11', 'entamoeba'              => '3.11',
         'stool exam'             => '3.5', 'ova and cyst'            => '3.5',
         'ova and para'           => '3.5', 'stool microscopy'        => '3.5',
+        'stool analysis'         => '3.5', 'stool exam'              => '3.5',
+        'stool routine'          => '3.5', 'faecal analysis'         => '3.5',
 
         // ─── SECTION 1 — URINE ANALYSIS ──────────────────────────────────────
+        // Generic urinalysis → 1.1 (total urine examinations)
+        'urinalysis'             => '1.1', 'urine analysis'          => '1.1',
+        'urine routine'          => '1.1', 'urine r/e'               => '1.1',
+        'urine full report'      => '1.1', 'ufr'                     => '1.1',
+        'urine dipstick'         => '1.1', 'urine test'              => '1.1',
+
         'urine glucose'          => '1.2', 'glycosuria'              => '1.2',
         'urine sugar'            => '1.2',
         'urine ketone'           => '1.3', 'ketonuria'               => '1.3',
@@ -104,6 +115,10 @@ class LabTestMapper
         'full blood count'       => '4.1', 'complete blood count'    => '4.1',
         'fbc'                    => '4.1', 'cbc'                     => '4.1',
         'full blood picture'     => '4.1', 'fbp'                     => '4.1',
+        // Generic haemoglobin (estimation) → 4.2
+        'hemoglobin level'       => '4.2', 'haemoglobin level'       => '4.2',
+        'hemoglobin'             => '4.2', 'haemoglobin'             => '4.2',
+        'hb level'               => '4.2', 'hgb'                     => '4.2',
         'haemoglobin estimation' => '4.2', 'hemoglobin estimation'   => '4.2',
         'hb estimation'          => '4.2',
         'hba1c'                  => '4.3', 'glycated haemoglobin'    => '4.3',
@@ -223,9 +238,12 @@ class LabTestMapper
         'hiv 1/2'                => '7.4', 'hiv1/2'                  => '7.4',
         'hiv antibody'           => '7.4', 'rapid hiv'               => '7.4',
         'hiv test'               => '7.4', 'hiv screen'              => '7.4',
-        'hiv serology'           => '7.4',
+        'hiv serology'           => '7.4', 'pitc'                    => '7.4',
+        'provider initiated'     => '7.4', 'hiv counselling'         => '7.4',
+        'testing and counselling for hiv' => '7.4',
         'brucella agglutination' => '7.5', 'brucellosis'             => '7.5',
-        'brucella serology'      => '7.5',
+        'brucella serology'      => '7.5', 'brucellin'               => '7.5',
+        'brucella antigen'       => '7.5',
         'rheumatoid factor'      => '7.6', 'rf test'                 => '7.6',
         'helicobacter pylori'    => '7.7', 'h. pylori'               => '7.7',
         'h pylori'               => '7.7', 'hp antigen'              => '7.7',
@@ -237,8 +255,14 @@ class LabTestMapper
         'hepatitis c test'       => '7.10', 'hepatitis c serology'   => '7.10',
         'pregnancy test'         => '7.11', 'beta hcg'               => '7.11',
         'hcg test'               => '7.11', 'urine pregnancy'        => '7.11',
+        'pregnancy detection'    => '7.11', 'serum pregnancy'        => '7.11',
         'crag test'              => '7.12', 'cryptococcal antigen'   => '7.12',
         'crag'                   => '7.12',
+
+        // Widal — salmonella/typhoid serology (section 7, added after existing entries)
+        'widal'                  => '7.8',
+        'salmonella serology'    => '7.8', 'salmonella antigen'      => '7.8',
+        'salmonella agglutin'    => '7.8', 'typhoid serology'        => '7.8',
 
         // ─── SECTION 8 — SPECIMEN REFERRALS ──────────────────────────────────
         'cd4 referral'           => '8.1', 'cd4 specimen'            => '8.1',
@@ -323,20 +347,29 @@ class LabTestMapper
         }
 
         // 3. AI-service semantic fallback
-        $aiUrl = rtrim(config('services.ai.url', env('AI_SERVICE_URL', 'http://localhost:8001')), '/');
-        try {
-            $response = Http::timeout(10)->post("{$aiUrl}/classify-lab-test", [
-                'text' => $testName,
-            ]);
-            if ($response->successful()) {
-                $responseCode = $response->json('predicted_code', 'unmapped');
-                if ($responseCode && in_array($responseCode, self::$allCodes, true)) {
-                    self::$cache[$key] = $responseCode;
-                    return $responseCode;
+        //    Skip entirely if we already know the service is offline this request.
+        static $aiOffline = false;
+
+        if (!$aiOffline) {
+            $aiUrl = rtrim(config('services.ai.url', env('AI_SERVICE_URL', 'http://localhost:8001')), '/');
+            try {
+                $response = Http::timeout(3)->post("{$aiUrl}/classify-lab-test", [
+                    'text' => $testName,
+                ]);
+                if ($response->successful()) {
+                    $responseCode = $response->json('predicted_code', 'unmapped');
+                    if ($responseCode && in_array($responseCode, self::$allCodes, true)) {
+                        self::$cache[$key] = $responseCode;
+                        return $responseCode;
+                    }
                 }
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                // Service not running — mark offline for the rest of this request, silent fallback
+                $aiOffline = true;
+                Log::info('LabTestMapper: AI classifier offline, using keyword-only mode. (' . $e->getMessage() . ')');
+            } catch (\Throwable $e) {
+                Log::warning("LabTestMapper: AI fallback error for '{$testName}': " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Log::warning("LabTestMapper: AI fallback failed for '{$testName}': " . $e->getMessage());
         }
 
         self::$cache[$key] = 'unmapped';

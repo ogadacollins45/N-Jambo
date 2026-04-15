@@ -460,8 +460,10 @@ class ReportController extends Controller
         }
 
         // ── 2. Query completed lab results (all sections except 8) ─────────────
+        // NOTE: lab_results status enum is ('draft','submitted','verified') — no 'completed'.
         $labResults = LabResult::with([
-                'labRequestTest.template',
+                'template',                  // direct FK: test_template_id on lab_results
+                'labRequestTest',            // still needed for section 8 referral count
                 'labRequest.patient',        // needed for age-gated rows (malaria, etc.)
                 'parameters',
             ])
@@ -470,11 +472,12 @@ class ReportController extends Controller
                   ->whereMonth('request_date', $month)
                   ->whereNotIn('status', ['rejected', 'cancelled']);
             })
-            ->whereIn('status', ['completed', 'verified'])
+            ->whereIn('status', ['submitted', 'verified'])
             ->get();
 
         foreach ($labResults as $result) {
-            $testTemplate = $result->labRequestTest?->template;
+            // Prefer the direct template FK; fall back to the join via labRequestTest
+            $testTemplate = $result->template ?? $result->labRequestTest?->template;
             if (!$testTemplate) continue;
 
             $testName = trim($testTemplate->name ?? '');

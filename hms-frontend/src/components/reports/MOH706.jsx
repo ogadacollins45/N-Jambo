@@ -183,6 +183,12 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
     subsection.columns.some((col) => (row[col] ?? 0) > 0)
   );
 
+  // Unique patient count for footer (de-dup across rows by patient_id)
+  const subsectionPatientIds = new Set(
+    subsection.rows.flatMap((row) => (row.patients || []).map((p) => p.patient_id))
+  );
+  const totalPatients = subsectionPatientIds.size;
+
   return (
     <div className="mb-5 border border-gray-200 rounded-2xl overflow-hidden shadow-sm print:border-black print:rounded-none print:mb-4">
       {/* Subsection header bar */}
@@ -196,6 +202,11 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
         {!sectionHasData && (
           <span className="ml-auto text-xs text-gray-400 italic flex items-center gap-1 print:hidden">
             <Info className="w-3 h-3" /> No data this period
+          </span>
+        )}
+        {sectionHasData && totalPatients > 0 && (
+          <span className="ml-auto text-xs text-blue-500 font-semibold flex items-center gap-1 print:hidden">
+            <User className="w-3 h-3" /> {totalPatients} patient{totalPatients !== 1 ? "s" : ""}
           </span>
         )}
       </div>
@@ -220,6 +231,10 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
                   {COLUMN_LABELS[col] ?? col}
                 </th>
               ))}
+              {/* Patients column — always shown, drives expand */}
+              <th className="py-2.5 px-4 text-center text-xs font-semibold text-blue-500 w-28 print:text-black">
+                Patients
+              </th>
             </tr>
           </thead>
 
@@ -257,6 +272,21 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
                         </td>
                       );
                     })}
+                    {/* Patients count cell */}
+                    <td className="py-2.5 px-4 text-center print:text-black">
+                      {hasPatients ? (
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+                          ${isExpanded
+                            ? "bg-blue-600 text-white"
+                            : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          } transition-colors`}>
+                          <User className="w-3 h-3" />
+                          {patients.length}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
                   </tr>
                   {isExpanded && hasPatients && <PatientTable patients={patients} label={row.label} />}
                 </React.Fragment>
@@ -277,6 +307,15 @@ const SubsectionTable = ({ subsection, expanded, toggle }) => {
                   {totals[col]}
                 </td>
               ))}
+              {/* Patients total — unique across subsection */}
+              <td className="px-4 py-2.5 text-center tabular-nums">
+                {totalPatients > 0 ? (
+                  <span className="inline-flex items-center gap-1">
+                    <User className="w-3 h-3 opacity-80" />
+                    {totalPatients}
+                  </span>
+                ) : <span className="opacity-40">0</span>}
+              </td>
             </tr>
           </tfoot>
         </table>

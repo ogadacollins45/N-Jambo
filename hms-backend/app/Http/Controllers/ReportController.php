@@ -536,6 +536,29 @@ class ReportController extends Controller
 
             // Arrays for secondary row mappings (like parameter isolates)
             $organismCodesToIncrement = [];
+
+            // Section 1 — urine parameter sub-row map
+            // keyword (substr of param name, lowercase) => [rowCode, countPositiveOnly]
+            // countPositiveOnly=false  → total_exam incremented always; true → only when abnormal
+            $urineParamSubRows = [
+                'glucose'       => ['1.2', false],
+                'ketone'        => ['1.3', false],
+                'protein'       => ['1.4', false],
+                'albumin'       => ['1.4', false],  // proteinuria marker
+                'pus cell'      => ['1.6', false],
+                'leukocyte'     => ['1.6', false],  // leukocytes = pus cells in urine
+                'wbc'           => ['1.6', false],
+                'haematobium'   => ['1.7', true],   // only relevant if detected
+                'bilharzia'     => ['1.7', true],
+                'vaginalis'     => ['1.8', true],   // T. vaginalis
+                'trichomonas'   => ['1.8', true],
+                'yeast'         => ['1.9', false],
+                'candida'       => ['1.9', true],
+                'bacteria'      => ['1.10', false],
+                'nitrite'       => ['1.10', false],  // positive nitrite = bacteriuria
+            ];
+            // Tracks which urine sub-rows to increment: rowCode => isAbnormal
+            $urineSubRowHits = [];
             
             // Arrays for Section 9 Drug Susceptibility Matrix
             $foundSection9Organisms = [];
@@ -650,6 +673,27 @@ class ReportController extends Controller
                 if (str_contains($pName, 'cd4')) {
                     $cd4Value = is_numeric($param->value) ? (float) $param->value : null;
                 }
+
+                // ── Section 1 urine sub-row detection from parameters ──────────
+                // Only applies when the parent test resolves to section 1 (urinalysis panel).
+                if (str_starts_with($code, '1.')) {
+                    $paramIsAbnormal = $param->is_abnormal
+                        || in_array($pVal, ['positive', 'detected'])
+                        || $flag === 'H' || $flag === 'L' || $flag === 'HIGH' || $flag === 'LOW';
+                    foreach ($urineParamSubRows as $keyword => [$subCode, $positiveOnly]) {
+                        if (str_contains($pName, $keyword)) {
+                            if (!$positiveOnly || $paramIsAbnormal) {
+                                // Keep the strictest (most-positive) flag per row
+                                if (!isset($urineSubRowHits[$subCode])) {
+                                    $urineSubRowHits[$subCode] = $paramIsAbnormal;
+                                } else {
+                                    $urineSubRowHits[$subCode] = $urineSubRowHits[$subCode] || $paramIsAbnormal;
+                                }
+                            }
+                            break; // one keyword match per parameter is enough
+                        }
+                    }
+                }
             }
 
             // ── Accumulate into the data structure ─────────────────────────────
@@ -717,6 +761,23 @@ class ReportController extends Controller
                     $oRowRef['number_positive'] = ($oRowRef['number_positive'] ?? 0) + 1;
                     $addPatient($oRowRef, $patient, $testName, $result->labRequest?->request_date);
                 }
+            }
+
+            // ── Increment Section 1 urine sub-rows derived from parameters ─────────
+            foreach ($urineSubRowHits as $subCode => $subIsAbnormal) {
+                if (!isset($codeIndex[$subCode])) continue;
+                [$uSNum, $uSubIdx, $uRowIdx] = $codeIndex[$subCode];
+                $uCols  = $sections[$uSNum]['subsections'][$uSubIdx]['columns'] ?? [];
+                $uRowRef = &$sections[$uSNum]['subsections'][$uSubIdx]['rows'][$uRowIdx];
+                // total_exam = how many urinalysis panels included this parameter test
+                if (in_array('total_exam', $uCols, true)) {
+                    $uRowRef['total_exam'] = ($uRowRef['total_exam'] ?? 0) + 1;
+                }
+                // number_positive = how many of those yielded an abnormal/positive result
+                if ($subIsAbnormal && in_array('number_positive', $uCols, true)) {
+                    $uRowRef['number_positive'] = ($uRowRef['number_positive'] ?? 0) + 1;
+                }
+                $addPatient($uRowRef, $patient, $testName, $result->labRequest?->request_date);
             }
 
             // ── Increment Section 9 Matrix ─────────────────────────────────────────
@@ -834,6 +895,7 @@ class ReportController extends Controller
                         'code'    => '1.1',  'title'   => 'Urine Chemistry',
                         'columns' => ['total_exam', 'number_positive'],
                         'rows'    => [
+                            $r('1.1', 'Total Urine Examinations'),
                             $r('1.2', 'Glucose'), $r('1.3', 'Ketones'), $r('1.4', 'Proteins'),
                         ],
                     ],

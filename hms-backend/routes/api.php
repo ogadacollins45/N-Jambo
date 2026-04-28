@@ -151,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     /** Reports */
+    Route::get('/reports/overview', [ReportController::class, 'getOverview']);
     Route::get('/reports/moh-717', [ReportController::class, 'getMoh717']);
     Route::get('/reports/disease-report', [ReportController::class, 'getDiseaseReport']);
     Route::get('/reports/moh-706', [ReportController::class, 'getMoh706']);

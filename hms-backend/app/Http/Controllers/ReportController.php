@@ -8,12 +8,70 @@ use App\Models\Patient;
 use App\Models\Diagnosis;
 use App\Models\LabResult;
 use App\Models\LabRequest;
+use App\Models\Admission;
 use Carbon\Carbon;
 use App\Services\DiseaseMapper;
 use App\Services\LabTestMapper;
 
 class ReportController extends Controller
 {
+    /**
+     * GET /api/reports/overview
+     * Returns lightweight summary stats for the Reports Overview tab.
+     * Disease categories are NOT computed here — they come from getDiseaseReport()
+     * so the same classification logic (DiseaseMapper + caching) is always used.
+     *
+     *   - total_outpatient_this_month  (treatments this calendar month)
+     *   - total_outpatient_this_year   (treatments this year)
+     *   - active_admissions            (admissions with status = 'active')
+     *   - total_patients               (all-time patient count)
+     *   - monthly_trend                (treatment counts for the last 6 months)
+     */
+    public function getOverview(Request $request)
+    {
+        $now   = Carbon::now();
+        $month = (int) $request->input('month', $now->month);
+        $year  = (int) $request->input('year',  $now->year);
+
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfDay();
+        $endOfMonth   = Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        $startOfYear  = Carbon::create($year, 1, 1)->startOfDay();
+        $endOfYear    = Carbon::create($year, 12, 31)->endOfDay();
+
+        // ── Outpatient counts ────────────────────────────────────────────────
+        $outpatientThisMonth = Treatment::whereBetween('visit_date', [$startOfMonth, $endOfMonth])->count();
+        $outpatientThisYear  = Treatment::whereBetween('visit_date', [$startOfYear, $endOfYear])->count();
+
+        // ── Active admissions ────────────────────────────────────────────────
+        $activeAdmissions = Admission::where('status', 'active')->count();
+
+        // ── All-time patient count ────────────────────────────────────────────
+        $totalPatients = Patient::count();
+
+        // ── Monthly trend (last 6 months ending at selected month) ───────────
+        $trend = [];
+        $pivotDate = Carbon::create($year, $month, 1);
+        for ($m = 5; $m >= 0; $m--) {
+            $ref   = $pivotDate->copy()->subMonths($m);
+            $start = $ref->copy()->startOfMonth();
+            $end   = $ref->copy()->endOfMonth();
+            $trend[] = [
+                'month' => $ref->format('M Y'),
+                'count' => Treatment::whereBetween('visit_date', [$start, $end])->count(),
+            ];
+        }
+
+        return response()->json([
+            'total_outpatient_this_month' => $outpatientThisMonth,
+            'total_outpatient_this_year'  => $outpatientThisYear,
+            'active_admissions'           => $activeAdmissions,
+            'total_patients'              => $totalPatients,
+            'monthly_trend'               => $trend,
+            'month'                       => $month,
+            'year'                        => $year,
+        ]);
+    }
+
     /**
      * Generate Data for MOH 717 - Monthly Service Workload Report
      *

@@ -235,7 +235,7 @@ const BillDetails = () => {
                   Add Procedure / Extra Item
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                  Select a billable procedure or service to add to this bill. The total will be recalculated immediately.
+                  Select a billable procedure or service to add to this bill.
                 </p>
 
                 {addItemSuccess && (

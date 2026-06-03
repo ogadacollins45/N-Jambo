@@ -35,64 +35,68 @@ const TreatmentPrint = () => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+            setError("");
+
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            // --- Step 1: Fetch patient (critical) ---
+            const patientUrl = `${API_BASE_URL}/patients/${id}`;
+            let patientData = null;
             try {
-                // We fetch patient details and all treatments/prescriptions/labs to filter client side
-                // easier than creating new backend endpoints for single treatment view with relations if not existing
-                // Ideally we would have GET /treatments/{id} with all relations
-
-                const token = localStorage.getItem('token');
-                const config = {
-                    headers: { Authorization: `Bearer ${token}` }
-                };
-
-                const [pRes, labRes, triagesRes] = await Promise.all([
-                    axios.get(`${API_BASE_URL}/patients/${id}`, config),
-                    axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`, config),
-                    axios.get(`${API_BASE_URL}/triages/patient/${id}`, config)
-                ]);
-
-                const patientData = pRes.data;
+                const pRes = await axios.get(patientUrl, config);
+                patientData = pRes.data;
                 setPatient(patientData);
-
-                // Find the specific treatment from eager loaded data
-                const treatments = patientData.treatments || [];
-                const specificTreatment = treatments.find(t => t.id === parseInt(treatmentId));
-
-                if (specificTreatment) {
-                    setTreatment(specificTreatment);
-
-                    // Get Prescriptions for this treatment
-                    setPrescriptions(specificTreatment.prescriptions || []);
-
-                    // Filter Lab Requests for this treatment
-                    setLabRequests(
-                        (labRes.data || []).filter(lr => lr.treatment_id === parseInt(treatmentId))
-                    );
-
-                    // Find Triage close to treatment time (optional logic, for now maybe just fetch all and let user see context? 
-                    // Or simpler: usually triage is done just before.
-                    // Let's try to find a triage created same day or within reason.
-                    // For now, let's just pick the latest one BEFORE the treatment if possible, or just don't show specific triage unless linked.
-                    // The current data model doesn't seem to explicitly link triage to treatment ID in the frontend code I saw, 
-                    // but PatientDetails fetches latest triage. 
-                    // Let's try to match by date or just leave it out if not strictly linked. 
-                    // Actually, let's look for a triage on the same visit_date.
-
-                    const visitDate = specificTreatment.visit_date.split('T')[0];
-                    const matchingTriage = (triagesRes.data || []).find(t => t.created_at.startsWith(visitDate));
-                    if (matchingTriage) {
-                        setTriage(matchingTriage);
-                    }
-                } else {
-                    setError("Treatment not found");
-                }
-
             } catch (err) {
-                console.error("Error fetching data:", err);
-                setError("Failed to load data");
-            } finally {
+                const status = err.response?.status;
+                const serverMsg = err.response?.data?.message || err.response?.data?.error || '';
+                const detail = `[${status || 'NETWORK_ERR'}] GET ${patientUrl} — ${serverMsg || err.message}`;
+                console.error('TreatmentPrint: patient fetch failed:', detail, err);
+                setError(`PATIENT FETCH FAILED\n${detail}\n\nServer: ${JSON.stringify(err.response?.data)}\nToken: ${token ? 'present' : 'MISSING'}\nAPI: ${API_BASE_URL}`);
                 setLoading(false);
+                return;
             }
+
+            // --- Step 2: Find the specific treatment from eager-loaded data ---
+            const treatments = patientData.treatments || [];
+            const specificTreatment = treatments.find(t => t.id === parseInt(treatmentId));
+
+            if (!specificTreatment) {
+                const msg = `Treatment #${treatmentId} not found in patient #${id}'s records.\nPatient has ${treatments.length} treatment(s): [${treatments.map(t => t.id).join(', ')}]`;
+                console.error('TreatmentPrint:', msg);
+                setError(msg);
+                setLoading(false);
+                return;
+            }
+
+            setTreatment(specificTreatment);
+            setPrescriptions(specificTreatment.prescriptions || []);
+
+            // --- Step 3: Fetch lab requests (non-critical) ---
+            const labUrl = `${API_BASE_URL}/lab/requests/patient/${id}`;
+            try {
+                const labRes = await axios.get(labUrl, config);
+                setLabRequests(
+                    (labRes.data || []).filter(lr => lr.treatment_id === parseInt(treatmentId))
+                );
+            } catch (err) {
+                const status = err.response?.status;
+                console.warn(`TreatmentPrint: lab fetch failed [${status}] ${labUrl} — ${err.response?.data?.message || err.message}`);
+                setLabRequests([]);
+            }
+
+            // --- Step 4: Fetch triages (non-critical) ---
+            const triageUrl = `${API_BASE_URL}/triages/patient/${id}`;
+            try {
+                const triagesRes = await axios.get(triageUrl, config);
+                const visitDate = specificTreatment.visit_date.split('T')[0];
+                const matchingTriage = (triagesRes.data || []).find(t => t.created_at.startsWith(visitDate));
+                if (matchingTriage) setTriage(matchingTriage);
+            } catch (err) {
+                console.warn(`TreatmentPrint: triage fetch failed — ${err.response?.status} ${err.message}`);
+            }
+
+            setLoading(false);
         };
 
         fetchData();
@@ -111,16 +115,47 @@ const TreatmentPrint = () => {
 
     if (error || !treatment || !patient) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center text-red-600">
-                    <AlertCircle className="w-10 h-10 mx-auto mb-2" />
-                    <p className="text-lg font-semibold">{error || "Record not found"}</p>
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-                    >
-                        Go Back
-                    </button>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+                <div className="max-w-2xl w-full">
+                    <div className="bg-white border border-red-300 rounded-xl shadow-md p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-600 flex-shrink-0" />
+                            <h2 className="text-lg font-bold text-red-700">
+                                {error ? 'Error Loading Record' : 'Record Not Found'}
+                            </h2>
+                        </div>
+
+                        {error ? (
+                            <div className="bg-gray-950 text-green-400 rounded-lg p-4 text-xs font-mono overflow-auto whitespace-pre-wrap leading-relaxed mb-4">
+                                {error}
+                            </div>
+                        ) : (
+                            <p className="text-gray-600 mb-4">The requested patient or treatment could not be found.</p>
+                        )}
+
+                        <div className="bg-gray-100 rounded-lg p-3 text-xs font-mono text-gray-600 space-y-1 mb-4">
+                            <div><span className="text-gray-400">Patient ID: </span>{id}</div>
+                            <div><span className="text-gray-400">Treatment ID: </span>{treatmentId}</div>
+                            <div><span className="text-gray-400">API: </span>{API_BASE_URL}</div>
+                            <div><span className="text-gray-400">Token: </span>{localStorage.getItem('token') ? 'present' : 'MISSING — not logged in!'}</div>
+                            <div><span className="text-gray-400">Time: </span>{new Date().toISOString()}</div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                            >
+                                Retry
+                            </button>
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                            >
+                                Go Back
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

@@ -13,6 +13,7 @@ const PatientPrintLog = () => {
     const [prescriptions, setPrescriptions] = useState([]);
     const [labRequests, setLabRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // { message, status, url }
 
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
@@ -22,53 +23,66 @@ const PatientPrintLog = () => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            // --- Step 1: Fetch patient (critical) ---
+            let patientData = null;
+            const patientUrl = `${API_BASE_URL}/patients/${id}`;
             try {
-                const [pRes, labRes] = await Promise.all([
-                    axios.get(`${API_BASE_URL}/patients/${id}`),
-                    axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`),
-                ]);
-
-                const patientData = pRes.data;
-                setPatient(patientData);
-                
-                const patientTreatments = patientData.treatments || [];
-                setTreatments(
-                    patientTreatments.sort(
-                        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-                    )
-                );
-                
-                const allPrescriptions = [];
-                patientTreatments.forEach(treatment => {
-                    if (treatment.prescriptions && treatment.prescriptions.length > 0) {
-                        allPrescriptions.push(...treatment.prescriptions);
-                    }
+                const pRes = await axios.get(patientUrl, config);
+                patientData = pRes.data;
+            } catch (err) {
+                const status = err.response?.status;
+                const serverMsg = err.response?.data?.message || err.response?.data?.error || '';
+                const detail = `[${status || 'NETWORK'}] GET ${patientUrl} — ${serverMsg || err.message}`;
+                console.error('PatientPrintLog: patient fetch failed:', detail, err);
+                setError({
+                    message: 'Failed to load patient data.',
+                    detail,
+                    status,
+                    url: patientUrl,
+                    raw: JSON.stringify(err.response?.data || err.message),
                 });
-                
-                if (allPrescriptions.length === 0) {
-                    try {
-                        const presRes = await axios.get(`${API_BASE_URL}/prescriptions`);
-                        setPrescriptions(
-                            (presRes.data || [])
-                                .filter((p) => p.patient_id === parseInt(id))
-                                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                        );
-                    } catch (err) {
-                        console.error("Error fetching fallback prescriptions:", err);
-                        setPrescriptions([]);
-                    }
-                } else {
-                    setPrescriptions(
-                        allPrescriptions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                    );
-                }
+                setLoading(false);
+                return;
+            }
 
+            setPatient(patientData);
+
+            const patientTreatments = patientData.treatments || [];
+            setTreatments(
+                [...patientTreatments].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                )
+            );
+
+            const allPrescriptions = [];
+            patientTreatments.forEach(treatment => {
+                if (treatment.prescriptions && treatment.prescriptions.length > 0) {
+                    allPrescriptions.push(...treatment.prescriptions);
+                }
+            });
+            setPrescriptions(
+                allPrescriptions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            );
+
+            // --- Step 2: Fetch lab requests (non-critical, isolated) ---
+            const labUrl = `${API_BASE_URL}/lab/requests/patient/${id}`;
+            try {
+                const labRes = await axios.get(labUrl, config);
                 setLabRequests(labRes.data || []);
             } catch (err) {
-                console.error("Error fetching patient data:", err);
-            } finally {
-                setLoading(false);
+                const status = err.response?.status;
+                const serverMsg = err.response?.data?.message || '';
+                console.warn(`PatientPrintLog: lab fetch failed [${status}] ${labUrl} — ${serverMsg || err.message}`);
+                // Non-critical — page still renders without lab data
+                setLabRequests([]);
             }
+
+            setLoading(false);
         };
 
         fetchData();
@@ -89,6 +103,43 @@ const PatientPrintLog = () => {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <p className="text-lg text-gray-600">Loading patient data...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-red-50 p-6">
+                <div className="max-w-xl w-full bg-white border border-red-300 rounded-xl shadow-md p-6">
+                    <h2 className="text-lg font-bold text-red-700 mb-2">⚠ Failed to Load Patient Log</h2>
+                    <p className="text-gray-700 mb-4">{error.message}</p>
+
+                    <div className="bg-gray-900 text-green-400 rounded-lg p-4 text-xs font-mono overflow-auto space-y-1">
+                        {error.status && <div><span className="text-gray-500">HTTP Status: </span>{error.status}</div>}
+                        {error.url && <div><span className="text-gray-500">URL: </span>{error.url}</div>}
+                        {error.detail && <div><span className="text-gray-500">Detail: </span>{error.detail}</div>}
+                        {error.raw && <div><span className="text-gray-500">Server Response: </span>{error.raw}</div>}
+                        <div><span className="text-gray-500">Patient ID: </span>{id}</div>
+                        <div><span className="text-gray-500">API Base: </span>{API_BASE_URL}</div>
+                        <div><span className="text-gray-500">Token present: </span>{localStorage.getItem('token') ? 'YES' : 'NO (not logged in!)'}</div>
+                        <div><span className="text-gray-500">Time: </span>{new Date().toISOString()}</div>
+                    </div>
+
+                    <div className="mt-4 flex gap-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                        >
+                            Retry
+                        </button>
+                        <button
+                            onClick={() => navigate(`/patients/${id}`)}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm"
+                        >
+                            Back to Patient
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }

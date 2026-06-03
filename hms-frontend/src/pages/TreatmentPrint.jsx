@@ -45,27 +45,24 @@ const TreatmentPrint = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 };
 
-                const [pRes, tRes, presRes, labRes, triagesRes] = await Promise.all([
+                const [pRes, labRes, triagesRes] = await Promise.all([
                     axios.get(`${API_BASE_URL}/patients/${id}`, config),
-                    axios.get(`${API_BASE_URL}/patients/${id}/treatments`, config),
-                    axios.get(`${API_BASE_URL}/prescriptions`, config),
                     axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`, config),
                     axios.get(`${API_BASE_URL}/triages/patient/${id}`, config)
                 ]);
 
-                setPatient(pRes.data);
+                const patientData = pRes.data;
+                setPatient(patientData);
 
-                // Find the specific treatment
-                const treatments = tRes.data || [];
+                // Find the specific treatment from eager loaded data
+                const treatments = patientData.treatments || [];
                 const specificTreatment = treatments.find(t => t.id === parseInt(treatmentId));
 
                 if (specificTreatment) {
                     setTreatment(specificTreatment);
 
-                    // Filter Prescriptions for this treatment
-                    setPrescriptions(
-                        (presRes.data || []).filter(p => p.treatment_id === parseInt(treatmentId))
-                    );
+                    // Get Prescriptions for this treatment
+                    setPrescriptions(specificTreatment.prescriptions || []);
 
                     // Filter Lab Requests for this treatment
                     setLabRequests(

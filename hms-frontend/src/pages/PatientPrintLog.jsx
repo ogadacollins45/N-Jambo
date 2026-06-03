@@ -23,24 +23,46 @@ const PatientPrintLog = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [pRes, tRes, presRes, labRes] = await Promise.all([
+                const [pRes, labRes] = await Promise.all([
                     axios.get(`${API_BASE_URL}/patients/${id}`),
-                    axios.get(`${API_BASE_URL}/patients/${id}/treatments`),
-                    axios.get(`${API_BASE_URL}/prescriptions`),
                     axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`),
                 ]);
 
-                setPatient(pRes.data);
+                const patientData = pRes.data;
+                setPatient(patientData);
+                
+                const patientTreatments = patientData.treatments || [];
                 setTreatments(
-                    tRes.data.sort(
+                    patientTreatments.sort(
                         (a, b) => new Date(b.created_at) - new Date(a.created_at)
                     )
                 );
-                setPrescriptions(
-                    (presRes.data || [])
-                        .filter((p) => p.patient_id === parseInt(id))
-                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                );
+                
+                const allPrescriptions = [];
+                patientTreatments.forEach(treatment => {
+                    if (treatment.prescriptions && treatment.prescriptions.length > 0) {
+                        allPrescriptions.push(...treatment.prescriptions);
+                    }
+                });
+                
+                if (allPrescriptions.length === 0) {
+                    try {
+                        const presRes = await axios.get(`${API_BASE_URL}/prescriptions`);
+                        setPrescriptions(
+                            (presRes.data || [])
+                                .filter((p) => p.patient_id === parseInt(id))
+                                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        );
+                    } catch (err) {
+                        console.error("Error fetching fallback prescriptions:", err);
+                        setPrescriptions([]);
+                    }
+                } else {
+                    setPrescriptions(
+                        allPrescriptions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    );
+                }
+
                 setLabRequests(labRes.data || []);
             } catch (err) {
                 console.error("Error fetching patient data:", err);

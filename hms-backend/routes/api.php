@@ -18,7 +18,8 @@ use App\Http\Controllers\{
     DatabaseManagementController,
     MainStoreDrugController,
     DrugMigrationController,
-    ReportController
+    ReportController,
+    ServiceItemController
 };
 
 // Health check endpoint (no authentication required)
@@ -88,6 +89,9 @@ Route::get('/billing/by-treatment/{treatmentId}', [BillingController::class, 'ge
 Route::get('/billing/patients', [BillingHelperController::class, 'getBillablePatients']);
 Route::get('/billing/pending', [BillingController::class, 'pending']);
 Route::get('/billing/cleared', [BillingController::class, 'cleared']);
+
+/** Service Items - public read for active items (billing dropdown) */
+Route::get('/service-items', [ServiceItemController::class, 'index']);
 
 
 use App\Http\Controllers\DashboardController;
@@ -328,4 +332,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admissions/{id}/discharge', [\App\Http\Controllers\AdmissionController::class, 'discharge']);
     Route::get('/admissions/{id}/bill', [\App\Http\Controllers\AdmissionController::class, 'getBill']);
     Route::get('/patients/{patientId}/active-admission', [\App\Http\Controllers\AdmissionController::class, 'getActiveForPatient']);
+
+    /** Service Items – Admin-only management (CRUD) */
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/service-items', [ServiceItemController::class, 'store']);
+        Route::get('/service-items/{id}', [ServiceItemController::class, 'show']);
+        Route::put('/service-items/{id}', [ServiceItemController::class, 'update']);
+        Route::delete('/service-items/{id}', [ServiceItemController::class, 'destroy']);
+    });
+
+    /** Add extra item to a bill (admin / cashier / reception) */
+    Route::post('/bills/{id}/add-item', [BillingController::class, 'addExtraItem']);
 });

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Save, Settings as SettingsIcon, TestTubes } from 'lucide-react';
+import { Save, Settings as SettingsIcon, TestTubes, Package } from 'lucide-react';
 import DashboardLayout from '../layout/DashboardLayout';
 import './SystemSettings.css';
 
 const SystemSettings = () => {
+    const navigate = useNavigate();
     const [consultationFee, setConsultationFee] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -103,10 +105,30 @@ const SystemSettings = () => {
                         </p>
                         <div className="settings-actions">
                             <button
-                                onClick={() => window.location.href = '/admin/lab-tests'}
+                                onClick={() => navigate('/admin/lab-tests')}
                                 className="btn btn-secondary"
                             >
                                 Manage Lab Tests
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Procedures & Extra Items Card */}
+                    <div className="system-settings-card">
+                        <h2>
+                            <Package size={20} style={{ display: 'inline', marginRight: 8, verticalAlign: 'middle' }} />
+                            Procedures &amp; Extra Items
+                        </h2>
+                        <p className="settings-description">
+                            Define the list of billable procedures, services, and extra items (e.g., Wound Dressing, X-Ray, IV Fluids). Staff can select these items when manually adding charges to any patient bill.
+                        </p>
+                        <div className="settings-actions">
+                            <button
+                                onClick={() => navigate('/admin/service-items')}
+                                className="btn btn-secondary"
+                            >
+                                <Package size={16} style={{ display: 'inline', marginRight: 6 }} />
+                                Manage Procedures &amp; Extra Items
                             </button>
                         </div>
                     </div>

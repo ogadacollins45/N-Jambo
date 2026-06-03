@@ -8,6 +8,7 @@ use App\Models\Bill;
 use App\Models\BillItem;
 use App\Models\Payment;
 use App\Models\Patient;
+use App\Models\ServiceItem;
 use App\Models\Treatment;
 
 class BillingController extends Controller
@@ -237,6 +238,65 @@ class BillingController extends Controller
             \Log::error('Payment failed: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to record payment',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually add an extra service item to an existing bill.
+     * Works for both outpatient and inpatient bills.
+     * After adding the item the bill totals are refreshed so the new
+     * amount is immediately reflected.
+     */
+    public function addExtraItem(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'service_item_id' => 'required|exists:service_items,id',
+            'quantity'        => 'required|integer|min:1',
+            'notes'           => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $result = DB::transaction(function () use ($validated, $id) {
+                $bill = Bill::lockForUpdate()->findOrFail($id);
+
+                $serviceItem = ServiceItem::findOrFail($validated['service_item_id']);
+
+                $qty      = (int) $validated['quantity'];
+                $price    = (float) $serviceItem->price;
+                $subtotal = round($price * $qty, 2);
+
+                $description = $serviceItem->name;
+                if (!empty($validated['notes'])) {
+                    $description .= ' – ' . $validated['notes'];
+                }
+
+                BillItem::create([
+                    'bill_id'     => $bill->id,
+                    'category'    => 'service',
+                    'description' => $description,
+                    'quantity'    => $qty,
+                    'amount'      => $price,
+                    'subtotal'    => $subtotal,
+                ]);
+
+                // Refresh totals so the bill sum includes the new item
+                $bill->refreshTotals();
+                $bill->refreshStatus();
+
+                return $bill->load(['items', 'payments', 'patient', 'doctor', 'treatment']);
+            });
+
+            return response()->json([
+                'message' => 'Item added to bill successfully',
+                'bill'    => $result,
+            ]);
+
+        } catch (\Throwable $e) {
+            \Log::error('addExtraItem failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to add item to bill',
                 'error'   => $e->getMessage(),
             ], 500);
         }

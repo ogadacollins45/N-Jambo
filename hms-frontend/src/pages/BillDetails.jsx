@@ -19,6 +19,8 @@ import {
   Calendar,
   Info,
   Eye,
+  Plus,
+  ShoppingCart,
 } from "lucide-react";
 
 const BillDetails = () => {
@@ -36,6 +38,17 @@ const BillDetails = () => {
     transaction_ref: "",
     notes: "",
   });
+
+  // --- Add Extra Item state ---
+  const [serviceItems, setServiceItems] = useState([]);
+  const [addItemForm, setAddItemForm] = useState({
+    service_item_id: "",
+    quantity: 1,
+    notes: "",
+  });
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [addItemError, setAddItemError] = useState("");
+  const [addItemSuccess, setAddItemSuccess] = useState("");
 
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -61,8 +74,19 @@ const BillDetails = () => {
     }
   };
 
+  // Fetch active service items for the add-item dropdown
+  const fetchServiceItems = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/service-items?active=true`);
+      setServiceItems(res.data);
+    } catch (err) {
+      console.error("Failed to fetch service items:", err);
+    }
+  };
+
   useEffect(() => {
     fetchBill();
+    fetchServiceItems();
   }, [id]);
 
   const flashMessage = (setter, message) => {
@@ -90,6 +114,46 @@ const BillDetails = () => {
       flashMessage(setError, "Failed to record payment. Please try again.");
     } finally {
       setIsPaying(false);
+    }
+  };
+
+  // Handle adding an extra service item to the bill
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    if (!addItemForm.service_item_id) {
+      setAddItemError("Please select a service item.");
+      return;
+    }
+    if (!addItemForm.quantity || addItemForm.quantity < 1) {
+      setAddItemError("Quantity must be at least 1.");
+      return;
+    }
+    setIsAddingItem(true);
+    setAddItemError("");
+    setAddItemSuccess("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${API_BASE_URL}/bills/${bill.id}/add-item`,
+        {
+          service_item_id: parseInt(addItemForm.service_item_id),
+          quantity: parseInt(addItemForm.quantity),
+          notes: addItemForm.notes || undefined,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Refresh the bill so totals update
+      await fetchBill();
+      setAddItemSuccess("Item added successfully!");
+      setAddItemForm({ service_item_id: "", quantity: 1, notes: "" });
+      setTimeout(() => setAddItemSuccess(""), 3500);
+    } catch (err) {
+      console.error("Add item error:", err);
+      setAddItemError(
+        err.response?.data?.message || "Failed to add item. Please try again."
+      );
+    } finally {
+      setIsAddingItem(false);
     }
   };
 
@@ -162,6 +226,124 @@ const BillDetails = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* ── Add Extra Item Card ── */}
+              <div className="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-indigo-500">
+                <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-indigo-500" />
+                  Add Procedure / Extra Item
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Select a billable procedure or service to add to this bill. The total will be recalculated immediately.
+                </p>
+
+                {addItemSuccess && (
+                  <div className="mb-3 flex items-center gap-2 bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg text-sm">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    {addItemSuccess}
+                  </div>
+                )}
+                {addItemError && (
+                  <div className="mb-3 flex items-center gap-2 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {addItemError}
+                  </div>
+                )}
+
+                {serviceItems.length === 0 ? (
+                  <div className="text-sm text-gray-400 italic bg-gray-50 rounded-lg px-4 py-3">
+                    No billable procedures configured. An admin can add them in{" "}
+                    <a href="/system-settings" className="text-indigo-600 hover:underline">System Settings</a>.
+                  </div>
+                ) : (
+                  <form onSubmit={handleAddItem} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Item dropdown */}
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Select Item *</label>
+                        <select
+                          id="add-item-select"
+                          value={addItemForm.service_item_id}
+                          onChange={(e) =>
+                            setAddItemForm((prev) => ({ ...prev, service_item_id: e.target.value }))
+                          }
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                          required
+                        >
+                          <option value="">-- Choose a procedure / item --</option>
+                          {serviceItems.map((si) => (
+                            <option key={si.id} value={si.id}>
+                              {si.name} — KES {Number(si.price).toFixed(2)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Quantity */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Quantity *</label>
+                        <input
+                          id="add-item-qty"
+                          type="number"
+                          min="1"
+                          value={addItemForm.quantity}
+                          onChange={(e) =>
+                            setAddItemForm((prev) => ({ ...prev, quantity: e.target.value }))
+                          }
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 text-sm"
+                          required
+                        />
+                      </div>
+
+                      {/* Notes */}
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Notes / Specification (optional)
+                        </label>
+                        <input
+                          id="add-item-notes"
+                          type="text"
+                          value={addItemForm.notes}
+                          onChange={(e) =>
+                            setAddItemForm((prev) => ({ ...prev, notes: e.target.value }))
+                          }
+                          placeholder="e.g. Right arm, emergency, etc."
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Preview subtotal */}
+                    {addItemForm.service_item_id && addItemForm.quantity >= 1 && (() => {
+                      const selected = serviceItems.find(
+                        (si) => String(si.id) === String(addItemForm.service_item_id)
+                      );
+                      if (!selected) return null;
+                      const subtotal = (Number(selected.price) * Number(addItemForm.quantity)).toFixed(2);
+                      return (
+                        <div className="text-sm text-gray-600 bg-indigo-50 rounded-lg px-4 py-2 flex justify-between">
+                          <span>Preview: {selected.name} × {addItemForm.quantity}</span>
+                          <span className="font-bold text-indigo-700">KES {subtotal}</span>
+                        </div>
+                      );
+                    })()}
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isAddingItem}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition shadow-md text-sm"
+                      >
+                        {isAddingItem ? (
+                          <><Loader className="animate-spin w-4 h-4" /> Adding...</>
+                        ) : (
+                          <><Plus className="w-4 h-4" /> Add to Bill</>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
 
               {/* Patient's Past Bills Card */}

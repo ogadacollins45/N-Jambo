@@ -20,7 +20,8 @@ use App\Http\Controllers\{
     DrugMigrationController,
     ReportController,
     ServiceItemController,
-    SystemDiagnosisController
+    SystemDiagnosisController,
+    AdmissionController
 };
 
 // Health check endpoint (no authentication required)
@@ -325,7 +326,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/triages/{id}', [TriageController::class, 'update']);
 
     // Admissions (Inpatient)
-    Route::get('/admissions', [\App\Http\Controllers\AdmissionController::class, 'index']);
     Route::get('/admissions', [AdmissionController::class, 'index']);
     Route::post('/admissions', [AdmissionController::class, 'store']);
     Route::get('/admissions/{id}', [AdmissionController::class, 'show']);

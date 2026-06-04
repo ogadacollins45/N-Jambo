@@ -8,6 +8,8 @@ const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search for a diagnosis..." }) => {
   const [options, setOptions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [baseValue, setBaseValue] = useState("");
+  const [clarification, setClarification] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef(null);
@@ -20,7 +22,7 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
         const res = await axios.get(`${API_BASE_URL}/system-diagnoses`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         const customDiagnoses = res.data.map(d => ({
           label: d.name,
           value: d.name,
@@ -29,7 +31,13 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
 
         // Combine custom and predefined
         const allDiagnoses = [...customDiagnoses, ...diseasesList];
-        
+
+        // Ensure "All Other Diseases" is in the list
+        const hasOther = allDiagnoses.some(d => d.value === "All Other Diseases");
+        if (!hasOther) {
+          allDiagnoses.push({ label: "All Other Diseases", value: "All Other Diseases" });
+        }
+
         // Remove duplicates by value
         const unique = [];
         const seen = new Set();
@@ -39,10 +47,10 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
             unique.push(item);
           }
         }
-        
+
         // Sort alphabetically
         unique.sort((a, b) => a.label.localeCompare(b.label));
-        
+
         setOptions(unique);
       } catch (err) {
         console.error("Failed to load custom diagnoses", err);
@@ -59,7 +67,23 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
   // Set initial search term if value is provided
   useEffect(() => {
     if (value && !isOpen) {
-      setSearchTerm(value);
+      if (value.startsWith("All Other Diseases - ")) {
+        setBaseValue("All Other Diseases");
+        setSearchTerm("All Other Diseases");
+        setClarification(value.substring("All Other Diseases - ".length));
+      } else if (value === "All Other Diseases") {
+        setBaseValue("All Other Diseases");
+        setSearchTerm("All Other Diseases");
+        setClarification("");
+      } else {
+        setBaseValue(value);
+        setSearchTerm(value);
+        setClarification("");
+      }
+    } else if (!value && !isOpen) {
+      setBaseValue("");
+      setSearchTerm("");
+      setClarification("");
     }
   }, [value, isOpen]);
 
@@ -69,8 +93,8 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
         // Reset search term to selected value when closing without selection
-        if (value) {
-          setSearchTerm(value);
+        if (baseValue) {
+          setSearchTerm(baseValue);
         } else {
           setSearchTerm("");
         }
@@ -81,11 +105,29 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [value]);
+  }, [baseValue]);
 
-  const filteredOptions = options.filter(option => 
+  const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSelection = (selectedValue) => {
+    setSearchTerm(selectedValue);
+    setBaseValue(selectedValue);
+    setIsOpen(false);
+
+    if (selectedValue === "All Other Diseases") {
+      onChange(`All Other Diseases${clarification ? ' - ' + clarification : ''}`);
+    } else {
+      setClarification("");
+      onChange(selectedValue);
+    }
+  };
+
+  const handleClarificationChange = (text) => {
+    setClarification(text);
+    onChange(`All Other Diseases - ${text}`);
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -103,6 +145,8 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
             // But we can let them clear it.
             if (e.target.value === "") {
               onChange("");
+              setBaseValue("");
+              setClarification("");
             }
           }}
           onFocus={() => setIsOpen(true)}
@@ -120,11 +164,7 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
               <div
                 key={idx}
                 className="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm text-gray-700"
-                onClick={() => {
-                  setSearchTerm(option.label);
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleSelection(option.value)}
               >
                 {option.label}
                 {option.isCustom && <span className="ml-2 text-xs text-indigo-500 font-semibold">(Custom)</span>}
@@ -135,6 +175,23 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
               No matching diagnosis found.
             </div>
           )}
+        </div>
+      )}
+
+      {baseValue === "All Other Diseases" && (
+        <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+          <label className="block text-xs font-semibold text-indigo-700 mb-1">
+
+            Enter impression manually...
+          </label>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+            placeholder="Type custom impression here..."
+            value={clarification}
+            onChange={(e) => handleClarificationChange(e.target.value)}
+            required
+          />
         </div>
       )}
     </div>

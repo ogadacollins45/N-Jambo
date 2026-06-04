@@ -1258,17 +1258,13 @@ const PatientDetails = () => {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Impression <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                              name="impression"
-                              placeholder="Clinical impression and assessment"
-                              rows="2"
-                              value={newTreatment.impression}
-                              onChange={handleChange}
-                              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              required
-                            />
+                                Impression <span className="text-red-500">*</span>
+                              </label>
+                              <SearchableDiagnosisDropdown
+                                value={newTreatment.impression}
+                                onChange={(val) => setNewTreatment(prev => ({ ...prev, impression: val }))}
+                                placeholder="Search or select impression..."
+                              />
                           </div>
                         </div>
 
@@ -2944,3 +2940,4 @@ const VitalSign = ({ label, value, className }) => (
 );
 
 export default PatientDetails;
+

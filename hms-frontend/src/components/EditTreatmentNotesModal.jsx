@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { X, FileText, Loader, AlertCircle, CheckCircle } from "lucide-react";
+import SearchableDiagnosisDropdown from "./SearchableDiagnosisDropdown";
 
 const EditTreatmentNotesModal = ({ treatment, onClose, onSaved }) => {
   const [formData, setFormData] = useState({
@@ -192,17 +193,13 @@ const EditTreatmentNotesModal = ({ treatment, onClose, onSaved }) => {
 
             {/* Impression */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Impression <span className="text-red-500">*</span>
               </label>
-              <textarea
-                name="impression"
+              <SearchableDiagnosisDropdown
                 value={formData.impression}
-                onChange={handleChange}
+                onChange={(val) => setFormData(prev => ({ ...prev, impression: val }))}
                 placeholder="Clinical impression and assessment"
-                required
-                rows="3"
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               />
             </div>
 

@@ -19,7 +19,8 @@ use App\Http\Controllers\{
     MainStoreDrugController,
     DrugMigrationController,
     ReportController,
-    ServiceItemController
+    ServiceItemController,
+    SystemDiagnosisController
 };
 
 // Health check endpoint (no authentication required)
@@ -325,13 +326,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admissions (Inpatient)
     Route::get('/admissions', [\App\Http\Controllers\AdmissionController::class, 'index']);
-    Route::post('/admissions', [\App\Http\Controllers\AdmissionController::class, 'store']);
-    Route::get('/admissions/{id}', [\App\Http\Controllers\AdmissionController::class, 'show']);
-    Route::post('/admissions/{id}/entries', [\App\Http\Controllers\AdmissionController::class, 'addEntry']);
-    Route::put('/admissions/{id}/entries/{entryId}', [\App\Http\Controllers\AdmissionController::class, 'updateEntry']);
-    Route::post('/admissions/{id}/discharge', [\App\Http\Controllers\AdmissionController::class, 'discharge']);
-    Route::get('/admissions/{id}/bill', [\App\Http\Controllers\AdmissionController::class, 'getBill']);
-    Route::get('/patients/{patientId}/active-admission', [\App\Http\Controllers\AdmissionController::class, 'getActiveForPatient']);
+    Route::get('/admissions', [AdmissionController::class, 'index']);
+    Route::post('/admissions', [AdmissionController::class, 'store']);
+    Route::get('/admissions/{id}', [AdmissionController::class, 'show']);
+    Route::post('/admissions/{id}/entries', [AdmissionController::class, 'addEntry']);
+    Route::put('/admissions/{id}/entries/{entryId}', [AdmissionController::class, 'updateEntry']);
+    Route::post('/admissions/{id}/discharge', [AdmissionController::class, 'discharge']);
+    Route::get('/admissions/{id}/bill', [AdmissionController::class, 'getBill']);
+    Route::get('/patients/{patientId}/active-admission', [AdmissionController::class, 'getActiveForPatient']);
 
     /** Service Items – Admin-only management (CRUD) */
     Route::middleware('role:admin')->group(function () {
@@ -343,4 +345,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /** Add extra item to a bill (admin / cashier / reception) */
     Route::post('/bills/{id}/add-item', [BillingController::class, 'addExtraItem']);
+
+    /** System Diagnoses */
+    Route::get('/system-diagnoses', [SystemDiagnosisController::class, 'index']);
+    Route::post('/system-diagnoses', [SystemDiagnosisController::class, 'store']);
+    Route::delete('/system-diagnoses/{id}', [SystemDiagnosisController::class, 'destroy']);
 });

@@ -51,6 +51,7 @@ import Settings from "./pages/Settings.jsx";
 import SystemSettings from "./pages/SystemSettings.jsx";
 import LabTestManagement from "./pages/LabTestManagement.jsx";
 import ServiceItems from "./pages/ServiceItems.jsx";
+import DiagnosesManagement from "./pages/DiagnosesManagement.jsx";
 
 import Appointments from "./pages/Appointments.jsx";
 import Queue from "./pages/Queue.jsx";
@@ -159,6 +160,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="/system-settings" element={<SystemSettings />} />
               <Route path="/admin/lab-tests" element={<LabTestManagement />} />
               <Route path="/admin/service-items" element={<ServiceItems />} />
+              <Route path="/admin/diagnoses" element={<DiagnosesManagement />} />
 
               {/* ⭐ UPDATES PAGE */}
               <Route path="/updates" element={<Updates />} />

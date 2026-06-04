@@ -1,0 +1,278 @@
+[
+  {
+    "label": "Diarrhoea with no dehydration",
+    "value": "Diarrhoea with no dehydration"
+  },
+  {
+    "label": "Diarrhoea with some dehydration",
+    "value": "Diarrhoea with some dehydration"
+  },
+  {
+    "label": "Diarrhoea with severe dehydration",
+    "value": "Diarrhoea with severe dehydration"
+  },
+  {
+    "label": "Cholera",
+    "value": "Cholera"
+  },
+  {
+    "label": "Dysentery (Bloody diarrhoea)",
+    "value": "Dysentery (Bloody diarrhoea)"
+  },
+  {
+    "label": "Gastroenterirtis",
+    "value": "Gastroenterirtis"
+  },
+  {
+    "label": "Pneumonia",
+    "value": "Pneumonia"
+  },
+  {
+    "label": "Severe pneumonia",
+    "value": "Severe pneumonia"
+  },
+  {
+    "label": "Upper Respiratory Tract Infections",
+    "value": "Upper Respiratory Tract Infections"
+  },
+  {
+    "label": "Lower Respiratory Tract Infections",
+    "value": "Lower Respiratory Tract Infections"
+  },
+  {
+    "label": "Asthma",
+    "value": "Asthma"
+  },
+  {
+    "label": "Presumed Tuberculosis",
+    "value": "Presumed Tuberculosis"
+  },
+  {
+    "label": "Suspected Malaria",
+    "value": "Suspected Malaria"
+  },
+  {
+    "label": "Tested for Malaria",
+    "value": "Tested for Malaria"
+  },
+  {
+    "label": "Confirmed malaria",
+    "value": "Confirmed malaria"
+  },
+  {
+    "label": "Ear infection",
+    "value": "Ear infection"
+  },
+  {
+    "label": "Malnutrition",
+    "value": "Malnutrition"
+  },
+  {
+    "label": "Anaemia",
+    "value": "Anaemia"
+  },
+  {
+    "label": "Meningococcal Meningitis",
+    "value": "Meningococcal Meningitis"
+  },
+  {
+    "label": "Other Meningitis",
+    "value": "Other Meningitis"
+  },
+  {
+    "label": "Neonatal Sepsis",
+    "value": "Neonatal Sepsis"
+  },
+  {
+    "label": "Neonatal Tetanus",
+    "value": "Neonatal Tetanus"
+  },
+  {
+    "label": "Poliomyelitis (AFP)",
+    "value": "Poliomyelitis (AFP)"
+  },
+  {
+    "label": "Chicken Pox",
+    "value": "Chicken Pox"
+  },
+  {
+    "label": "Measles",
+    "value": "Measles"
+  },
+  {
+    "label": "Hepatitis",
+    "value": "Hepatitis"
+  },
+  {
+    "label": "Amoebiasis",
+    "value": "Amoebiasis"
+  },
+  {
+    "label": "Mumps",
+    "value": "Mumps"
+  },
+  {
+    "label": "Typhoid fever",
+    "value": "Typhoid fever"
+  },
+  {
+    "label": "Bilharzia (Schistosomiasis)",
+    "value": "Bilharzia (Schistosomiasis)"
+  },
+  {
+    "label": "Intestinal worms",
+    "value": "Intestinal worms"
+  },
+  {
+    "label": "Eye Infections",
+    "value": "Eye Infections"
+  },
+  {
+    "label": "Tonsilitis",
+    "value": "Tonsilitis"
+  },
+  {
+    "label": "Urinary Tract Infections",
+    "value": "Urinary Tract Infections"
+  },
+  {
+    "label": "Mental Disorders",
+    "value": "Mental Disorders"
+  },
+  {
+    "label": "Dental Disorders",
+    "value": "Dental Disorders"
+  },
+  {
+    "label": "Jiggers Infestation",
+    "value": "Jiggers Infestation"
+  },
+  {
+    "label": "Diseases of the skin",
+    "value": "Diseases of the skin"
+  },
+  {
+    "label": "Down's syndrome",
+    "value": "Down's syndrome"
+  },
+  {
+    "label": "Poisoning",
+    "value": "Poisoning"
+  },
+  {
+    "label": "Road Traffic Injuries",
+    "value": "Road Traffic Injuries"
+  },
+  {
+    "label": "Deaths due to Road Traffic Injuries",
+    "value": "Deaths due to Road Traffic Injuries"
+  },
+  {
+    "label": "Violence related injuries",
+    "value": "Violence related injuries"
+  },
+  {
+    "label": "Other injuries",
+    "value": "Other injuries"
+  },
+  {
+    "label": "Sexual Violence",
+    "value": "Sexual Violence"
+  },
+  {
+    "label": "Burns",
+    "value": "Burns"
+  },
+  {
+    "label": "Snake Bites",
+    "value": "Snake Bites"
+  },
+  {
+    "label": "Dog Bites",
+    "value": "Dog Bites"
+  },
+  {
+    "label": "Other Bites",
+    "value": "Other Bites"
+  },
+  {
+    "label": "Diabetes",
+    "value": "Diabetes"
+  },
+  {
+    "label": "Epilepsy",
+    "value": "Epilepsy"
+  },
+  {
+    "label": "Other Convulsive Disorders",
+    "value": "Other Convulsive Disorders"
+  },
+  {
+    "label": "Rheumatic Fever",
+    "value": "Rheumatic Fever"
+  },
+  {
+    "label": "Brucellosis",
+    "value": "Brucellosis"
+  },
+  {
+    "label": "Rickets",
+    "value": "Rickets"
+  },
+  {
+    "label": "Cerebral Palsy",
+    "value": "Cerebral Palsy"
+  },
+  {
+    "label": "Autism",
+    "value": "Autism"
+  },
+  {
+    "label": "Tryponosomiasis",
+    "value": "Tryponosomiasis"
+  },
+  {
+    "label": "Yellow Fever",
+    "value": "Yellow Fever"
+  },
+  {
+    "label": "Viral Haemorrhagic Fever",
+    "value": "Viral Haemorrhagic Fever"
+  },
+  {
+    "label": "Rift valley fever",
+    "value": "Rift valley fever"
+  },
+  {
+    "label": "Chikungunya",
+    "value": "Chikungunya"
+  },
+  {
+    "label": "Dengue fever",
+    "value": "Dengue fever"
+  },
+  {
+    "label": "Leishmaniasis(Kalaazar)",
+    "value": "Leishmaniasis(Kalaazar)"
+  },
+  {
+    "label": "Cutaneous leishmaniasis",
+    "value": "Cutaneous leishmaniasis"
+  },
+  {
+    "label": "Suspected anthrax",
+    "value": "Suspected anthrax"
+  },
+  {
+    "label": "Suspected Childhood Cancers",
+    "value": "Suspected Childhood Cancers"
+  },
+  {
+    "label": "Hypoxaemia (Spo2<90%)",
+    "value": "Hypoxaemia (Spo2<90%)"
+  },
+  {
+    "label": "All Other Diseases",
+    "value": "All Other Diseases"
+  }
+]

@@ -4,6 +4,7 @@ import axios from "axios";
 import DashboardLayout from "../layout/DashboardLayout";
 import AddPrescriptionModal from "../components/AddPrescriptionModal";
 import AddDiagnosisModal from "../components/AddDiagnosisModal";
+import SearchableDiagnosisDropdown from "../components/SearchableDiagnosisDropdown";
 import EditTreatmentNotesModal from "../components/EditTreatmentNotesModal";
 import TriageForm from "../components/TriageForm";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
@@ -2813,6 +2814,7 @@ const PatientDetails = () => {
                 <select
                   value={admissionForm.doctor_id}
                   onChange={(e) => setAdmissionForm(prev => ({ ...prev, doctor_id: e.target.value }))}
+
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm"
                 >
                   <option value="">Select doctor...</option>
@@ -2825,12 +2827,10 @@ const PatientDetails = () => {
               {/* Reason */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason / Provisional Diagnosis</label>
-                <textarea
-                  rows={3}
-                  placeholder="Chief complaint or provisional diagnosis..."
+                <SearchableDiagnosisDropdown 
                   value={admissionForm.reason}
-                  onChange={(e) => setAdmissionForm(prev => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm resize-none"
+                  onChange={(val) => setAdmissionForm(prev => ({ ...prev, reason: val }))}
+                  placeholder="Search or select provisional diagnosis..."
                 />
               </div>
 

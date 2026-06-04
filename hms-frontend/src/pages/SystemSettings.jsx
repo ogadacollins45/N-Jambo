@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Save, Settings as SettingsIcon, TestTubes, Package } from 'lucide-react';
+import { Save, Settings as SettingsIcon, TestTubes, Package, Activity } from 'lucide-react';
 import DashboardLayout from '../layout/DashboardLayout';
 import './SystemSettings.css';
 
@@ -129,6 +129,26 @@ const SystemSettings = () => {
                             >
                                 <Package size={16} style={{ display: 'inline', marginRight: 6 }} />
                                 Manage Procedures &amp; Extra Items
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Custom Diagnoses Card */}
+                    <div className="system-settings-card">
+                        <h2>
+                            <Activity size={20} style={{ display: 'inline', marginRight: 8, verticalAlign: 'middle' }} />
+                            Manage Diagnoses
+                        </h2>
+                        <p className="settings-description">
+                            Manage the custom list of diagnoses available system-wide in addition to the standard disease database.
+                        </p>
+                        <div className="settings-actions">
+                            <button
+                                onClick={() => navigate('/admin/diagnoses')}
+                                className="btn btn-secondary"
+                            >
+                                <Activity size={16} style={{ display: 'inline', marginRight: 6 }} />
+                                Manage Diagnoses
                             </button>
                         </div>
                     </div>

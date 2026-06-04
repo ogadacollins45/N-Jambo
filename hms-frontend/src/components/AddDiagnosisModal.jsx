@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { X, FileText, Loader, AlertCircle, CheckCircle } from "lucide-react";
 import { DIAGNOSIS_CATEGORIES } from "../data/diagnosisCategories";
+import SearchableDiagnosisDropdown from "./SearchableDiagnosisDropdown";
 
 const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) => {
     const [diagnosis, setDiagnosis] = useState(treatment.diagnosis || "");
@@ -131,12 +132,10 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) =>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Diagnosis <span className="text-red-500">*</span>
                         </label>
-                        <textarea
+                        <SearchableDiagnosisDropdown 
                             value={diagnosis}
-                            onChange={(e) => setDiagnosis(e.target.value)}
-                            placeholder="Enter diagnosis (e.g., Hypertension, Type 2 Diabetes)"
-                            rows="3"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            onChange={(val) => setDiagnosis(val)}
+                            placeholder="Search or select diagnosis..."
                         />
                     </div>
 

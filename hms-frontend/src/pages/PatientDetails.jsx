@@ -116,7 +116,7 @@ const PatientDetails = () => {
   // Lab test modal states (for adding tests to existing treatment)
   const [showLabTestModal, setShowLabTestModal] = useState(false);
   const [selectedTreatmentForLab, setSelectedTreatmentForLab] = useState(null);
-  
+
   // Edit treatment notes states
   const [showEditNotesModal, setShowEditNotesModal] = useState(false);
   const [selectedTreatmentForNotes, setSelectedTreatmentForNotes] = useState(null);
@@ -881,7 +881,7 @@ const PatientDetails = () => {
                       >
                         <ClipboardPlus size={16} className="mr-2" /> Add to Queue
                       </button>
-                      
+
                       {/* ==== INPATIENT ADMIT BUTTON ==== */}
                       {activeAdmission ? (
                         <button
@@ -929,7 +929,7 @@ const PatientDetails = () => {
                       return hasTreatmentToday ? "Add Revisit" : "New Treatment";
                     })()}
                   </button>
-                  
+
                   {user?.role === "admin" && (
                     <button
                       onClick={() => setShowDeleteModal(true)}
@@ -1258,13 +1258,13 @@ const PatientDetails = () => {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Impression <span className="text-red-500">*</span>
-                              </label>
-                              <SearchableDiagnosisDropdown
-                                value={newTreatment.impression}
-                                onChange={(val) => setNewTreatment(prev => ({ ...prev, impression: val }))}
-                                placeholder="Search or select impression..."
-                              />
+                              Impression <span className="text-red-500">*</span>
+                            </label>
+                            <SearchableDiagnosisDropdown
+                              value={newTreatment.impression}
+                              onChange={(val) => setNewTreatment(prev => ({ ...prev, impression: val }))}
+                              placeholder="Search or select impression... (Add custom impressions/diagnoses in System Settings)"
+                            />
                           </div>
                         </div>
 
@@ -2727,7 +2727,7 @@ const PatientDetails = () => {
                   const newAdmission = res.data.admission;
                   setShowAdmissionModal(false);
                   setAdmissionForm({ ward: "", bed: "", admission_type: "general", payment_type: "", reason: "", doctor_id: "" });
-                  
+
                   flashMessage(setSuccess, "Patient Admitted successfully.");
                   // After brief pause, navigate to inpatient view or refresh
                   setTimeout(() => {
@@ -2823,7 +2823,7 @@ const PatientDetails = () => {
               {/* Reason */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason / Provisional Diagnosis</label>
-                <SearchableDiagnosisDropdown 
+                <SearchableDiagnosisDropdown
                   value={admissionForm.reason}
                   onChange={(val) => setAdmissionForm(prev => ({ ...prev, reason: val }))}
                   placeholder="Search or select provisional diagnosis..."

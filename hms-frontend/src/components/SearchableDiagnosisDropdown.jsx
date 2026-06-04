@@ -182,7 +182,7 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
         <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
           <label className="block text-xs font-semibold text-indigo-700 mb-1">
 
-            Enter impression manually...
+            Enter impression manually... 
           </label>
           <input
             type="text"

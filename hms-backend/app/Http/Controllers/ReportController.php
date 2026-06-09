@@ -342,8 +342,15 @@ class ReportController extends Controller
             ->whereMonth('visit_date', $month)
             ->get();
 
+        // Fetch custom options from DB
+        $customOptions = \App\Models\DiseaseOption::where('is_custom', true)->pluck('name')->toArray();
+
         // ── Initialize result structure ───────────────────────────────────────
         $allKeys = DiseaseMapper::allKeys();
+        foreach ($customOptions as $customLabel) {
+            $allKeys[] = 'custom_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $customLabel));
+        }
+
         $diseases = [];
         foreach ($allKeys as $key) {
             $diseases[$key] = [
@@ -420,10 +427,15 @@ class ReportController extends Controller
 
             // ── Classify each diagnosis → disease key → tally ─────────────────
             foreach ($diagnosisList as $d) {
-                $diseaseKey = DiseaseMapper::map($d['text'], $d['category'], $d['sub']);
-
-                if (!isset($diseases[$diseaseKey])) {
+                if (empty($d['text'])) {
                     $diseaseKey = 'other_diseases';
+                } else {
+                    $diseaseKey = DiseaseMapper::strictMap($d['text'], $customOptions);
+                    
+                    // Fallback to 'other_diseases' if strictMap returns null
+                    if (!$diseaseKey) {
+                        $diseaseKey = 'other_diseases';
+                    }
                 }
 
                 // demographic counter
@@ -469,9 +481,16 @@ class ReportController extends Controller
         }
         unset($data);
 
+        // Format labels for response
+        $labels = DiseaseMapper::labels();
+        foreach ($customOptions as $customLabel) {
+            $slug = 'custom_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $customLabel));
+            $labels[$slug] = $customLabel;
+        }
+
         return response()->json([
             'diseases' => $diseases,
-            'labels'   => DiseaseMapper::labels(),
+            'labels'   => $labels,
             'summary'  => $summary,
             'month'    => $month,
             'year'     => $year,

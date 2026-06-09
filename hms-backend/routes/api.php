@@ -21,7 +21,8 @@ use App\Http\Controllers\{
     ReportController,
     ServiceItemController,
     SystemDiagnosisController,
-    AdmissionController
+    AdmissionController,
+    DiseaseOptionController
 };
 
 // Health check endpoint (no authentication required)
@@ -350,4 +351,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/system-diagnoses', [SystemDiagnosisController::class, 'index']);
     Route::post('/system-diagnoses', [SystemDiagnosisController::class, 'store']);
     Route::delete('/system-diagnoses/{id}', [SystemDiagnosisController::class, 'destroy']);
+
+    /** Disease Options */
+    Route::get('/disease-options', [DiseaseOptionController::class, 'index']);
+    Route::post('/disease-options', [DiseaseOptionController::class, 'store']);
+    Route::delete('/disease-options/{id}', [DiseaseOptionController::class, 'destroy']);
+    Route::post('/disease-options/seed-defaults', [DiseaseOptionController::class, 'seedDefaults']);
 });

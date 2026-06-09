@@ -19,14 +19,14 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
     const fetchCustomDiagnoses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/system-diagnoses`, {
+        const res = await axios.get(`${API_BASE_URL}/disease-options`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         const customDiagnoses = res.data.map(d => ({
           label: d.name,
           value: d.name,
-          isCustom: true
+          isCustom: !!d.is_custom
         }));
 
         // Combine custom and predefined
@@ -187,11 +187,14 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
           <input
             type="text"
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-            placeholder="Type custom impression here..."
+            placeholder="e.g., HTN (This won't create a new report category)"
             value={clarification}
             onChange={(e) => handleClarificationChange(e.target.value)}
             required
           />
+          <p className="text-xs text-gray-400 mt-1">
+            This text is appended to the diagnosis for extra details, but reporting will still group it under the selected main category.
+          </p>
         </div>
       )}
     </div>

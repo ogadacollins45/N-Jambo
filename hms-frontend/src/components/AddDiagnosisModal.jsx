@@ -27,6 +27,11 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) =>
             return;
         }
 
+        if (diagnosis.trim() === "All Other Diseases") {
+            flashMessage(setError, "Please specify the other disease details.");
+            return;
+        }
+
         if (!diagnosisCategory) {
             flashMessage(setError, "Please select a diagnosis category");
             return;

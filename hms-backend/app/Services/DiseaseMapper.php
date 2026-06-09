@@ -309,6 +309,44 @@ class DiseaseMapper
     // Static helpers
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Strict mapping logic
+    // ─────────────────────────────────────────────────────────────────────────
+    public static function strictMap(string $diagnosisText, array $customLabels = []): ?string
+    {
+        $text = strtolower(trim($diagnosisText));
+        if (empty($text)) return null;
+
+        $standardLabels = self::labels(); // Returns array of 'key' => 'Label'
+
+        // 1. Exact Match Check
+        foreach ($standardLabels as $key => $label) {
+            if ($text === strtolower(trim($label))) return $key;
+        }
+        foreach ($customLabels as $customLabel) {
+            if ($text === strtolower(trim($customLabel))) {
+                return 'custom_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $customLabel));
+            }
+        }
+
+        // 2. Base String Check (Splitting by " - ")
+        if (strpos($text, ' - ') !== false) {
+            $parts = explode(' - ', $text, 2);
+            $baseText = strtolower(trim($parts[0]));
+
+            foreach ($standardLabels as $key => $label) {
+                if ($baseText === strtolower(trim($label))) return $key;
+            }
+            foreach ($customLabels as $customLabel) {
+                if ($baseText === strtolower(trim($customLabel))) {
+                    return 'custom_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $customLabel));
+                }
+            }
+        }
+
+        return null; // Return null if it matches absolutely nothing
+    }
+
     /**
      * All 73 disease keys in order + summary keys
      */

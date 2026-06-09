@@ -104,7 +104,7 @@ const DiagnosesManagement = () => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/system-diagnoses`, { headers });
+      const res = await axios.get(`${API_BASE_URL}/disease-options`, { headers });
       setItems(res.data);
     } catch (err) {
       console.error(err);
@@ -121,7 +121,7 @@ const DiagnosesManagement = () => {
   const handleCreate = async (formData) => {
     setSaving(true);
     try {
-      await axios.post(`${API_BASE_URL}/system-diagnoses`, formData, { headers });
+      await axios.post(`${API_BASE_URL}/disease-options`, formData, { headers });
       showToast("success", "Diagnosis created successfully!");
       setShowCreate(false);
       await fetchItems();
@@ -137,7 +137,7 @@ const DiagnosesManagement = () => {
     if (!window.confirm("Delete this custom diagnosis? This cannot be undone.")) return;
     setDeleting(id);
     try {
-      await axios.delete(`${API_BASE_URL}/system-diagnoses/${id}`, { headers });
+      await axios.delete(`${API_BASE_URL}/disease-options/${id}`, { headers });
       showToast("success", "Diagnosis deleted.");
       setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
@@ -145,6 +145,20 @@ const DiagnosesManagement = () => {
       showToast("error", "Failed to delete diagnosis.");
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleSeedDefaults = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/disease-options/seed-defaults`, {}, { headers });
+      showToast("success", res.data.message);
+      await fetchItems();
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Failed to seed base diseases.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,7 +202,13 @@ const DiagnosesManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-end mt-6 mb-4">
+          <div className="flex justify-end gap-3 mt-6 mb-4">
+            <button
+              onClick={handleSeedDefaults}
+              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition shadow-md text-sm"
+            >
+              <Activity size={18} /> Sync Base Diseases
+            </button>
             {!showCreate && (
               <button
                 onClick={() => setShowCreate(true)}
@@ -224,6 +244,7 @@ const DiagnosesManagement = () => {
                 <thead className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
                   <tr>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Diagnosis Name</th>
+                    <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Type</th>
                     <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -231,20 +252,31 @@ const DiagnosesManagement = () => {
                   {items.map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-indigo-50/30">
                       <td className="px-6 py-4 text-sm font-semibold text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 text-sm">
+                        {item.is_custom ? (
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Custom</span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Base</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            disabled={deleting === item.id}
-                            className="p-2 rounded-lg text-red-500 hover:bg-red-100 transition disabled:opacity-40"
-                            title="Delete"
-                          >
-                            {deleting === item.id ? (
-                              <Loader size={16} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
-                          </button>
+                          {item.is_custom ? (
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              disabled={deleting === item.id}
+                              className="p-2 rounded-lg text-red-500 hover:bg-red-100 transition disabled:opacity-40"
+                              title="Delete Custom Diagnosis"
+                            >
+                              {deleting === item.id ? (
+                                <Loader size={16} className="animate-spin" />
+                              ) : (
+                                <Trash2 size={16} />
+                              )}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">Cannot delete base disease</span>
+                          )}
                         </div>
                       </td>
                     </tr>

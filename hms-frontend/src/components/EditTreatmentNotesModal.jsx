@@ -36,6 +36,12 @@ const EditTreatmentNotesModal = ({ treatment, onClose, onSaved }) => {
     setSuccess("");
 
     try {
+      if (formData.impression.trim() === "All Other Diseases") {
+        flashMessage(setError, "Please specify the other disease details for the impression.");
+        setLoading(false);
+        return;
+      }
+
       const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
       await axios.put(`${API_BASE_URL}/treatments/${treatment.id}`, formData);
 

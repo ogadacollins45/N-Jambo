@@ -336,6 +336,12 @@ const PatientDetails = () => {
         }
       } else {
         // 💊 Treatment
+        if (newTreatment.impression.trim() === "All Other Diseases") {
+          flashMessage(setError, "Please specify the other disease details for the impression.");
+          setSavingTreatment(false);
+          return;
+        }
+
         let payload = {
           visit_date: newTreatment.visit_date,
           diagnosis: newTreatment.diagnosis,

@@ -720,8 +720,6 @@ const PatientDetails = () => {
     try {
       await axios.put(`${API_BASE_URL}/treatments/${treatmentId}`, {
         diagnosis: "",
-        diagnosis_category: "",
-        diagnosis_subcategory: "",
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });

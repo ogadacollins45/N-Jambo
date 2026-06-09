@@ -10,7 +10,7 @@ class DiseaseOptionController extends Controller
 {
     public function index()
     {
-        $options = DiseaseOption::orderBy('name', 'asc')->get();
+        $options = DiseaseOption::with(['category', 'subcategory'])->orderBy('name', 'asc')->get();
         return response()->json($options);
     }
 
@@ -70,5 +70,30 @@ class DiseaseOptionController extends Controller
         }
 
         return response()->json(['message' => "Seeded defaults successfully. Added/Updated {$count} options."]);
+    }
+    public function batchAssignCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'disease_option_ids' => 'required|array',
+            'disease_option_ids.*' => 'exists:disease_options,id',
+            'disease_category_id' => 'required|exists:disease_categories,id',
+            'disease_subcategory_id' => 'required|exists:disease_subcategories,id',
+        ]);
+
+        // ensure subcategory belongs to category
+        $subcategory = \App\Models\DiseaseSubcategory::where('id', $validated['disease_subcategory_id'])
+            ->where('disease_category_id', $validated['disease_category_id'])
+            ->first();
+
+        if (!$subcategory) {
+            return response()->json(['message' => 'The selected subcategory does not belong to the selected category.'], 422);
+        }
+
+        DiseaseOption::whereIn('id', $validated['disease_option_ids'])->update([
+            'disease_category_id' => $validated['disease_category_id'],
+            'disease_subcategory_id' => $validated['disease_subcategory_id'],
+        ]);
+
+        return response()->json(['message' => 'Categories assigned successfully.']);
     }
 }

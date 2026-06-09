@@ -358,4 +358,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/disease-options', [DiseaseOptionController::class, 'store']);
     Route::delete('/disease-options/{id}', [DiseaseOptionController::class, 'destroy']);
     Route::post('/disease-options/seed-defaults', [DiseaseOptionController::class, 'seedDefaults']);
+    Route::post('/disease-options/batch-assign-category', [DiseaseOptionController::class, 'batchAssignCategory']);
+
+    /** Disease Categories & Subcategories */
+    Route::get('/disease-categories', [\App\Http\Controllers\DiseaseCategoryController::class, 'index']);
+    Route::post('/disease-categories', [\App\Http\Controllers\DiseaseCategoryController::class, 'storeCategory']);
+    Route::put('/disease-categories/{id}', [\App\Http\Controllers\DiseaseCategoryController::class, 'updateCategory']);
+    Route::delete('/disease-categories/{id}', [\App\Http\Controllers\DiseaseCategoryController::class, 'destroyCategory']);
+    
+    Route::post('/disease-categories/{categoryId}/subcategories', [\App\Http\Controllers\DiseaseCategoryController::class, 'storeSubcategory']);
+    Route::put('/disease-categories/{categoryId}/subcategories/{subcategoryId}', [\App\Http\Controllers\DiseaseCategoryController::class, 'updateSubcategory']);
+    Route::delete('/disease-categories/{categoryId}/subcategories/{subcategoryId}', [\App\Http\Controllers\DiseaseCategoryController::class, 'destroySubcategory']);
 });

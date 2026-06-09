@@ -12,8 +12,6 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
     };
 
     const [diagnosis, setDiagnosis] = useState(getInitialValue('diagnosis'));
-    const [diagnosisCategory, setDiagnosisCategory] = useState(getInitialValue('diagnosis_category'));
-    const [diagnosisSubcategory, setDiagnosisSubcategory] = useState(getInitialValue('diagnosis_subcategory'));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState();
@@ -34,16 +32,6 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
             return;
         }
 
-        if (!diagnosisCategory) {
-            flashMessage(setError, "Please select a diagnosis category");
-            return;
-        }
-
-        if (!diagnosisSubcategory) {
-            flashMessage(setError, "Please select a diagnosis subcategory");
-            return;
-        }
-
         setLoading(true);
         setError("");
 
@@ -54,8 +42,6 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
                 // Create new diagnosis record
                 await axios.post(`${API_BASE_URL}/treatments/${treatment.id}/diagnoses`, {
                     diagnosis: diagnosis.trim(),
-                    diagnosis_category: diagnosisCategory,
-                    diagnosis_subcategory: diagnosisSubcategory,
                 }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
@@ -63,8 +49,6 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
                 // Update additional diagnosis
                 await axios.put(`${API_BASE_URL}/diagnoses/${diagnosisData.id}`, {
                     diagnosis: diagnosis.trim(),
-                    diagnosis_category: diagnosisCategory,
-                    diagnosis_subcategory: diagnosisSubcategory,
                 }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
@@ -72,8 +56,6 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
                 // Update primary diagnosis in treatment
                 await axios.put(`${API_BASE_URL}/treatments/${treatment.id}`, {
                     diagnosis: diagnosis.trim(),
-                    diagnosis_category: diagnosisCategory,
-                    diagnosis_subcategory: diagnosisSubcategory,
                 }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
@@ -95,9 +77,7 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
         }
     };
 
-    const availableSubcategories = diagnosisCategory
-        ? DIAGNOSIS_CATEGORIES[diagnosisCategory] || []
-        : [];
+
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -155,50 +135,10 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
                             onChange={(val) => setDiagnosis(val)}
                             placeholder="Search or select diagnosis..."
                         />
+                        <p className="text-xs text-gray-500 mt-2">
+                            The disease category and subcategory will be automatically assigned.
+                        </p>
                     </div>
-
-                    {/* Category Dropdown */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Diagnosis Category <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            value={diagnosisCategory}
-                            onChange={(e) => {
-                                setDiagnosisCategory(e.target.value);
-                                setDiagnosisSubcategory(""); // Reset subcategory when category changes
-                            }}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        >
-                            <option value="">-- Select Category --</option>
-                            {Object.keys(DIAGNOSIS_CATEGORIES).map((category) => (
-                                <option key={category} value={category}>
-                                    {category}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Subcategory Dropdown (shows only after category selected) */}
-                    {diagnosisCategory && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Diagnosis Subcategory <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                value={diagnosisSubcategory}
-                                onChange={(e) => setDiagnosisSubcategory(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                                <option value="">-- Select Subcategory --</option>
-                                {availableSubcategories.map((subcategory) => (
-                                    <option key={subcategory} value={subcategory}>
-                                        {subcategory}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
                 </div>
 
                 {/* Footer */}

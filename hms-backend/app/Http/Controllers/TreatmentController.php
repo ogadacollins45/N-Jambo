@@ -152,6 +152,26 @@ class TreatmentController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | RESOLVE DIAGNOSIS CATEGORY & SUBCATEGORY
+        |--------------------------------------------------------------------------
+        */
+        $resolvedCategory = $validated['diagnosis_category'] ?? null;
+        $resolvedSubcategory = $validated['diagnosis_subcategory'] ?? null;
+
+        if (!empty($validated['diagnosis'])) {
+            $diseaseOption = \App\Models\DiseaseOption::with(['category', 'subcategory'])->where('name', $validated['diagnosis'])->first();
+            if ($diseaseOption) {
+                if ($diseaseOption->category) {
+                    $resolvedCategory = $diseaseOption->category->name;
+                }
+                if ($diseaseOption->subcategory) {
+                    $resolvedSubcategory = $diseaseOption->subcategory->name;
+                }
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | CREATE TREATMENT
         |--------------------------------------------------------------------------
         */
@@ -165,8 +185,8 @@ class TreatmentController extends Controller
             'visit_date'           => $validated['visit_date'],
             'treatment_type'       => $treatmentType, // NEW - Mark as 'new' or 'revisit'
             'diagnosis'            => $validated['diagnosis'] ?? null,
-            'diagnosis_category'    => $validated['diagnosis_category'] ?? null,
-            'diagnosis_subcategory' => $validated['diagnosis_subcategory'] ?? null,
+            'diagnosis_category'    => $resolvedCategory,
+            'diagnosis_subcategory' => $resolvedSubcategory,
             'diagnosis_status'     => $diagnosisStatus,
             'treatment_notes'      => $validated['treatment_notes'] ?? null,
             'chief_complaint'      => $validated['chief_complaint'] ?? null,
@@ -255,11 +275,29 @@ class TreatmentController extends Controller
         }
         if (array_key_exists('diagnosis', $validated)) {
             $treatment->diagnosis = $validated['diagnosis'];
+            
+            // Auto resolve category and subcategory
+            if (!empty($validated['diagnosis'])) {
+                $diseaseOption = \App\Models\DiseaseOption::with(['category', 'subcategory'])->where('name', $validated['diagnosis'])->first();
+                if ($diseaseOption) {
+                    if ($diseaseOption->category) {
+                        $treatment->diagnosis_category = $diseaseOption->category->name;
+                    }
+                    if ($diseaseOption->subcategory) {
+                        $treatment->diagnosis_subcategory = $diseaseOption->subcategory->name;
+                    }
+                }
+            } else {
+                $treatment->diagnosis_category = null;
+                $treatment->diagnosis_subcategory = null;
+            }
         }
-        if (array_key_exists('diagnosis_category', $validated)) {
+        
+        // Only override if explicitly provided in request, otherwise keep the auto-resolved ones
+        if (array_key_exists('diagnosis_category', $validated) && $validated['diagnosis_category'] !== null) {
             $treatment->diagnosis_category = $validated['diagnosis_category'];
         }
-        if (array_key_exists('diagnosis_subcategory', $validated)) {
+        if (array_key_exists('diagnosis_subcategory', $validated) && $validated['diagnosis_subcategory'] !== null) {
             $treatment->diagnosis_subcategory = $validated['diagnosis_subcategory'];
         }
         if (array_key_exists('treatment_notes', $validated)) {

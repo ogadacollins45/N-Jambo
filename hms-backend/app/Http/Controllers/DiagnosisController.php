@@ -35,6 +35,23 @@ class DiagnosisController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'diagnosis' => 'required|string',
+            'diagnosis_category' => 'required|string|max:100',
+            'diagnosis_subcategory' => 'required|string|max:100',
+        ]);
+
+        $diagnosis = Diagnosis::findOrFail($id);
+        $diagnosis->update($validated);
+
+        return response()->json([
+            'message' => 'Diagnosis updated successfully',
+            'diagnosis' => $diagnosis,
+        ]);
+    }
+
     /**
      * Delete a diagnosis
      */

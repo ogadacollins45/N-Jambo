@@ -48,6 +48,7 @@ Route::delete('/treatments/{id}', [TreatmentController::class, 'destroy']);
 
 // Diagnosis routes
 Route::post('/treatments/{id}/diagnoses', [DiagnosisController::class, 'store']);
+Route::put('/diagnoses/{id}', [DiagnosisController::class, 'update']);
 Route::delete('/diagnoses/{id}', [DiagnosisController::class, 'destroy']);
 
 Route::get('/doctors', [DoctorController::class, 'index']);

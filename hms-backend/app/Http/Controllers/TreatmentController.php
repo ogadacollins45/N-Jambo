@@ -250,57 +250,57 @@ class TreatmentController extends Controller
         ]);
 
         // Update fields
-        if (isset($validated['visit_date'])) {
+        if (array_key_exists('visit_date', $validated)) {
             $treatment->visit_date = $validated['visit_date'];
         }
-        if (isset($validated['diagnosis'])) {
+        if (array_key_exists('diagnosis', $validated)) {
             $treatment->diagnosis = $validated['diagnosis'];
         }
-        if (isset($validated['diagnosis_category'])) {
+        if (array_key_exists('diagnosis_category', $validated)) {
             $treatment->diagnosis_category = $validated['diagnosis_category'];
         }
-        if (isset($validated['diagnosis_subcategory'])) {
+        if (array_key_exists('diagnosis_subcategory', $validated)) {
             $treatment->diagnosis_subcategory = $validated['diagnosis_subcategory'];
         }
-        if (isset($validated['treatment_notes'])) {
+        if (array_key_exists('treatment_notes', $validated)) {
             $treatment->treatment_notes = $validated['treatment_notes'];
         }
-        if (isset($validated['chief_complaint'])) {
+        if (array_key_exists('chief_complaint', $validated)) {
             $treatment->chief_complaint = $validated['chief_complaint'];
         }
-        if (isset($validated['history_presenting_illness'])) {
+        if (array_key_exists('history_presenting_illness', $validated)) {
             $treatment->history_presenting_illness = $validated['history_presenting_illness'];
         }
-        if (isset($validated['premedication'])) {
+        if (array_key_exists('premedication', $validated)) {
             $treatment->premedication = $validated['premedication'];
         }
-        if (isset($validated['past_medical_history'])) {
+        if (array_key_exists('past_medical_history', $validated)) {
             $treatment->past_medical_history = $validated['past_medical_history'];
         }
-        if (isset($validated['systemic_review'])) {
+        if (array_key_exists('systemic_review', $validated)) {
             $treatment->systemic_review = $validated['systemic_review'];
         }
-        if (isset($validated['general_systemic_examination'])) {
+        if (array_key_exists('general_systemic_examination', $validated)) {
             $treatment->general_systemic_examination = $validated['general_systemic_examination'];
         }
-        if (isset($validated['impression'])) {
+        if (array_key_exists('impression', $validated)) {
             $treatment->impression = $validated['impression'];
         }
-        if (isset($validated['payment_type'])) {
+        if (array_key_exists('payment_type', $validated)) {
             $treatment->payment_type = $validated['payment_type'];
         }
-        if (isset($validated['doctor_id'])) {
+        if (array_key_exists('doctor_id', $validated)) {
             $treatment->doctor_id = $validated['doctor_id'];
         }
-        if (isset($validated['attending_doctor'])) {
+        if (array_key_exists('attending_doctor', $validated)) {
             $treatment->attending_doctor = $validated['attending_doctor'];
         }
-        if (isset($validated['status'])) {
+        if (array_key_exists('status', $validated)) {
             $treatment->status = $validated['status'];
         }
 
         // Automatically update diagnosis_status based on diagnosis presence
-        if (isset($validated['diagnosis'])) {
+        if (array_key_exists('diagnosis', $validated)) {
             $treatment->diagnosis_status = !empty($validated['diagnosis']) ? 'confirmed' : 'pending';
         }
 

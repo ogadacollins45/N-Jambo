@@ -124,7 +124,8 @@ const PatientDetails = () => {
   const [modalLabPriority, setModalLabPriority] = useState('routine');
 
   // Diagnosis mode state
-  const [diagnosisMode, setDiagnosisMode] = useState('primary'); // 'primary' or 'additional'
+  const [diagnosisMode, setDiagnosisMode] = useState('primary'); // 'primary', 'additional', 'edit_additional'
+  const [selectedDiagnosisForEdit, setSelectedDiagnosisForEdit] = useState(null);
 
   // ===== INPATIENT ADMISSION STATE =====
   const [activeAdmission, setActiveAdmission] = useState(null);
@@ -703,10 +704,33 @@ const PatientDetails = () => {
   };
 
   // Open diagnosis modal
-  const openDiagnosisModal = (treatment, mode = 'primary') => {
+  const openDiagnosisModal = (treatment, mode = 'primary', diagnosisData = null) => {
     setSelectedTreatment(treatment);
     setDiagnosisMode(mode);
+    setSelectedDiagnosisForEdit(diagnosisData);
     setShowDiagnosisModal(true);
+  };
+
+  // Delete primary diagnosis
+  const handleDeletePrimaryDiagnosis = async (treatmentId) => {
+    if (!window.confirm('Are you sure you want to delete the primary diagnosis?')) {
+      return;
+    }
+
+    try {
+      await axios.put(`${API_BASE_URL}/treatments/${treatmentId}`, {
+        diagnosis: "",
+        diagnosis_category: "",
+        diagnosis_subcategory: "",
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      flashMessage(setSuccess, 'Primary diagnosis deleted successfully');
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting primary diagnosis:', err);
+      flashMessage(setError, 'Failed to delete primary diagnosis. Please try again.');
+    }
   };
 
   // Delete additional diagnosis
@@ -1912,25 +1936,47 @@ const PatientDetails = () => {
                                         </h4>
 
                                         {/* Primary Diagnosis */}
-                                        <p className="text-sm mb-2">
-                                          <span className={t.diagnosis ? "text-indigo-900 font-medium" : "text-gray-400 italic"}>
-                                            {t.diagnosis || "Not yet diagnosed"}
-                                          </span>
-                                        </p>
-
-                                        {/* Category & Subcategory Badges */}
-                                        {t.diagnosis_category && (
-                                          <div className="flex gap-2 flex-wrap mb-3">
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm">
-                                              {t.diagnosis_category}
-                                            </span>
-                                            {t.diagnosis_subcategory && (
-                                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm">
-                                                {t.diagnosis_subcategory}
+                                        <div className="flex items-start justify-between mb-2">
+                                          <div>
+                                            <p className="text-sm">
+                                              <span className={t.diagnosis ? "text-indigo-900 font-medium" : "text-gray-400 italic"}>
+                                                {t.diagnosis || "Not yet diagnosed"}
                                               </span>
+                                            </p>
+
+                                            {/* Category & Subcategory Badges */}
+                                            {t.diagnosis_category && (
+                                              <div className="flex gap-2 flex-wrap mt-2 mb-1">
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-sm">
+                                                  {t.diagnosis_category}
+                                                </span>
+                                                {t.diagnosis_subcategory && (
+                                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm">
+                                                    {t.diagnosis_subcategory}
+                                                  </span>
+                                                )}
+                                              </div>
                                             )}
                                           </div>
-                                        )}
+                                          {t.diagnosis && (
+                                            <div className="flex gap-2 ml-2">
+                                              <button
+                                                onClick={() => openDiagnosisModal(t, 'primary')}
+                                                className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
+                                                title="Edit primary diagnosis"
+                                              >
+                                                <Edit size={16} />
+                                              </button>
+                                              <button
+                                                onClick={() => handleDeletePrimaryDiagnosis(t.id)}
+                                                className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                                title="Delete primary diagnosis"
+                                              >
+                                                <Trash2 size={16} />
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
 
                                         {/* Additional Diagnoses */}
                                         {t.diagnoses && t.diagnoses.length > 0 && (
@@ -1952,13 +1998,22 @@ const PatientDetails = () => {
                                                       </span>
                                                     </div>
                                                   </div>
-                                                  <button
-                                                    onClick={() => handleDeleteDiagnosis(d.id)}
-                                                    className="ml-2 text-red-500 hover:text-red-700 transition-colors"
-                                                    title="Delete diagnosis"
-                                                  >
-                                                    <X size={16} />
-                                                  </button>
+                                                  <div className="flex gap-2 ml-2">
+                                                    <button
+                                                      onClick={() => openDiagnosisModal(t, 'edit_additional', d)}
+                                                      className="text-indigo-600 hover:text-indigo-800 transition-colors p-1"
+                                                      title="Edit diagnosis"
+                                                    >
+                                                      <Edit size={16} />
+                                                    </button>
+                                                    <button
+                                                      onClick={() => handleDeleteDiagnosis(d.id)}
+                                                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                                      title="Delete diagnosis"
+                                                    >
+                                                      <Trash2 size={16} />
+                                                    </button>
+                                                  </div>
                                                 </div>
                                               ))}
                                             </div>
@@ -2665,10 +2720,14 @@ const PatientDetails = () => {
           <AddDiagnosisModal
             treatment={{ ...selectedTreatment, patient }}
             mode={diagnosisMode}
-            onClose={() => setShowDiagnosisModal(false)}
+            diagnosisData={selectedDiagnosisForEdit}
+            onClose={() => {
+              setShowDiagnosisModal(false);
+              setSelectedDiagnosisForEdit(null);
+            }}
             onSaved={async () => {
               await fetchAllData();
-              flashMessage(setSuccess, 'Diagnosis added successfully!');
+              flashMessage(setSuccess, 'Diagnosis saved successfully!');
             }}
           />
         )}

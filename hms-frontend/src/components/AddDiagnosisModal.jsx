@@ -4,14 +4,16 @@ import { X, FileText, Loader, AlertCircle, CheckCircle } from "lucide-react";
 import { DIAGNOSIS_CATEGORIES } from "../data/diagnosisCategories";
 import SearchableDiagnosisDropdown from "./SearchableDiagnosisDropdown";
 
-const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) => {
-    const [diagnosis, setDiagnosis] = useState(treatment.diagnosis || "");
-    const [diagnosisCategory, setDiagnosisCategory] = useState(
-        treatment.diagnosis_category || ""
-    );
-    const [diagnosisSubcategory, setDiagnosisSubcategory] = useState(
-        treatment.diagnosis_subcategory || ""
-    );
+const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, onClose, onSaved }) => {
+    const getInitialValue = (field) => {
+        if (mode === 'edit_additional' && diagnosisData) return diagnosisData[field] || "";
+        if (mode === 'primary') return treatment[field] || "";
+        return "";
+    };
+
+    const [diagnosis, setDiagnosis] = useState(getInitialValue('diagnosis'));
+    const [diagnosisCategory, setDiagnosisCategory] = useState(getInitialValue('diagnosis_category'));
+    const [diagnosisSubcategory, setDiagnosisSubcategory] = useState(getInitialValue('diagnosis_subcategory'));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState();
@@ -57,12 +59,23 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) =>
                 }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
+            } else if (mode === 'edit_additional') {
+                // Update additional diagnosis
+                await axios.put(`${API_BASE_URL}/diagnoses/${diagnosisData.id}`, {
+                    diagnosis: diagnosis.trim(),
+                    diagnosis_category: diagnosisCategory,
+                    diagnosis_subcategory: diagnosisSubcategory,
+                }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
             } else {
                 // Update primary diagnosis in treatment
                 await axios.put(`${API_BASE_URL}/treatments/${treatment.id}`, {
                     diagnosis: diagnosis.trim(),
                     diagnosis_category: diagnosisCategory,
                     diagnosis_subcategory: diagnosisSubcategory,
+                }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
             }
 
@@ -93,7 +106,7 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', onClose, onSaved }) =>
                 <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-6 flex justify-between items-center rounded-t-xl">
                     <div className="flex items-center gap-3">
                         <FileText size={24} />
-                        <h2 className="text-2xl font-bold">Add Diagnosis</h2>
+                        <h2 className="text-2xl font-bold">{mode === 'edit_additional' || (mode === 'primary' && treatment.diagnosis) ? 'Edit Diagnosis' : 'Add Diagnosis'}</h2>
                     </div>
                     <button
                         onClick={onClose}

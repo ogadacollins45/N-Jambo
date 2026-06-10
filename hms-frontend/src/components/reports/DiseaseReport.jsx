@@ -68,6 +68,14 @@ const DiseaseReport = () => {
 
   return (
     <div className="space-y-4">
+      {/* Print Header */}
+      <div className="hidden print:block text-center border-b border-gray-200 pb-4 mb-4">
+        <h2 className="text-2xl font-bold text-gray-900">Disease Surveillance Report</h2>
+        <p className="text-gray-600 mt-1">
+          Period: {MONTHS.find(m => m.value === month)?.label} {year}
+        </p>
+      </div>
+
       {/* Controls */}
       <div className="print:hidden flex flex-col md:flex-row gap-3 items-end bg-indigo-50 p-4 rounded-xl border border-indigo-100">
         <div>
@@ -126,10 +134,10 @@ const DiseaseReport = () => {
       {!loading && data && (
         <>
           {/* Disease Table */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm print:overflow-visible print:border-gray-300 print:shadow-none print:mt-4">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-indigo-600 text-white">
+                <tr className="bg-indigo-600 text-white print:bg-gray-200 print:text-black border-b print:border-gray-400">
                   <th className="py-3 px-4 text-left font-semibold w-8"></th>
                   <th className="py-3 px-4 text-left font-semibold">Disease / Condition</th>
                   <th className="py-3 px-3 text-center font-semibold">Under 5 ♂</th>
@@ -138,7 +146,7 @@ const DiseaseReport = () => {
                   <th className="py-3 px-3 text-center font-semibold">Over 5 ♀</th>
                   <th className="py-3 px-3 text-center font-semibold">New</th>
                   <th className="py-3 px-3 text-center font-semibold">Re-Att</th>
-                  <th className="py-3 px-3 text-center font-semibold bg-indigo-700">Total</th>
+                  <th className="py-3 px-3 text-center font-semibold bg-indigo-700 print:bg-gray-300">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,9 +160,9 @@ const DiseaseReport = () => {
                   return (
                     <React.Fragment key={key}>
                       <tr
-                        className={`border-b border-gray-100 transition-colors ${
+                        className={`border-b border-gray-100 print:border-gray-300 transition-colors ${
                           hasPatients ? "cursor-pointer" : ""
-                        } ${isHighlighted ? "bg-white hover:bg-indigo-50" : "bg-gray-50/50 text-gray-400"}`}
+                        } ${isHighlighted ? "bg-white hover:bg-indigo-50" : "bg-gray-50/50 text-gray-400 print:text-gray-600 print:bg-white"}`}
                         onClick={() => hasPatients && toggle(key)}
                       >
                         <td className="py-2 px-4 text-gray-400">
@@ -172,9 +180,9 @@ const DiseaseReport = () => {
                         <td className="py-2 px-3 text-center">{d.under5_f || "—"}</td>
                         <td className="py-2 px-3 text-center">{d.over5_m || "—"}</td>
                         <td className="py-2 px-3 text-center">{d.over5_f || "—"}</td>
-                        <td className="py-2 px-3 text-center text-green-700 font-medium">{d.new || "—"}</td>
-                        <td className="py-2 px-3 text-center text-amber-700 font-medium">{d.reatt || "—"}</td>
-                        <td className={`py-2 px-3 text-center font-bold ${isHighlighted ? "text-indigo-700" : ""}`}>
+                        <td className="py-2 px-3 text-center text-green-700 print:text-black font-medium">{d.new || "—"}</td>
+                        <td className="py-2 px-3 text-center text-amber-700 print:text-black font-medium">{d.reatt || "—"}</td>
+                        <td className={`py-2 px-3 text-center font-bold ${isHighlighted ? "text-indigo-700 print:text-black" : ""}`}>
                           {d.total || 0}
                         </td>
                       </tr>
@@ -252,7 +260,7 @@ const DiseaseReport = () => {
           </div>
 
           {/* Summary Section */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 print:mt-8 print:break-inside-avoid">
             {[
               { label: "No. of First Attendances", value: data.summary.new_attendances, color: "green" },
               { label: "Re-Attendances", value: data.summary.reattendances, color: "amber" },
@@ -261,9 +269,9 @@ const DiseaseReport = () => {
               { label: "Referrals From Community", value: data.summary.referrals_from_community, color: "purple" },
               { label: "Referrals To Community", value: data.summary.referrals_to_community, color: "rose" },
             ].map((s) => (
-              <div key={s.label} className={`bg-${s.color}-50 border border-${s.color}-100 rounded-xl p-3 text-center`}>
-                <div className={`text-2xl font-black text-${s.color}-700`}>{s.value}</div>
-                <div className="text-xs text-gray-500 mt-1 leading-tight">{s.label}</div>
+              <div key={s.label} className={`bg-${s.color}-50 border border-${s.color}-100 rounded-xl p-3 text-center print:border-gray-400 print:bg-white print:border`}>
+                <div className={`text-2xl font-black text-${s.color}-700 print:text-black`}>{s.value}</div>
+                <div className="text-xs text-gray-500 mt-1 leading-tight print:text-gray-800 font-medium">{s.label}</div>
               </div>
             ))}
           </div>

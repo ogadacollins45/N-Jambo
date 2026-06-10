@@ -179,8 +179,8 @@ export default function Reports() {
         <div className="w-full p-6 space-y-6">
 
           {/* Page Header */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full">
-            <div className="p-6 sm:p-8 bg-gradient-to-r from-blue-600 to-indigo-600">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full print:shadow-none print:overflow-visible">
+            <div className="p-6 sm:p-8 bg-gradient-to-r from-blue-600 to-indigo-600 print:hidden">
               <div className="flex items-center">
                 <BarChart2 className="w-8 h-8 text-white mr-4" />
                 <div>
@@ -193,7 +193,7 @@ export default function Reports() {
             </div>
 
             {/* Tab navigation */}
-            <div className="border-b border-gray-200 bg-gray-50 flex overflow-x-auto hide-scrollbar -mt-1 rounded-t-none">
+            <div className="border-b border-gray-200 bg-gray-50 flex overflow-x-auto hide-scrollbar -mt-1 rounded-t-none print:hidden">
               <button onClick={() => setActiveTab("overview")} className={tabClass("overview")}>
                 <PieChart className={`w-4 h-4 transition-colors duration-300 ${activeTab === "overview" ? "text-white" : "text-gray-400"}`} />
                 Overview
@@ -213,7 +213,7 @@ export default function Reports() {
             </div>
 
             {/* Tab content */}
-            <div className="p-6 bg-white min-h-[500px]">
+            <div className="p-6 bg-white min-h-[500px] print:p-0 print:min-h-0">
 
               {/* ── OVERVIEW TAB ──────────────────────────────────────────── */}
               {activeTab === "overview" && (

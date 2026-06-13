@@ -13,7 +13,7 @@ use App\Models\Patient;
 class AdmissionController extends Controller
 {
     /**
-     * List all admissions (optionally filtered by status).
+     * List all the admissions (optionally filtered by status).
      */
     public function index(Request $request)
     {

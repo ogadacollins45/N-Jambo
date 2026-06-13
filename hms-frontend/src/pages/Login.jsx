@@ -46,8 +46,22 @@ const Login = () => {
 
 
     } catch (err) {
-      console.error(err);
-      setError("Invalid credentials. Please try again.");
+      console.error("Login error:", err);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (err.response) {
+        // The request was made and the server responded with a status code outside 2xx
+        errorMessage = err.response.data?.message || err.response.data?.error || `Server Error: ${err.response.status} ${err.response.statusText}`;
+      } else if (err.request) {
+        // The request was made but no response was received (e.g. network error, CORS)
+        errorMessage = "Network error: No response received from server. Please check your internet connection.";
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        errorMessage = err.message;
+      }
+
+      // Ensure the error message is a string for rendering
+      setError(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
     } finally {
       setLoading(false);
     }

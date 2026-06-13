@@ -46,21 +46,20 @@ const Login = () => {
 
 
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error full object:", err);
       let errorMessage = "An unexpected error occurred. Please try again.";
       
       if (err.response) {
-        // The request was made and the server responded with a status code outside 2xx
         errorMessage = err.response.data?.message || err.response.data?.error || `Server Error: ${err.response.status} ${err.response.statusText}`;
       } else if (err.request) {
-        // The request was made but no response was received (e.g. network error, CORS)
-        errorMessage = "Network error: No response received from server. Please check your internet connection.";
+        // Includes more detailed debug info for the network error
+        errorMessage = `Network error (${err.code || 'UNKNOWN_CODE'}): No response from server. ` +
+                       `Message: ${err.message}. ` + 
+                       `Check your connection or DNS settings.`;
       } else {
-        // Something happened in setting up the request that triggered an Error
         errorMessage = err.message;
       }
 
-      // Ensure the error message is a string for rendering
       setError(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
     } finally {
       setLoading(false);

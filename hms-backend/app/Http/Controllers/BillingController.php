@@ -301,4 +301,51 @@ class BillingController extends Controller
             ], 500);
         }
     }
+    /**
+     * Delete an item from a bill.
+     * Consultations cannot be deleted. If a prescription item is deleted,
+     * the underlying prescription item is also deleted.
+     */
+    public function deleteItem(Request $request, $id, $itemId)
+    {
+        try {
+            $bill = DB::transaction(function () use ($id, $itemId) {
+                $bill = Bill::lockForUpdate()->findOrFail($id);
+                $item = BillItem::where('bill_id', $bill->id)->findOrFail($itemId);
+
+                if (strtolower($item->category) === 'consultation' || strtolower($item->description) === 'consultation fee') {
+                    abort(403, 'Consultation items cannot be deleted.');
+                }
+
+                // If it's linked to a prescription item, delete that too
+                if ($item->prescription_item_id) {
+                    $prescriptionItem = \App\Models\PrescriptionItem::find($item->prescription_item_id);
+                    if ($prescriptionItem) {
+                        $prescriptionItem->delete();
+                    }
+                }
+
+                // Delete the bill item
+                $item->delete();
+
+                // Refresh totals
+                $bill->refreshTotals();
+                $bill->refreshStatus();
+
+                return $bill->load(['items', 'payments', 'patient', 'doctor', 'treatment']);
+            });
+
+            return response()->json([
+                'message' => 'Item deleted successfully',
+                'bill'    => $bill,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('deleteItem failed: ' . $e->getMessage());
+            $status = $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException ? $e->getStatusCode() : 500;
+            return response()->json([
+                'message' => 'Failed to delete item',
+                'error'   => $e->getMessage(),
+            ], $status);
+        }
+    }
 }

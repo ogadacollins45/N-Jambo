@@ -21,6 +21,7 @@ import {
   Eye,
   Plus,
   ShoppingCart,
+  Trash2,
 } from "lucide-react";
 
 const BillDetails = () => {
@@ -114,6 +115,25 @@ const BillDetails = () => {
       flashMessage(setError, "Failed to record payment. Please try again.");
     } finally {
       setIsPaying(false);
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/bills/${bill.id}/items/${itemId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      flashMessage(setSuccess, "Item deleted successfully.");
+      fetchBill();
+    } catch (error) {
+      console.error("Delete item error:", error);
+      flashMessage(
+        setError,
+        error.response?.data?.message || "Failed to delete item."
+      );
     }
   };
 
@@ -212,17 +232,32 @@ const BillDetails = () => {
                         <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
                         <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
                         <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {bill?.items?.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{item.description}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">{item.quantity}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-right">{Number(item.amount).toFixed(2)}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-medium text-right">{Number(item.subtotal).toFixed(2)}</td>
-                        </tr>
-                      ))}
+                      {bill?.items?.map((item) => {
+                        const isConsultation = item.category?.toLowerCase() === 'consultation' || item.description?.toLowerCase() === 'consultation fee';
+                        return (
+                          <tr key={item.id}>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{item.description}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">{item.quantity}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-right">{Number(item.amount).toFixed(2)}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-medium text-right">{Number(item.subtotal).toFixed(2)}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                              {!isConsultation && (
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                  title="Delete Item"
+                                >
+                                  <Trash2 className="w-4 h-4 inline-block" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

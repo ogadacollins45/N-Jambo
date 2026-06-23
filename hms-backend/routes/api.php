@@ -347,6 +347,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /** Add extra item to a bill (admin / cashier / reception) */
     Route::post('/bills/{id}/add-item', [BillingController::class, 'addExtraItem']);
+    Route::delete('/bills/{id}/items/{itemId}', [BillingController::class, 'deleteItem']);
 
     /** System Diagnoses */
     Route::get('/system-diagnoses', [SystemDiagnosisController::class, 'index']);

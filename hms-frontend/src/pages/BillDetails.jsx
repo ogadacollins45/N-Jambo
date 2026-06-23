@@ -22,6 +22,7 @@ import {
   Plus,
   ShoppingCart,
   Trash2,
+  Search,
 } from "lucide-react";
 
 const BillDetails = () => {
@@ -50,6 +51,7 @@ const BillDetails = () => {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [addItemError, setAddItemError] = useState("");
   const [addItemSuccess, setAddItemSuccess] = useState("");
+  const [serviceSearchTerm, setServiceSearchTerm] = useState("");
 
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -297,22 +299,37 @@ const BillDetails = () => {
                       {/* Item dropdown */}
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Select Item *</label>
-                        <select
-                          id="add-item-select"
-                          value={addItemForm.service_item_id}
-                          onChange={(e) =>
-                            setAddItemForm((prev) => ({ ...prev, service_item_id: e.target.value }))
-                          }
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                          required
-                        >
-                          <option value="">-- Choose a procedure / item --</option>
-                          {serviceItems.map((si) => (
-                            <option key={si.id} value={si.id}>
-                              {si.name} — KES {Number(si.price).toFixed(2)}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex flex-col gap-2">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="Search for a procedure or service..."
+                              value={serviceSearchTerm}
+                              onChange={(e) => setServiceSearchTerm(e.target.value)}
+                              className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                            />
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                          </div>
+                          <select
+                            id="add-item-select"
+                            size={serviceSearchTerm ? 5 : 1}
+                            value={addItemForm.service_item_id}
+                            onChange={(e) =>
+                              setAddItemForm((prev) => ({ ...prev, service_item_id: e.target.value }))
+                            }
+                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                            required
+                          >
+                            <option value="">-- Choose a procedure / item --</option>
+                            {serviceItems
+                              .filter((si) => si.name.toLowerCase().includes(serviceSearchTerm.toLowerCase()))
+                              .map((si) => (
+                                <option key={si.id} value={si.id}>
+                                  {si.name} — KES {Number(si.price).toFixed(2)}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
                       </div>
 
                       {/* Quantity */}

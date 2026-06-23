@@ -13,6 +13,7 @@ const LabTestManagement = () => {
     const [currentTest, setCurrentTest] = useState(null);
     const [expandedTest, setExpandedTest] = useState(null);
     const [addingParameter, setAddingParameter] = useState(false);
+    const [currentParameter, setCurrentParameter] = useState(null);
 
     const [testForm, setTestForm] = useState({
         name: '',
@@ -89,7 +90,7 @@ const LabTestManagement = () => {
         }
     };
 
-    const handleAddParameter = async () => {
+    const handleSaveParameter = async () => {
         if (!expandedTest || !parameterForm.name) {
             alert('Please fill in parameter name');
             return;
@@ -97,16 +98,24 @@ const LabTestManagement = () => {
         setAddingParameter(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`${API_BASE_URL}/api/lab/management/tests/${expandedTest.id}/parameters`, parameterForm, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Parameter added successfully');
+            if (currentParameter) {
+                await axios.put(`${API_BASE_URL}/api/lab/management/parameters/${currentParameter.id}`, parameterForm, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                alert('Parameter updated successfully');
+            } else {
+                await axios.post(`${API_BASE_URL}/api/lab/management/tests/${expandedTest.id}/parameters`, parameterForm, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                alert('Parameter added successfully');
+            }
             setShowParameterForm(false);
+            setCurrentParameter(null);
             setParameterForm({ name: '', code: '', result_type: 'range', unit: '', normal_range_min: '', normal_range_max: '' });
             fetchData();
         } catch (error) {
-            console.error('Error adding parameter:', error);
-            alert('Failed to add parameter');
+            console.error('Error saving parameter:', error);
+            alert('Failed to save parameter');
         } finally {
             setAddingParameter(false);
         }
@@ -158,6 +167,20 @@ const LabTestManagement = () => {
             price: 0,
             is_active: true,
         });
+    };
+
+    const openEditParameter = (test, param) => {
+        setExpandedTest(test);
+        setCurrentParameter(param);
+        setParameterForm({
+            name: param.name,
+            code: param.code || '',
+            result_type: param.result_type || 'range',
+            unit: param.unit || '',
+            normal_range_min: param.normal_range_min || '',
+            normal_range_max: param.normal_range_max || '',
+        });
+        setShowParameterForm(true);
     };
 
     const openEditTest = (test) => {
@@ -269,6 +292,13 @@ const LabTestManagement = () => {
                                                             ? 'Pos/Neg'
                                                             : `${param.normal_range_min} - ${param.normal_range_max} ${param.unit}`}
                                                     </div>
+                                                    <button
+                                                        onClick={() => openEditParameter(test, param)}
+                                                        className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                                        title="Edit parameter"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleDeleteParameter(param.id)}
                                                         className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
@@ -487,11 +517,11 @@ const LabTestManagement = () => {
                         <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
                             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">Add Parameter</h3>
+                                    <h3 className="text-xl font-bold text-white">{currentParameter ? 'Edit' : 'Add'} Parameter</h3>
                                     <p className="text-indigo-100 text-sm mt-1">{expandedTest.name}</p>
                                 </div>
                                 <button
-                                    onClick={() => { setShowParameterForm(false); setExpandedTest(null); }}
+                                    onClick={() => { setShowParameterForm(false); setExpandedTest(null); setCurrentParameter(null); }}
                                     className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
                                 >
                                     <X size={20} />
@@ -585,25 +615,25 @@ const LabTestManagement = () => {
                                 </div>
                                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
                                     <button
-                                        onClick={() => { setShowParameterForm(false); setExpandedTest(null); }}
+                                        onClick={() => { setShowParameterForm(false); setExpandedTest(null); setCurrentParameter(null); }}
                                         className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={handleAddParameter}
+                                        onClick={handleSaveParameter}
                                         disabled={addingParameter}
                                         className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-md transition-all"
                                     >
                                         {addingParameter ? (
                                             <>
                                                 <Loader className="animate-spin w-4 h-4" />
-                                                Adding...
+                                                Saving...
                                             </>
                                         ) : (
                                             <>
-                                                <PlusCircle size={18} />
-                                                Add Parameter
+                                                {currentParameter ? <Save size={18} /> : <PlusCircle size={18} />}
+                                                {currentParameter ? 'Update Parameter' : 'Add Parameter'}
                                             </>
                                         )}
                                     </button>

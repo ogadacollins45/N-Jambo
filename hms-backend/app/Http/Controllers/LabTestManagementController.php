@@ -220,6 +220,8 @@ class LabTestManagementController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'code' => 'sometimes|string|max:50',
+            'result_type' => 'sometimes|in:range,binary',
             'unit' => 'nullable|string|max:50',
             'normal_range_min' => 'nullable|numeric',
             'normal_range_max' => 'nullable|numeric',

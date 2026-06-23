@@ -115,6 +115,8 @@ class AdmissionController extends Controller
             'patient',
             'doctor',
             'entries.user',
+            'clinicalNotes.user',
+            'treatmentNotes.user',
             'prescriptions.items',
             'bill.items',
             'bill.payments',
@@ -132,6 +134,8 @@ class AdmissionController extends Controller
             'patient',
             'doctor',
             'entries.user',
+            'clinicalNotes.user',
+            'treatmentNotes.user',
             'prescriptions.items',
             'bill.items',
             'bill.payments',
@@ -318,5 +322,103 @@ class AdmissionController extends Controller
         }
 
         return response()->json($bill);
+    }
+
+    /**
+     * Add a Clinical Note to an admission.
+     */
+    public function addClinicalNote(Request $request, $id)
+    {
+        $admission = Admission::findOrFail($id);
+
+        if (!$admission->isActive()) {
+            return response()->json([
+                'message' => 'Cannot add clinical notes to a non-active admission.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'chief_complaint' => 'nullable|string',
+            'general_exam'    => 'nullable|string',
+            'systemic_exam'   => 'nullable|string',
+            'diagnosis'       => 'nullable|string',
+            'plan_notes'      => 'nullable|string',
+        ]);
+
+        $note = $admission->clinicalNotes()->create([
+            'user_id'         => auth()->id() == 999999 ? null : auth()->id(),
+            'chief_complaint' => $validated['chief_complaint'] ?? null,
+            'general_exam'    => $validated['general_exam'] ?? null,
+            'systemic_exam'   => $validated['systemic_exam'] ?? null,
+            'diagnosis'       => $validated['diagnosis'] ?? null,
+            'plan_notes'      => $validated['plan_notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Clinical note added successfully.',
+            'note'    => $note->load('user'),
+        ], 201);
+    }
+
+    /**
+     * Add a Treatment Note to an admission.
+     */
+    public function addTreatmentNote(Request $request, $id)
+    {
+        $admission = Admission::findOrFail($id);
+
+        if (!$admission->isActive()) {
+            return response()->json([
+                'message' => 'Cannot add treatment notes to a non-active admission.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'type'       => 'nullable|string',
+            'medication' => 'nullable|string',
+            'dosage'     => 'nullable|string',
+            'route'      => 'nullable|string',
+            'directions' => 'nullable|string',
+            'frequency'  => 'nullable|string',
+        ]);
+
+        $note = $admission->treatmentNotes()->create([
+            'user_id'    => auth()->id() == 999999 ? null : auth()->id(),
+            'type'       => $validated['type'] ?? null,
+            'medication' => $validated['medication'] ?? null,
+            'dosage'     => $validated['dosage'] ?? null,
+            'route'      => $validated['route'] ?? null,
+            'directions' => $validated['directions'] ?? null,
+            'frequency'  => $validated['frequency'] ?? null,
+            'status'     => 'active',
+        ]);
+
+        return response()->json([
+            'message' => 'Treatment note added successfully.',
+            'note'    => $note->load('user'),
+        ], 201);
+    }
+
+    /**
+     * Update the status of a Treatment Note.
+     */
+    public function updateTreatmentNoteStatus(Request $request, $id, $noteId)
+    {
+        $admission = Admission::findOrFail($id);
+        
+        $note = $admission->treatmentNotes()->findOrFail($noteId);
+
+        $validated = $request->validate([
+            'status' => 'required|in:active,completed,discontinued',
+        ]);
+
+        $note->update([
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json([
+            'message' => 'Treatment note status updated successfully.',
+            'note'    => $note->load('user'),
+        ]);
     }
 }

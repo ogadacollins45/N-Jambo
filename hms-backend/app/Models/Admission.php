@@ -61,6 +61,16 @@ class Admission extends Model
         return $this->hasMany(Prescription::class)->orderByDesc('created_at');
     }
 
+    public function clinicalNotes()
+    {
+        return $this->hasMany(ClinicalNote::class)->orderByDesc('created_at');
+    }
+
+    public function treatmentNotes()
+    {
+        return $this->hasMany(TreatmentNote::class)->orderByDesc('created_at');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Accessors & Helpers

@@ -336,6 +336,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admissions/{id}/discharge', [AdmissionController::class, 'discharge']);
     Route::get('/admissions/{id}/bill', [AdmissionController::class, 'getBill']);
     Route::get('/patients/{patientId}/active-admission', [AdmissionController::class, 'getActiveForPatient']);
+    Route::post('/admissions/{id}/clinical-notes', [AdmissionController::class, 'addClinicalNote']);
+    Route::post('/admissions/{id}/treatment-notes', [AdmissionController::class, 'addTreatmentNote']);
+    Route::put('/admissions/{id}/treatment-notes/{noteId}/status', [AdmissionController::class, 'updateTreatmentNoteStatus']);
 
     /** Service Items – Admin-only management (CRUD) */
     Route::middleware('role:admin')->group(function () {

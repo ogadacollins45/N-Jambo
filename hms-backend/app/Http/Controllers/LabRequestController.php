@@ -197,6 +197,40 @@ class LabRequestController extends Controller
     }
 
     /**
+     * Delete a specific test from a lab request
+     */
+    public function destroyTest($id, $testId)
+    {
+        $labRequest = LabRequest::findOrFail($id);
+        
+        $requestTest = LabRequestTest::where('lab_request_id', $id)
+            ->where('id', $testId)
+            ->firstOrFail();
+
+        // Delete associated results if any
+        if ($requestTest->result) {
+            \App\Models\LabResultParameter::where('lab_result_id', $requestTest->result->id)->delete();
+            $requestTest->result->delete();
+        }
+
+        $requestTest->delete();
+
+        // If this was the last test in the request, delete the whole request
+        if ($labRequest->tests()->count() === 0) {
+            $labRequest->delete();
+            return response()->json([
+                'message' => 'Test removed. Request was also deleted as it had no more tests.',
+                'request_deleted' => true
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Test removed successfully',
+            'request_deleted' => false
+        ]);
+    }
+
+    /**
      * Get available test templates
      */
     public function availableTests()

@@ -265,6 +265,23 @@ const PatientDetails = () => {
     }
   };
 
+  const deleteLabTest = async (requestId, testId) => {
+    if (!window.confirm('Are you sure you want to delete this test?')) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/lab/requests/${requestId}/tests/${testId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setSuccess('Test deleted successfully');
+      fetchAllData();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to delete test');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
   useEffect(() => {
     fetchAllData();
 
@@ -1904,18 +1921,34 @@ const PatientDetails = () => {
                                                           <p className="text-gray-500">{test.template.category.name}</p>
                                                         )}
                                                       </div>
-                                                      {test.result ? (
-                                                        <button
-                                                          onClick={() => setSelectedLabResult(test.result)}
-                                                          className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded"
-                                                        >
-                                                          View Results
-                                                        </button>
-                                                      ) : (
-                                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
-                                                          Pending
-                                                        </span>
-                                                      )}
+                                                      <div className="flex items-center gap-2">
+                                                        {test.result ? (
+                                                          <>
+                                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                                              Results Available
+                                                            </span>
+                                                            <button
+                                                              onClick={() => setSelectedLabResult(test.result)}
+                                                              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded"
+                                                            >
+                                                              View Results
+                                                            </button>
+                                                          </>
+                                                        ) : (
+                                                          <>
+                                                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                                              Pending
+                                                            </span>
+                                                            <button
+                                                              onClick={() => deleteLabTest(labRequest.id, test.id)}
+                                                              className="p-1 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded"
+                                                              title="Delete Test"
+                                                            >
+                                                              <Trash2 size={14} />
+                                                            </button>
+                                                          </>
+                                                        )}
+                                                      </div>
                                                     </div>
                                                   ))}
                                                 </div>
@@ -2160,9 +2193,18 @@ const PatientDetails = () => {
                                         </button>
                                       </>
                                     ) : (
-                                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                                        Pending
-                                      </span>
+                                      <>
+                                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                          Pending
+                                        </span>
+                                        <button
+                                          onClick={() => deleteLabTest(labRequest.id, test.id)}
+                                          className="p-1 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded"
+                                          title="Delete Test"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </>
                                     )}
                                   </div>
                                 </div>

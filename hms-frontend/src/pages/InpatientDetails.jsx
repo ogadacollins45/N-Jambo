@@ -274,15 +274,28 @@ const InpatientDetails = () => {
   };
 
   const handleDeletePrescription = async (prescriptionId) => {
-    if (!window.confirm("Are you sure you want to delete this prescription? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete this prescription?")) return;
     try {
-      await axios.delete(`${API_BASE}/prescriptions/${prescriptionId}`, {
+      await axios.delete(`${API_BASE}/pharmacy/prescriptions/${prescriptionId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       flashMessage(setSuccess, "Prescription deleted successfully.");
       fetchAdmission();
     } catch (err) {
       flashMessage(setError, err.response?.data?.message || "Failed to delete prescription.");
+    }
+  };
+
+  const deleteLabTest = async (requestId, testId) => {
+    if (!window.confirm('Are you sure you want to delete this test?')) return;
+    try {
+      await axios.delete(`${API_BASE}/lab/requests/${requestId}/tests/${testId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      flashMessage(setSuccess, 'Test deleted successfully');
+      fetchAdmission();
+    } catch (error) {
+      flashMessage(setError, error.response?.data?.message || 'Failed to delete test');
     }
   };
 
@@ -1240,9 +1253,20 @@ const InpatientDetails = () => {
                             <div>
                               <div className="space-y-2 mt-3">
                                 {lr.tests?.map((t) => (
-                                  <div key={t.id} className="flex justify-between text-sm bg-gray-50 rounded-lg p-2">
+                                  <div key={t.id} className="flex justify-between items-center text-sm bg-gray-50 rounded-lg p-2">
                                     <span className="text-gray-700">{t.template?.name || "Unknown Test"}</span>
-                                    <span className={`text-xs font-medium capitalize ${t.status === "completed" ? "text-green-600" : "text-gray-500"}`}>{t.status}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`text-xs font-medium capitalize ${t.status === "completed" ? "text-green-600" : "text-gray-500"}`}>{t.status}</span>
+                                      {t.status !== "completed" && (
+                                        <button
+                                          onClick={() => deleteLabTest(lr.id, t.id)}
+                                          className="p-1 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded"
+                                          title="Delete Test"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>

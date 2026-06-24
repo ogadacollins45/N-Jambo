@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useLabNotification } from '../context/LabNotificationContext';
-import { Microscope, Save, Send, X, Plus, Loader, Clock, CheckCircle2, Edit } from 'lucide-react';
+import { Microscope, Save, Send, X, Plus, Loader, Clock, CheckCircle2, Edit, Trash2 } from 'lucide-react';
 
 const LabProcessing = () => {
     const { id } = useParams();
@@ -201,6 +201,24 @@ const LabProcessing = () => {
         }
     };
 
+    const deleteTest = async (testId) => {
+        if (!window.confirm('Are you sure you want to delete this test from the request?')) return;
+        
+        try {
+            const response = await axios.delete(`${API_BASE}/lab/requests/${id}/tests/${testId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (response.data.request_deleted) {
+                navigate('/lab/queue');
+            } else {
+                loadRequest();
+            }
+        } catch (err) {
+            alert('Error deleting test: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
     const handleParameterChange = (testId, parameterId, value) => {
         setResults(prev => ({
             ...prev,
@@ -338,13 +356,22 @@ const LabProcessing = () => {
                                                 </span>
                                             )}
                                         </h3>
-                                        <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${test.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                            test.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {test.status === 'completed' && <CheckCircle2 className="w-4 h-4" />}
-                                            {test.status}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${test.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                test.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                {test.status === 'completed' && <CheckCircle2 className="w-4 h-4" />}
+                                                {test.status}
+                                            </span>
+                                            <button
+                                                onClick={() => deleteTest(test.id)}
+                                                className="p-1.5 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                                title="Delete Test"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {openTests.includes(test.id) && (

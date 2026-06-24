@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../layout/DashboardLayout';
 import { Microscope, Clock, AlertTriangle, ChevronRight, Search, Calendar, BarChart2, ClipboardList, Download, Plus, Trash2 } from 'lucide-react';
 import AddManualLabRequestModal from '../components/AddManualLabRequestModal';
 
 const LabQueue = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('queue');
 
     // ─── Queue Tab State ───────────────────────────────────────────────────
@@ -355,7 +357,7 @@ const LabQueue = () => {
                                                             <div className="flex items-center"><Clock className="w-4 h-4 mr-1" />{new Date(request.request_date).toLocaleString()}</div>
                                                         </td>
                                                         <td className="px-4 py-3 flex gap-2">
-                                                            <button onClick={() => window.location.href = `/lab/processing/${request.id}`} className="bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition flex items-center text-sm">
+                                                            <button onClick={() => navigate(`/lab/processing/${request.id}`)} className="bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition flex items-center text-sm">
                                                                 Process<ChevronRight className="w-4 h-4 ml-1" />
                                                             </button>
                                                             <button onClick={() => setRequestToDelete(request)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition" title="Delete request">
@@ -443,6 +445,7 @@ const LabQueue = () => {
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Tests</th>
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide min-w-[200px]">Results</th>
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -477,6 +480,15 @@ const LabQueue = () => {
                                                             <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusBadge(req.status)}`}>
                                                                 {formatStatus(req.status)}
                                                             </span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <button
+                                                                onClick={() => navigate(`/lab/requests/${req.id}/print`)}
+                                                                className="flex items-center gap-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                                                title="Print Lab Report"
+                                                            >
+                                                                Print
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ))}

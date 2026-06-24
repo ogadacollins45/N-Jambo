@@ -63,6 +63,7 @@ import PharmacyReports from "./pages/PharmacyReports.jsx";
 import LabQueue from "./pages/LabQueue.jsx";
 import LabProcessing from "./pages/LabProcessing.jsx";
 import LabCompleted from "./pages/LabCompleted.jsx";
+import LabReportPrint from "./pages/LabReportPrint.jsx";
 import Updates from "./pages/Updates.jsx";
 import DatabaseManagement from "./pages/DatabaseManagement.jsx";
 import Reports from "./pages/Reports.jsx";
@@ -116,6 +117,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="/lab/queue" element={<LabQueue />} />
               <Route path="/lab/processing/:id" element={<LabProcessing />} />
               <Route path="/lab/completed" element={<LabCompleted />} />
+              <Route path="/lab/requests/:id/print" element={<LabReportPrint />} />
 
               {/* Patients */}
               <Route path="/patients" element={<Patients />} />

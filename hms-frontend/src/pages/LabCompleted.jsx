@@ -191,6 +191,14 @@ const LabCompleted = () => {
                                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                                             {reviewingId === req.id ? 'Reviewing...' : 'Mark Reviewed'}
                                                         </button>
+                                                        {/* Print Report */}
+                                                        <button
+                                                            onClick={() => navigate(`/lab/requests/${req.id}/print`)}
+                                                            className="flex items-center gap-1 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                                            title="Print Lab Report"
+                                                        >
+                                                            Print
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>

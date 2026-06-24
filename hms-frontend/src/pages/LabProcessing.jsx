@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useLabNotification } from '../context/LabNotificationContext';
-import { Microscope, Save, Send, X, Plus, Loader, Clock, CheckCircle2 } from 'lucide-react';
+import { Microscope, Save, Send, X, Plus, Loader, Clock, CheckCircle2, Edit } from 'lucide-react';
 
 const LabProcessing = () => {
     const { id } = useParams();
@@ -347,7 +347,7 @@ const LabProcessing = () => {
                                         </span>
                                     </div>
 
-                                    {test.status !== 'completed' && openTests.includes(test.id) && (
+                                    {openTests.includes(test.id) && (
                                         <div>
                                             <div className="space-y-3 mb-4">
                                                 {test.template?.parameters?.map((param) => (
@@ -461,9 +461,28 @@ const LabProcessing = () => {
                                         </button>
                                     )}
 
-                                    {test.status === 'completed' && test.result && (
+                                    {test.status === 'completed' && test.result && !openTests.includes(test.id) && (
                                         <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                                            <p className="text-sm font-medium text-green-800 mb-2">Results Submitted</p>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <p className="text-sm font-medium text-green-800">Results Submitted</p>
+                                                <button
+                                                    onClick={() => {
+                                                        const existingResults = {};
+                                                        test.result.parameters?.forEach(rp => {
+                                                            existingResults[rp.parameter_id] = rp.value;
+                                                        });
+                                                        setResults(prev => ({ ...prev, [test.id]: existingResults }));
+                                                        if (test.result.overall_comment) {
+                                                            setComments(prev => ({ ...prev, [test.id]: test.result.overall_comment }));
+                                                        }
+                                                        toggleTestForm(test.id);
+                                                    }}
+                                                    className="bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 flex items-center text-xs font-medium"
+                                                >
+                                                    <Edit className="w-3.5 h-3.5 mr-1" />
+                                                    Edit Results
+                                                </button>
+                                            </div>
                                             {test.result.parameters?.map((rp) => (
                                                 <div key={rp.id} className="text-sm text-gray-700 flex justify-between py-1">
                                                     <span>{rp.parameter?.name}:</span>

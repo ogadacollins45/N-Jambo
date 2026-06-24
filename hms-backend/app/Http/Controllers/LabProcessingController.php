@@ -119,6 +119,18 @@ class LabProcessingController extends Controller
 
         DB::beginTransaction();
         try {
+            // Check if results have already been reviewed by a doctor
+            if ($labRequest->reviewed_at) {
+                return response()->json(['message' => 'Cannot edit results that have already been reviewed by a doctor.'], 403);
+            }
+
+            // Check if result already exists and delete it to allow re-submission
+            $existingResult = LabResult::where('lab_request_test_id', $requestTest->id)->first();
+            if ($existingResult) {
+                LabResultParameter::where('lab_result_id', $existingResult->id)->delete();
+                $existingResult->delete();
+            }
+
             // Create result
             $result = LabResult::create([
                 'lab_request_test_id' => $requestTest->id,

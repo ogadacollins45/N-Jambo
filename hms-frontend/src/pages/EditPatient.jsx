@@ -42,6 +42,11 @@ const EditPatient = () => {
     pregnancy_status: "na",
     has_disability: false,
     disability_type: "",
+
+    age: "",
+    age_years: "",
+    age_months: "",
+    age_days: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,16 +54,99 @@ const EditPatient = () => {
   const [success, setSuccess] = useState("");
   const [mohFieldsExpanded, setMohFieldsExpanded] = useState(false);
 
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const decomposeAge = (dob) => {
+    if (!dob) return { years: "", months: "", days: "" };
+    const birth = new Date(dob);
+    const today = new Date();
+    if (isNaN(birth)) return { years: "", months: "", days: "" };
+
+    let years  = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth()    - birth.getMonth();
+    let days   = today.getDate()     - birth.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) {
+      years  -= 1;
+      months += 12;
+    }
+
+    return {
+      years:  years  > 0 ? String(years)  : "",
+      months: months > 0 ? String(months) : "",
+      days:   days   > 0 ? String(days)   : "",
+    };
+  };
+
+  const dobFromParts = (y, m, d) => {
+    const years  = parseInt(y)  || 0;
+    const months = parseInt(m)  || 0;
+    const days   = parseInt(d)  || 0;
+    if (!years && !months && !days) return "";
+    const today = new Date();
+    const birth = new Date(
+      today.getFullYear()  - years,
+      today.getMonth()     - months,
+      today.getDate()      - days
+    );
+    return birth.toISOString().split("T")[0];
+  };
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleDOBChange = (e) => {
+    const dob = e.target.value;
+    const { years, months, days } = decomposeAge(dob);
+    setFormData((prev) => ({
+      ...prev,
+      dob,
+      age:        years,
+      age_years:  years,
+      age_months: months,
+      age_days:   days,
+    }));
+  };
+
+  const handleYearsChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(raw, prev.age_months, prev.age_days);
+      return { ...prev, age_years: raw, age: raw, dob };
+    });
+  };
+
+  const handleMonthsChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(prev.age_years, raw, prev.age_days);
+      return { ...prev, age_months: raw, dob };
+    });
+  };
+
+  const handleDaysChange = (e) => {
+    const raw = e.target.value;
+    setFormData((prev) => {
+      const dob = dobFromParts(prev.age_years, prev.age_months, raw);
+      return { ...prev, age_days: raw, dob };
+    });
+  };
+
   useEffect(() => {
     const fetchPatient = async () => {
       setLoading(true);
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/patients/${id}`);
+        const loadedDob = res.data.dob || "";
+        const decomp = decomposeAge(loadedDob);
+
         setFormData({
           first_name: res.data.first_name || "",
           last_name: res.data.last_name || "",
           gender: res.data.gender || "",
-          dob: res.data.dob || "",
+          dob: loadedDob,
           phone: res.data.phone || "",
           email: res.data.email || "",
           address: res.data.address || "",
@@ -73,6 +161,11 @@ const EditPatient = () => {
           pregnancy_status: res.data.pregnancy_status || "na",
           has_disability: res.data.has_disability || false,
           disability_type: res.data.disability_type || "",
+
+          age: res.data.age || decomp.years,
+          age_years: res.data.age_years || decomp.years,
+          age_months: res.data.age_months || decomp.months,
+          age_days: res.data.age_days || decomp.days,
         });
       } catch (err) {
         console.error(err);
@@ -96,7 +189,14 @@ const EditPatient = () => {
     setSuccess("");
 
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/patients/${id}`, formData, {
+      const payload = {
+        ...formData,
+        age_years: parseInt(formData.age_years) || 0,
+        age_months: parseInt(formData.age_months) || 0,
+        age_days: parseInt(formData.age_days) || 0,
+      };
+
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/patients/${id}`, payload, {
         headers: { "Content-Type": "application/json" },
       });
       setSuccess("Patient updated successfully! Redirecting...");
@@ -161,10 +261,78 @@ const EditPatient = () => {
                   <InputField icon={<User className="w-5 h-5 text-gray-400" />} label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required />
                   <InputField icon={<User className="w-5 h-5 text-gray-400" />} label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} required />
                   <SelectField icon={<Users className="w-5 h-5 text-gray-400" />} label="Gender" name="gender" value={formData.gender} onChange={handleChange} required options={[{ value: "M", label: "Male" }, { value: "F", label: "Female" }, { value: "O", label: "Other" }]} />
-                  <InputField icon={<Cake className="w-5 h-5 text-gray-400" />} label="Date of Birth" name="dob" type="date" value={formData.dob} onChange={handleChange} />
                   <InputField icon={<Phone className="w-5 h-5 text-gray-400" />} label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} />
                   <InputField icon={<Mail className="w-5 h-5 text-gray-400" />} label="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} />
                 </div>
+                
+                {/* DOB + Age (Years / Months / Days) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  {/* Date of birth calendar */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <Cake className="w-3.5 h-3.5" /> Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleDOBChange}
+                      className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+                    />
+                  </div>
+
+                  {/* Age — three separate integer boxes */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                      Age
+                      <span className="font-normal normal-case text-gray-400 ml-1">
+                        (years syncs with DOB · months &amp; days are extra detail)
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* Years */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="150"
+                          value={formData.age_years}
+                          onChange={handleYearsChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Years</span>
+                      </div>
+                      {/* Months */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="11"
+                          value={formData.age_months}
+                          onChange={handleMonthsChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Months</span>
+                      </div>
+                      {/* Days */}
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="30"
+                          value={formData.age_days}
+                          onChange={handleDaysChange}
+                          className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-center"
+                          placeholder="0"
+                        />
+                        <span className="block text-center text-xs text-gray-500 mt-0.5 font-medium">Days</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="relative">
                   <div className="absolute top-3 left-3 flex items-center pointer-events-none">
                     <MapPin className="w-5 h-5 text-gray-400" />

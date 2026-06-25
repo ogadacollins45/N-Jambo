@@ -26,6 +26,9 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
         gender: '',
         dob: '',
         age: '',
+        age_years: '',
+        age_months: '',
+        age_days: '',
         phone: '',
         email: '',
         address: '',
@@ -43,35 +46,87 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
 
     // Form logic helpers
-    const calculateAgeFromDOB = (dob) => {
-        if (!dob) return '';
-        const birthDate = new Date(dob);
+    const decomposeAge = (dob) => {
+        if (!dob) return { years: "", months: "", days: "" };
+        const birth = new Date(dob);
         const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-        return age >= 0 ? age : '';
+        if (isNaN(birth)) return { years: "", months: "", days: "" };
+
+        let years  = today.getFullYear() - birth.getFullYear();
+        let months = today.getMonth()    - birth.getMonth();
+        let days   = today.getDate()     - birth.getDate();
+
+        if (days < 0) {
+            months -= 1;
+            const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+            days += prevMonth.getDate();
+        }
+        if (months < 0) {
+            years  -= 1;
+            months += 12;
+        }
+
+        return {
+            years:  years  > 0 ? String(years)  : "",
+            months: months > 0 ? String(months) : "",
+            days:   days   > 0 ? String(days)   : "",
+        };
     };
 
-    const calculateDOBFromAge = (age) => {
-        if (!age || isNaN(age)) return '';
+    const dobFromParts = (y, m, d) => {
+        const years  = parseInt(y)  || 0;
+        const months = parseInt(m)  || 0;
+        const days   = parseInt(d)  || 0;
+        if (!years && !months && !days) return "";
         const today = new Date();
-        const birthYear = today.getFullYear() - parseInt(age);
-        const dob = new Date(birthYear, today.getMonth(), today.getDate());
-        return dob.toISOString().split('T')[0];
+        const birth = new Date(
+            today.getFullYear()  - years,
+            today.getMonth()     - months,
+            today.getDate()      - days
+        );
+        return birth.toISOString().split('T')[0];
     };
 
     const handlePatientChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'dob') {
-            const newAge = calculateAgeFromDOB(value);
-            setNewPatient((prev) => ({ ...prev, dob: value, age: newAge }));
-        } else if (name === 'age') {
-            const newDOB = calculateDOBFromAge(value);
-            setNewPatient((prev) => ({ ...prev, age: value, dob: newDOB }));
-        } else {
-            setNewPatient((prev) => ({ ...prev, [name]: value }));
-        }
+        setNewPatient((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleDOBChange = (e) => {
+        const dob = e.target.value;
+        const { years, months, days } = decomposeAge(dob);
+        setNewPatient((prev) => ({
+            ...prev,
+            dob,
+            age:        years,
+            age_years:  years,
+            age_months: months,
+            age_days:   days,
+        }));
+    };
+
+    const handleYearsChange = (e) => {
+        const raw = e.target.value;
+        setNewPatient((prev) => {
+            const dob = dobFromParts(raw, prev.age_months, prev.age_days);
+            return { ...prev, age_years: raw, age: raw, dob };
+        });
+    };
+
+    const handleMonthsChange = (e) => {
+        const raw = e.target.value;
+        setNewPatient((prev) => {
+            const dob = dobFromParts(prev.age_years, raw, prev.age_days);
+            return { ...prev, age_months: raw, dob };
+        });
+    };
+
+    const handleDaysChange = (e) => {
+        const raw = e.target.value;
+        setNewPatient((prev) => {
+            const dob = dobFromParts(prev.age_years, prev.age_months, raw);
+            return { ...prev, age_days: raw, dob };
+        });
     };
 
     // Auto-search patients
@@ -118,7 +173,13 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
     const handleRegisterPatient = async () => {
         setLoading(true);
         try {
-            const response = await axios.post('/patients', newPatient);
+            const payload = {
+                ...newPatient,
+                age_years: parseInt(newPatient.age_years) || 0,
+                age_months: parseInt(newPatient.age_months) || 0,
+                age_days: parseInt(newPatient.age_days) || 0,
+            };
+            const response = await axios.post('/patients', payload);
             setSelectedPatient(response.data.data || response.data);
             setStep(2);
         } catch (error) {
@@ -193,7 +254,7 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
         setSearchQuery('');
         setSearchResults([]);
         setSelectedPatient(null);
-        setNewPatient({ first_name: '', last_name: '', national_id: '', gender: '', dob: '', age: '', phone: '', email: '', address: '' });
+        setNewPatient({ first_name: '', last_name: '', national_id: '', gender: '', dob: '', age: '', age_years: '', age_months: '', age_days: '', phone: '', email: '', address: '' });
         setSelectedTests([]);
         setTestSearch('');
         setPriority('routine');
@@ -309,8 +370,21 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
                                             <option value="">Select...</option><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option>
                                         </select>
                                     </div>
-                                    <div><label className="text-xs text-gray-500">Date of Birth</label><input type="date" name="dob" value={newPatient.dob} onChange={handlePatientChange} max={new Date().toISOString().split('T')[0]} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
-                                    <div><label className="text-xs text-gray-500">Age</label><input type="number" name="age" value={newPatient.age} onChange={handlePatientChange} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
+                                    <div><label className="text-xs text-gray-500">Date of Birth</label><input type="date" name="dob" value={newPatient.dob} onChange={handleDOBChange} max={new Date().toISOString().split('T')[0]} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
+                                    <div>
+                                        <label className="text-xs text-gray-500">Age</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div>
+                                                <input type="number" min="0" max="150" value={newPatient.age_years} onChange={handleYearsChange} className="w-full border rounded p-2 focus:ring-indigo-500 text-center" placeholder="Yrs" />
+                                            </div>
+                                            <div>
+                                                <input type="number" min="0" max="11" value={newPatient.age_months} onChange={handleMonthsChange} className="w-full border rounded p-2 focus:ring-indigo-500 text-center" placeholder="Mo" />
+                                            </div>
+                                            <div>
+                                                <input type="number" min="0" max="30" value={newPatient.age_days} onChange={handleDaysChange} className="w-full border rounded p-2 focus:ring-indigo-500 text-center" placeholder="Days" />
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div><label className="text-xs text-gray-500">Phone</label><input type="tel" name="phone" value={newPatient.phone} onChange={handlePatientChange} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
                                     <div className="sm:col-span-2">
                                         <button onClick={handleRegisterPatient} disabled={loading || !newPatient.first_name || !newPatient.last_name || !newPatient.gender} className="w-full bg-indigo-600 text-white py-2.5 rounded hover:bg-indigo-700 disabled:opacity-50 font-medium mt-2">

@@ -217,17 +217,10 @@ const LabReportPrint = () => {
                                                     {test.result.parameters?.map((paramResult) => {
                                                         const p = paramResult.parameter;
                                                         const isNumeric = p?.result_type === 'range';
-                                                        const val = paramResult.numeric_value ?? paramResult.text_value ?? (paramResult.is_positive ? 'Positive' : 'Negative');
+                                                        const val = paramResult.value;
                                                         
                                                         // Check if out of range for highlight
-                                                        let isOutOfRange = false;
-                                                        if (isNumeric && p?.normal_range_min !== null && p?.normal_range_max !== null && paramResult.numeric_value !== null) {
-                                                            if (paramResult.numeric_value < p.normal_range_min || paramResult.numeric_value > p.normal_range_max) {
-                                                                isOutOfRange = true;
-                                                            }
-                                                        } else if (!isNumeric && paramResult.is_positive) {
-                                                            isOutOfRange = true; // Flag positive binary results
-                                                        }
+                                                        const isOutOfRange = paramResult.is_abnormal;
 
                                                         return (
                                                             <tr key={paramResult.id}>

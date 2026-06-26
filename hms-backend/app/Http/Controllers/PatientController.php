@@ -175,7 +175,17 @@ class PatientController extends Controller
             'email'       => 'nullable|email|max:255',
             'address'     => 'nullable|string|max:255',
             'national_id' => 'nullable|string|max:50|unique:patients,national_id',
-            // 🚫 removed upid validation (auto-generated in model)
+            
+            // MOH fields
+            'county'            => 'nullable|string|max:100',
+            'sub_county'        => 'nullable|string|max:100',
+            'ward'              => 'nullable|string|max:100',
+            'village'           => 'nullable|string|max:100',
+            'next_of_kin'       => 'nullable|string|max:100',
+            'next_of_kin_phone' => 'nullable|string|max:20',
+            'pregnancy_status'  => 'nullable|string|in:yes,no,unknown,na',
+            'has_disability'    => 'nullable|boolean',
+            'disability_type'   => 'nullable|string|max:100',
         ]);
 
         $patient = Patient::create($validated);
@@ -276,6 +286,17 @@ class PatientController extends Controller
             'email'       => 'nullable|email|max:255',
             'address'     => 'nullable|string|max:255',
             'national_id' => 'nullable|string|max:50|unique:patients,national_id,' . $id,
+            
+            // MOH fields
+            'county'            => 'nullable|string|max:100',
+            'sub_county'        => 'nullable|string|max:100',
+            'ward'              => 'nullable|string|max:100',
+            'village'           => 'nullable|string|max:100',
+            'next_of_kin'       => 'nullable|string|max:100',
+            'next_of_kin_phone' => 'nullable|string|max:20',
+            'pregnancy_status'  => 'nullable|string|in:yes,no,unknown,na',
+            'has_disability'    => 'nullable|boolean',
+            'disability_type'   => 'nullable|string|max:100',
         ]);
 
         $patient->update($validated);

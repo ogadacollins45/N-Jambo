@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import logo from "../assets/logo.jpeg";
+import MaintenanceGuard, { IS_MAINTENANCE_MODE } from "../components/MaintenanceGuard";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -157,6 +158,8 @@ const Login = () => {
               </p>
             </div>
 
+            <MaintenanceGuard type="login" />
+
             {error && (
               <div className="bg-red-100/90 backdrop-blur-sm border border-red-300 text-red-700 px-4 py-3 rounded-lg text-center text-sm animate-slide-up shadow-lg">
                 {error}
@@ -176,6 +179,7 @@ const Login = () => {
                   placeholder="Enter Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={IS_MAINTENANCE_MODE}
                   required
                 />
               </label>
@@ -192,6 +196,7 @@ const Login = () => {
                     placeholder="Enter Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={IS_MAINTENANCE_MODE}
                     required
                   />
 
@@ -208,10 +213,14 @@ const Login = () => {
               {/* LOGIN BUTTON */}
               <button
                 type="submit"
-                disabled={loading}
-                className="h-14 px-8 rounded-lg font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700"
+                disabled={loading || IS_MAINTENANCE_MODE}
+                className={`h-14 px-8 rounded-lg font-bold text-white ${
+                  IS_MAINTENANCE_MODE
+                    ? 'bg-gray-400 cursor-not-allowed opacity-70' 
+                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700'
+                }`}
               >
-                {loading ? "Logging in..." : "Log In"}
+                {IS_MAINTENANCE_MODE ? "System Offline" : (loading ? "Logging in..." : "Log In")}
               </button>
             </form>
           </div>

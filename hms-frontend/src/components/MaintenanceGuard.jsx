@@ -6,7 +6,7 @@ import { AuthContext } from "../context/AuthContext";
 // ==========================================
 // Change this to `true` to take the system down for maintenance.
 // Change this to `false` to restore normal functionality.
-export const IS_MAINTENANCE_MODE = true;
+export const IS_MAINTENANCE_MODE = false;
 // ==========================================
 
 const MaintenanceGuard = ({ type = "login" }) => {

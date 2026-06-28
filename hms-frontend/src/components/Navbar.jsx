@@ -5,7 +5,6 @@ import { useSidebar } from "../context/SidebarContext";
 import { useLabNotification } from "../context/LabNotificationContext";
 import { Moon, Sun, LogOut, User, Menu, X, Maximize, Minimize, Bell } from "lucide-react";
 import logo from "../assets/logo.jpeg";
-import MaintenanceGuard from "./MaintenanceGuard";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -43,7 +42,6 @@ const Navbar = () => {
       className={`w-full fixed top-0 left-0 right-0 z-50 shadow-lg transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
         }`}
     >
-      <MaintenanceGuard type="app" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side: Brand */}

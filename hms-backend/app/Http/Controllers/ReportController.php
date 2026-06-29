@@ -92,14 +92,19 @@ class ReportController extends Controller
         $month = (int) $request->input('month', Carbon::now()->month);
         $year  = (int) $request->input('year',  Carbon::now()->year);
 
-        $treatments = Treatment::with([
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString();
+        $endDate   = Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+
+        $perPage = (int) $request->input('per_page', 500);
+        $paginator = Treatment::with([
             'patient:id,upid,first_name,last_name,age,age_years,gender,pregnancy_status',
             'diagnoses:id,treatment_id,diagnosis'
         ])
             ->select('id', 'patient_id', 'visit_date', 'treatment_type', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'chief_complaint', 'treatment_notes')
-            ->whereYear('visit_date', $year)
-            ->whereMonth('visit_date', $month)
-            ->get();
+            ->whereBetween('visit_date', [$startDate, $endDate])
+            ->paginate($perPage);
+
+        $treatments = $paginator->items();
 
         $result = [
             'a1'             => $this->initDemographics(),
@@ -228,7 +233,14 @@ class ReportController extends Controller
         $a6 += $result['a5']['attendances'];
         $result['a6_total'] = $a6;
 
-        return response()->json($result);
+        return response()->json([
+            'report' => $result,
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page'    => $paginator->lastPage(),
+                'total'        => $paginator->total(),
+            ]
+        ]);
     }
 
     // ──────────────────────────────────────────────────────────────────────────

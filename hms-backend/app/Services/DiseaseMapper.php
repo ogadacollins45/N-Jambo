@@ -59,11 +59,12 @@ class DiseaseMapper
         }
 
         // ── 2. AI microservice (primary, high-confidence path) ───────────────
-        $aiKey = self::classifyViaAI($text);
-        if ($aiKey !== null) {
-            Cache::put($cacheKey, $aiKey, self::CACHE_TTL);
-            return $aiKey;
-        }
+        // (Temporarily disabled as per user request to avoid timeouts)
+        // $aiKey = self::classifyViaAI($text);
+        // if ($aiKey !== null) {
+        //     Cache::put($cacheKey, $aiKey, self::CACHE_TTL);
+        //     return $aiKey;
+        // }
 
         // ── 3. Keyword match on free-text ────────────────────────────────────
         $textKey = self::matchText($text);
@@ -95,13 +96,16 @@ class DiseaseMapper
     // AI microservice call
     // ─────────────────────────────────────────────────────────────────────────
 
+    /** Circuit breaker to prevent repeated timeouts in loops */
+    private static bool $aiOffline = false;
+
     /**
      * Call the local FastAPI AI classifier and return the disease key if confidence
      * meets the configured threshold, or null if the service is unavailable / low confidence.
      */
     private static function classifyViaAI(string $text): ?string
     {
-        if (empty($text)) {
+        if (empty($text) || self::$aiOffline) {
             return null;
         }
 
@@ -132,7 +136,8 @@ class DiseaseMapper
                 Log::warning("DiseaseMapper AI service returned HTTP {$response->status()} for '{$text}'");
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            // Service not running — silent fallback, no stack trace needed
+            // Service not running — trigger circuit breaker for this request lifecycle
+            self::$aiOffline = true;
             Log::info('DiseaseMapper: AI classifier offline, using keyword fallback. (' . $e->getMessage() . ')');
         } catch (\Throwable $e) {
             Log::warning('DiseaseMapper: AI classifier error — ' . $e->getMessage());

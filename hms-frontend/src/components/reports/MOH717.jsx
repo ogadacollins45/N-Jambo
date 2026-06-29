@@ -9,6 +9,7 @@ const MOH717 = () => {
   const [reportData, setReportData] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [fetchedPeriod, setFetchedPeriod] = useState(null); // { month, year } of the loaded report
+  const [progress, setProgress] = useState({ current: 0, total: 0, percent: 0 }); // To track chunking progress
 
   const [facilityInfo] = useState({
     county: "Bungoma",
@@ -26,25 +27,70 @@ const MOH717 = () => {
     { value: 11, label: "November"},{ value: 12, label: "December" },
   ];
 
+  const mergeReports = (acc, chunk) => {
+    if (!acc) return chunk;
+    const merged = JSON.parse(JSON.stringify(acc));
+    const add = (obj1, obj2) => {
+      for (let key in obj2) {
+        if (typeof obj2[key] === "number") {
+          obj1[key] = (obj1[key] || 0) + obj2[key];
+        } else if (Array.isArray(obj2[key])) {
+          obj1[key] = [...(obj1[key] || []), ...obj2[key]];
+        } else if (typeof obj2[key] === "object" && obj2[key] !== null) {
+          if (!obj1[key]) obj1[key] = {};
+          add(obj1[key], obj2[key]);
+        }
+      }
+    };
+    add(merged, chunk);
+    return merged;
+  };
+
   const fetchReport = async () => {
     setLoading(true);
     setExpanded({});
+    setProgress({ current: 0, total: 0, percent: 0 });
     const fetchingMonth = month;
     const fetchingYear = year;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/reports/moh-717?month=${fetchingMonth}&year=${fetchingYear}`,
-        { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
-      );
-      if (res.ok) {
-        setReportData(await res.json());
+      let page = 1;
+      let lastPage = 1;
+      let masterReport = null;
+
+      while (page <= lastPage) {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/reports/moh-717?month=${fetchingMonth}&year=${fetchingYear}&page=${page}&per_page=500`,
+          { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
+        );
+        
+        if (!res.ok) break;
+        
+        const data = await res.json();
+        
+        // Merge chunks
+        masterReport = mergeReports(masterReport, data.report);
+        
+        lastPage = data.pagination.last_page || 1;
+        
+        setProgress({
+          current: Math.min(page * 500, data.pagination.total),
+          total: data.pagination.total,
+          percent: Math.round((page / lastPage) * 100)
+        });
+        
+        page++;
+      }
+
+      if (masterReport) {
+        setReportData(masterReport);
         setFetchedPeriod({ month: fetchingMonth, year: fetchingYear });
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setProgress({ current: 0, total: 0, percent: 0 });
     }
   };
 
@@ -219,8 +265,34 @@ const MOH717 = () => {
       </div>
 
       {loading && (
-        <div className="flex justify-center py-16">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-2" />
+          <p className="text-indigo-800 font-medium animate-pulse">
+            Generating Report...
+          </p>
+          {progress.total > 0 ? (
+            <div className="w-full max-w-sm">
+              <div className="flex justify-between text-xs text-indigo-600 mb-1 font-semibold">
+                <span>{progress.current.toLocaleString()} / {progress.total.toLocaleString()} records</span>
+                <span>{progress.percent}%</span>
+              </div>
+              <div className="w-full bg-indigo-100 rounded-full h-2">
+                <div 
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress.percent}%` }}
+                ></div>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full max-w-sm">
+              <div className="flex justify-between text-xs text-indigo-400 mb-1 font-semibold">
+                <span>Initializing data stream...</span>
+              </div>
+              <div className="w-full bg-indigo-100 rounded-full h-2 overflow-hidden">
+                <div className="bg-indigo-400 h-2 rounded-full w-1/3 animate-[ping_1.5s_ease-in-out_infinite]"></div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

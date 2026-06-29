@@ -44,6 +44,7 @@ Route::get('/patients/{id}/treatments', [TreatmentController::class, 'index']);
 Route::post('/patients/{id}/treatments', [TreatmentController::class, 'store']);
 Route::get('/treatments/today', [TreatmentController::class, 'getTodaysTreatments']);
 Route::put('/treatments/{id}', [TreatmentController::class, 'update']);
+Route::get('/treatments/{id}', [TreatmentController::class, 'show']);
 Route::delete('/treatments/{id}', [TreatmentController::class, 'destroy']);
 
 // Diagnosis routes

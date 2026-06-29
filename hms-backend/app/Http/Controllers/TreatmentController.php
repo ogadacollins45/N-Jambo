@@ -13,17 +13,87 @@ use App\Http\Controllers\BillingController;
 class TreatmentController extends Controller
 {
     /**
-     * Get all treatments for a patient
+     * Get paginated treatments for a patient — lean payload for list view.
+     * Only returns columns needed for the collapsed treatment card.
+     * Full detail is fetched via show() when a card is expanded.
      */
     public function index($patient_id)
     {
-        $patient = Patient::with(['treatments.doctor', 'treatments.diagnoses'])->find($patient_id);
-
-        if (!$patient) {
+        if (!Patient::where('id', $patient_id)->exists()) {
             return response()->json(['message' => 'Patient not found'], 404);
         }
 
-        return response()->json($patient->treatments);
+        $treatments = Treatment::where('patient_id', $patient_id)
+            ->with([
+                'doctor:id,first_name,last_name',
+                'diagnoses:id,treatment_id,diagnosis,diagnosis_category,diagnosis_subcategory',
+            ])
+            ->select([
+                'id', 'patient_id', 'doctor_id', 'visit_date', 'diagnosis',
+                'diagnosis_status', 'diagnosis_category', 'diagnosis_subcategory',
+                'status', 'treatment_type', 'chief_complaint', 'attending_doctor',
+                'created_at',
+            ])
+            ->orderByDesc('visit_date')
+            ->paginate(10);
+
+        return response()->json($treatments);
+    }
+
+    /**
+     * Get full treatment detail — called when user expands a treatment card.
+     * Includes prescriptions, lab requests, and all text fields.
+     */
+    public function show($id)
+    {
+        $treatment = Treatment::with([
+            'doctor:id,first_name,last_name',
+            'diagnoses',
+            'prescriptions' => function ($q) {
+                $q->withTrashed();
+            },
+            'prescriptions.items.inventoryItem:id,name,unit,category,subcategory,item_code,batch_no,expiry_date',
+            'labRequests.tests.template.category',
+            'labRequests.tests.result.parameters.parameter',
+        ])->find($id);
+
+        if (!$treatment) {
+            return response()->json(['message' => 'Treatment not found'], 404);
+        }
+
+        // Transform prescription items for the frontend
+        $treatmentArray = $treatment->toArray();
+        if (isset($treatmentArray['prescriptions'])) {
+            foreach ($treatmentArray['prescriptions'] as &$prescription) {
+                if (isset($prescription['items'])) {
+                    $prescription['items'] = array_map(function ($item) {
+                        $invItem = $item['inventory_item'] ?? null;
+                        return [
+                            'id' => $item['id'],
+                            'name' => $item['drug_name_text'] ?? ($invItem ? $invItem['name'] : 'Unknown Item'),
+                            'quantity' => $item['quantity'],
+                            'unit' => $invItem ? $invItem['unit'] : null,
+                            'unit_price' => (float) $item['unit_price'],
+                            'subtotal' => (float) $item['subtotal'],
+                            'category' => $invItem ? $invItem['category'] : null,
+                            'subcategory' => $invItem ? $invItem['subcategory'] : null,
+                            'item_code' => $invItem ? $invItem['item_code'] : null,
+                            'batch_no' => $invItem ? $invItem['batch_no'] : null,
+                            'expiry_date' => $invItem && isset($invItem['expiry_date']) ? $invItem['expiry_date'] : null,
+                            'dosage' => $item['dosage_text'],
+                            'frequency' => $item['frequency_text'],
+                            'duration' => $item['duration_text'],
+                            'instructions' => $item['instructions_text'],
+                            'mapped_drug_id' => $item['mapped_drug_id'],
+                            'mapped_quantity' => $item['mapped_quantity'],
+                            'dispensed_from_stock' => $item['dispensed_from_stock'],
+                        ];
+                    }, $prescription['items']);
+                }
+            }
+        }
+
+        return response()->json($treatmentArray);
     }
 
     /**

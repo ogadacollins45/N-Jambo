@@ -10,19 +10,17 @@ use App\Models\Doctor;
 class PatientController extends Controller
 {
     /**
-     * Display a listing of all patients with their treatments.
-     * Only treatments that are active or awaiting billing are included.
+     * Display a listing of patients — lean payload for table view.
+     * No eager-loading of treatments; only columns the UI table needs.
      */
     public function index(Request $request)
     {
-        $query = Patient::with([
-            'treatments' => function ($q) {
-                $q->whereIn('status', ['active', 'awaiting_billing'])
-                ->orderByDesc('visit_date');
-            }
+        $query = Patient::select([
+            'id', 'upid', 'national_id', 'first_name', 'last_name',
+            'gender', 'phone', 'email', 'created_at'
         ])->orderByDesc('created_at');
 
-        // ✅ Search filter (by name, phone, email, or national_id)
+        // Search filter (by name, phone, email, national_id, or upid)
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -34,127 +32,113 @@ class PatientController extends Controller
             });
         }
 
-        // ✅ Filter by today's patients
+        // Filter by today's patients
         if ($request->input('today') === 'true') {
             $query->whereDate('created_at', now()->toDateString());
         }
 
-        // ✅ Paginate results (20 per page)
+        // Paginate results (20 per page)
         $patients = $query->paginate(20);
 
         return response()->json($patients);
     }
 
     /**
-     * Get patients with incomplete treatments
-     * A treatment is incomplete if it's missing:
+     * Get patients with incomplete treatments — pure SQL, zero PHP filtering.
+     * A treatment is incomplete if its latest active treatment is missing:
      * - Diagnosis (no primary diagnosis AND no additional diagnoses)
      * - Prescription
-     * - Dispensation (if prescription exists but not dispensed)
-     * - Lab results (if lab request exists but not completed)
+     * - Dispensation (prescription exists but not dispensed)
+     * - Lab results (lab request exists but not completed)
      */
     public function getIncompletePatients(Request $request)
     {
-        // Get all patients with active treatments, ordered by most recent treatment
-        $allPatients = Patient::with([
-            'treatments' => function ($q) {
+        $query = Patient::select([
+                'patients.id', 'patients.upid', 'patients.national_id',
+                'patients.first_name', 'patients.last_name',
+                'patients.phone', 'patients.gender', 'patients.created_at'
+            ])
+            ->whereHas('treatments', function ($q) {
+                $q->where('status', 'active')
+                  ->where(function ($incomplete) {
+                      // Missing diagnosis: no primary AND no additional diagnoses
+                      $incomplete->where(function ($noDiag) {
+                          $noDiag->where(function ($primary) {
+                              $primary->whereNull('diagnosis')->orWhere('diagnosis', '');
+                          })->whereDoesntHave('diagnoses');
+                      })
+                      // OR missing prescription
+                      ->orWhereDoesntHave('prescriptions')
+                      // OR has undispensed prescription
+                      ->orWhereHas('prescriptions', function ($p) {
+                          $p->where(function ($notDispensed) {
+                              $notDispensed->where('pharmacy_status', '!=', 'dispensed')
+                                ->whereNull('dispensed_at');
+                          });
+                      })
+                      // OR has incomplete lab request
+                      ->orWhereHas('labRequests', function ($l) {
+                          $l->where('status', '!=', 'completed');
+                      });
+                  });
+            })
+            ->with(['treatments' => function ($q) {
                 $q->where('status', 'active')
                   ->orderByDesc('created_at')
-                  ->with(['doctor', 'diagnoses', 'prescriptions.items', 'labRequests.tests']);
-            }
-        ])
-        ->whereHas('treatments', function ($q) {
-            $q->where('status', 'active');
-        })
-        ->get();
+                  ->limit(1)
+                  ->select(['id', 'patient_id', 'diagnosis', 'status', 'created_at']);
+            }])
+            ->orderByDesc('created_at');
 
-        // Filter patients to only include those with incomplete treatments
-        $incompletePatients = $allPatients->filter(function ($patient) {
-            if (!$patient->treatments || count($patient->treatments) === 0) {
-                return false;
-            }
+        $paginated = $query->paginate(20);
 
-            // Get the latest active treatment
+        // Compute incomplete_items for each patient's latest treatment efficiently
+        $paginated->getCollection()->transform(function ($patient) {
             $latestTreatment = $patient->treatments->first();
             $incompleteItems = [];
-            
-            // Check 1: Missing diagnosis
-            $hasDiagnosis = !empty($latestTreatment->diagnosis) || 
-                           ($latestTreatment->diagnoses && count($latestTreatment->diagnoses) > 0);
-            if (!$hasDiagnosis) {
-                $incompleteItems[] = 'diagnosis';
-            }
-            
-            // Check 2: Missing prescription
-            $hasPrescription = $latestTreatment->prescriptions && count($latestTreatment->prescriptions) > 0;
-            if (!$hasPrescription) {
-                $incompleteItems[] = 'prescription';
-            } else {
-                // Check 3: Pending dispensation (if prescription exists)
-                // Check if ALL prescriptions have been dispensed
-                $allDispensed = true;
-                foreach ($latestTreatment->prescriptions as $prescription) {
-                    // A prescription is dispensed if:
-                    // - pharmacy_status is 'dispensed', OR
-                    // - dispensed_at timestamp is set
-                    $isDispensed = ($prescription->pharmacy_status === 'dispensed') || 
-                                  !empty($prescription->dispensed_at);
-                    
-                    if (!$isDispensed) {
-                        $allDispensed = false;
-                        break;
+
+            if ($latestTreatment) {
+                // Check diagnosis (use counts to avoid loading relations)
+                $hasDiagnosis = !empty($latestTreatment->diagnosis) ||
+                    $latestTreatment->diagnoses()->exists();
+                if (!$hasDiagnosis) {
+                    $incompleteItems[] = 'diagnosis';
+                }
+
+                // Check prescription
+                $hasPrescription = $latestTreatment->prescriptions()->exists();
+                if (!$hasPrescription) {
+                    $incompleteItems[] = 'prescription';
+                } else {
+                    // Check dispensation
+                    $hasUndispensed = $latestTreatment->prescriptions()
+                        ->where('pharmacy_status', '!=', 'dispensed')
+                        ->whereNull('dispensed_at')
+                        ->exists();
+                    if ($hasUndispensed) {
+                        $incompleteItems[] = 'dispensation';
                     }
                 }
-                if (!$allDispensed) {
-                    $incompleteItems[] = 'dispensation';
+
+                // Check lab
+                $hasIncompleteLab = $latestTreatment->labRequests()
+                    ->where('status', '!=', 'completed')
+                    ->exists();
+                if ($hasIncompleteLab) {
+                    $incompleteItems[] = 'lab';
                 }
+
+                $patient->latest_treatment_date = $latestTreatment->created_at;
             }
-            
-            // Check 4: Pending lab results (if lab request exists)
-            if ($latestTreatment->labRequests && count($latestTreatment->labRequests) > 0) {
-                foreach ($latestTreatment->labRequests as $labRequest) {
-                    if ($labRequest->status !== 'completed') {
-                        $incompleteItems[] = 'lab';
-                        break;
-                    }
-                }
-            }
-            
-            // Add incomplete items to patient
+
             $patient->incomplete_items = $incompleteItems;
-            $patient->latest_treatment_date = $latestTreatment->created_at;
-            
-            // Only include if there are incomplete items
-            return count($incompleteItems) > 0;
+            // Remove the treatments relation from the response to keep payload lean
+            unset($patient->treatments);
+
+            return $patient;
         });
 
-        // Sort by most recent treatment
-        $sortedPatients = $incompletePatients->sortByDesc('latest_treatment_date')->values();
-
-        // Manually paginate the results
-        $page = $request->input('page', 1);
-        $perPage = 20;
-        $total = $sortedPatients->count();
-        $lastPage = ceil($total / $perPage);
-        $offset = ($page - 1) * $perPage;
-        
-        $paginatedPatients = $sortedPatients->slice($offset, $perPage)->values();
-        
-        // Create pagination response
-        return response()->json([
-            'current_page' => (int) $page,
-            'data' => $paginatedPatients,
-            'first_page_url' => url('/api/patients/incomplete?page=1'),
-            'from' => $total > 0 ? $offset + 1 : null,
-            'last_page' => $lastPage,
-            'last_page_url' => url("/api/patients/incomplete?page={$lastPage}"),
-            'next_page_url' => $page < $lastPage ? url("/api/patients/incomplete?page=" . ($page + 1)) : null,
-            'path' => url('/api/patients/incomplete'),
-            'per_page' => $perPage,
-            'prev_page_url' => $page > 1 ? url("/api/patients/incomplete?page=" . ($page - 1)) : null,
-            'to' => $total > 0 ? min($offset + $perPage, $total) : null,
-            'total' => $total,
-        ]);
+        return response()->json($paginated);
     }
 
     /**
@@ -197,68 +181,20 @@ class PatientController extends Controller
     }
 
     /**
-     * Display a specific patient with all related data.
-     * Optimized with eager loading to prevent N+1 queries.
+     * Display a specific patient — lean payload.
+     * Only returns patient fields + relationship counts for tab badges.
+     * Treatments, lab requests, vitals, etc. are fetched on-demand by the frontend.
      */
     public function show($id)
     {
-        $patient = Patient::with([
-            'treatments' => function ($q) {
-                $q->orderByDesc('visit_date');
-            },
-            'treatments.doctor',
-            'treatments.diagnoses',
-            'treatments.prescriptions' => function ($q) {
-                $q->withTrashed(); // Include soft-deleted prescriptions in history
-            },
-            'treatments.prescriptions.items.inventoryItem',
-            'treatments.labRequests.tests',
-            'appointments.doctor',
-            'bills'
-        ])->find($id);
+        $patient = Patient::withCount(['treatments', 'appointments', 'bills'])
+            ->find($id);
 
         if (!$patient) {
             return response()->json(['message' => 'Patient not found'], 404);
         }
 
-        // Convert to array and transform prescription items
-        $patientArray = $patient->toArray();
-        
-        if (isset($patientArray['treatments'])) {
-            foreach ($patientArray['treatments'] as &$treatment) {
-                if (isset($treatment['prescriptions'])) {
-                    foreach ($treatment['prescriptions'] as &$prescription) {
-                        if (isset($prescription['items'])) {
-                            $prescription['items'] = array_map(function ($item) {
-                                $invItem = $item['inventory_item'] ?? null;
-                                return [
-                                    'id' => $item['id'],
-                                    'name' => $item['drug_name_text'] ?? ($invItem ? $invItem['name'] : 'Unknown Item'),
-                                    'quantity' => $item['quantity'],
-                                    'unit' => $invItem ? $invItem['unit'] : null,
-                                    'unit_price' => (float) $item['unit_price'],
-                                    'subtotal' => (float) $item['subtotal'],
-                                    'category' => $invItem ? $invItem['category'] : null,
-                                    'subcategory' => $invItem ? $invItem['subcategory'] : null,
-                                    'item_code' => $invItem ? $invItem['item_code'] : null,
-                                    'batch_no' => $invItem ? $invItem['batch_no'] : null,
-                                    'expiry_date' => $invItem && isset($invItem['expiry_date']) ? $invItem['expiry_date'] : null,
-                                    'dosage' => $item['dosage_text'],
-                                    'frequency' => $item['frequency_text'],
-                                    'duration' => $item['duration_text'],
-                                    'instructions' => $item['instructions_text'],
-                                    'mapped_drug_id' => $item['mapped_drug_id'],
-                                    'mapped_quantity' => $item['mapped_quantity'],
-                                    'dispensed_from_stock' => $item['dispensed_from_stock'],
-                                ];
-                            }, $prescription['items']);
-                        }
-                    }
-                }
-            }
-        }
-
-        return response()->json($patientArray);
+        return response()->json($patient);
     }
 
     /**

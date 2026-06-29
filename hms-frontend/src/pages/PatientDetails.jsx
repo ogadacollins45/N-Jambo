@@ -64,7 +64,9 @@ const PatientDetails = () => {
   const [scheduleLater, setScheduleLater] = useState(false);
   const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
   const [expandedTreatments, setExpandedTreatments] = useState({});
+  const [treatmentDetails, setTreatmentDetails] = useState({}); // Lazy-loaded full treatment data
   const [currentPage, setCurrentPage] = useState(1);
+  const [treatmentsPagination, setTreatmentsPagination] = useState(null); // Server-side pagination metadata
   const treatmentsPerPage = 10;
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -152,116 +154,155 @@ const PatientDetails = () => {
 
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
+  // ── Lazy-load flags to prevent re-fetching ──
+  const [labLoaded, setLabLoaded] = useState(false);
+  const [triagesLoaded, setTriagesLoaded] = useState(false);
+  const [deletedPresLoaded, setDeletedPresLoaded] = useState(false);
+  const [doctorsLoaded, setDoctorsLoaded] = useState(false);
+
+  // ── Fetch treatments (paginated, lean) ──
+  const fetchTreatments = async (page = 1) => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/patients/${id}/treatments?page=${page}`);
+      setTreatments(res.data.data || []);
+      setTreatmentsPagination({
+        total: res.data.total,
+        per_page: res.data.per_page,
+        current_page: res.data.current_page,
+        last_page: res.data.last_page,
+      });
+    } catch (err) {
+      console.error('Error fetching treatments:', err);
+    }
+  };
+
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      // Optimized: Single patient call now includes treatments, appointments, prescriptions via eager loading
-      const [pRes, dRes, labRes, delPresRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/patients/${id}`), // Now includes treatments, appointments, bills with eager loading
-        axios.get(`${API_BASE_URL}/doctors`),
-        axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`),
-        axios.get(`${API_BASE_URL}/patients/${id}/deleted-prescriptions`),
+      // Only 3 lean calls on initial load (vs. 7+ before)
+      const [pRes, triageRes, admRes] = await Promise.allSettled([
+        axios.get(`${API_BASE_URL}/patients/${id}`),
+        axios.get(`${API_BASE_URL}/triages/${id}/latest`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }),
+        axios.get(`${API_BASE_URL}/patients/${id}/active-admission`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }),
       ]);
 
-      // Fetch latest triage (optional - may not exist)
-      try {
-        const triageRes = await axios.get(`${API_BASE_URL}/triages/${id}/latest`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (triageRes.data && triageRes.data.id) {
-          setLatestTriage(triageRes.data);
-        }
-      } catch (err) {
-        // No triage data - that's okay
+      // Patient data (lean — no treatments, no eager loading)
+      if (pRes.status === 'fulfilled') {
+        setPatient(pRes.value.data);
+      }
+
+      // Latest triage (lightweight)
+      if (triageRes.status === 'fulfilled' && triageRes.value.data?.id) {
+        setLatestTriage(triageRes.value.data);
+      } else {
         setLatestTriage(null);
       }
 
-      // Fetch all triages for history
-      try {
-        const allTriagesRes = await axios.get(`${API_BASE_URL}/triages/patient/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setAllTriages(allTriagesRes.data || []);
-      } catch (err) {
-        setAllTriages([]);
-      }
-
-      // Extract data from the optimized patient response
-      const patientData = pRes.data;
-      setPatient(patientData);
-
-      // Fetch active admission (inpatient check)
-      try {
-        const admRes = await axios.get(`${API_BASE_URL}/patients/${id}/active-admission`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setActiveAdmission(admRes.data.admission || null);
-      } catch {
+      // Active admission (lightweight)
+      if (admRes.status === 'fulfilled') {
+        setActiveAdmission(admRes.value.data.admission || null);
+      } else {
         setActiveAdmission(null);
       }
 
-      // Treatments are now included in the patient response with eager loading
-      setTreatments(
-        (patientData.treatments || []).sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        )
-      );
+      // Fetch first page of treatments (paginated, lean)
+      await fetchTreatments(1);
 
-      // Appointments are included in patient response
-      setAppointments(patientData.appointments || []);
-
-      // Extract prescriptions from treatments (they're already eager-loaded)
-      const allPrescriptions = [];
-      (patientData.treatments || []).forEach(treatment => {
-        if (treatment.prescriptions && treatment.prescriptions.length > 0) {
-          allPrescriptions.push(...treatment.prescriptions);
-        }
-      });
-
-      // If no prescriptions found from eager loading, fetch separately as fallback
-      if (allPrescriptions.length === 0) {
-        console.log('⚠️ No prescriptions from eager loading, fetching separately...');
-        try {
-          const presRes = await axios.get(`${API_BASE_URL}/prescriptions`);
-          const patientPrescriptions = (presRes.data || [])
-            .filter((p) => p.patient_id === parseInt(id));
-          console.log('✅ Fallback prescriptions fetched:', patientPrescriptions);
-          setPrescriptions(
-            patientPrescriptions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          );
-        } catch (err) {
-          console.error('Error fetching prescriptions:', err);
-          setPrescriptions([]);
-        }
-      } else {
-        console.log('✅ Prescriptions from eager loading:', allPrescriptions);
-        console.log('First prescription items:', allPrescriptions[0]?.items);
-        setPrescriptions(
-          allPrescriptions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        );
-      }
-
-      setDoctors(dRes.data || []);
-      setLabRequests(labRes.data || []);
-      setDeletedPrescriptions(delPresRes.data || []);
-
-      // 🔎 Resolve logged-in doctor's profile (if role is doctor)
-      if (user?.role === "doctor" && Array.isArray(dRes.data)) {
-        const meDoc =
-          dRes.data.find(
-            (d) =>
-              (d.email || "").toLowerCase() ===
-              (user.email || "").toLowerCase()
-          ) || null;
-        setCurrentDoctor(meDoc);
-      } else {
-        setCurrentDoctor(null);
-      }
     } catch (err) {
       console.error("Error fetching patient details:", err);
       setError("Failed to fetch patient data. Please try again later.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ── Lazy-load functions for tabs and forms ──
+  const ensureDoctorsLoaded = async () => {
+    if (doctorsLoaded) return;
+    try {
+      const dRes = await axios.get(`${API_BASE_URL}/doctors`);
+      setDoctors(dRes.data || []);
+      // Resolve logged-in doctor's profile
+      if (user?.role === "doctor" && Array.isArray(dRes.data)) {
+        const meDoc = dRes.data.find(
+          (d) => (d.email || "").toLowerCase() === (user.email || "").toLowerCase()
+        ) || null;
+        setCurrentDoctor(meDoc);
+      } else {
+        setCurrentDoctor(null);
+      }
+      setDoctorsLoaded(true);
+    } catch (err) {
+      console.error('Error loading doctors:', err);
+    }
+  };
+
+  const ensureLabRequestsLoaded = async () => {
+    if (labLoaded) return;
+    try {
+      const labRes = await axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`);
+      setLabRequests(labRes.data || []);
+      setLabLoaded(true);
+    } catch (err) {
+      console.error('Error loading lab requests:', err);
+    }
+  };
+
+  const ensureTriagesLoaded = async () => {
+    if (triagesLoaded) return;
+    try {
+      const allTriagesRes = await axios.get(`${API_BASE_URL}/triages/patient/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setAllTriages(allTriagesRes.data || []);
+      setTriagesLoaded(true);
+    } catch (err) {
+      setAllTriages([]);
+    }
+  };
+
+  const ensureDeletedPrescriptionsLoaded = async () => {
+    if (deletedPresLoaded) return;
+    try {
+      const delPresRes = await axios.get(`${API_BASE_URL}/patients/${id}/deleted-prescriptions`);
+      setDeletedPrescriptions(delPresRes.data || []);
+      setDeletedPresLoaded(true);
+    } catch (err) {
+      console.error('Error loading deleted prescriptions:', err);
+    }
+  };
+
+  // ── Tab change handler — lazy loads data for the tab ──
+  const handleTabChange = async (tab) => {
+    setActiveTab(tab);
+    if (tab === 'lab-results') await ensureLabRequestsLoaded();
+    if (tab === 'vitals-history') await ensureTriagesLoaded();
+    if (tab === 'deleted-prescriptions') await ensureDeletedPrescriptionsLoaded();
+  };
+
+  // ── Expand treatment card — lazy-load full detail ──
+  const handleExpandTreatment = async (treatmentId) => {
+    const isExpanding = !expandedTreatments[treatmentId];
+    setExpandedTreatments(prev => ({ ...prev, [treatmentId]: isExpanding }));
+
+    if (isExpanding && !treatmentDetails[treatmentId]) {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/treatments/${treatmentId}`);
+        setTreatmentDetails(prev => ({ ...prev, [treatmentId]: res.data }));
+        // Extract prescriptions from the detail for use in getPrescriptionSummary
+        if (res.data.prescriptions) {
+          setPrescriptions(prev => {
+            const existing = prev.filter(p => p.treatment_id !== treatmentId);
+            return [...existing, ...res.data.prescriptions];
+          });
+        }
+      } catch (err) {
+        console.error('Error loading treatment detail:', err);
+      }
     }
   };
 
@@ -289,6 +330,7 @@ const PatientDetails = () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('openTreatment') === 'true') {
       setShowForm(true);
+      ensureDoctorsLoaded();
       // Set today's date
       setNewTreatment(prev => ({
         ...prev,
@@ -300,22 +342,19 @@ const PatientDetails = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Load available lab tests
-  useEffect(() => {
-    const loadLabTests = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/lab/tests/available`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        // Flatten grouped tests
-        const allTests = Object.values(response.data).flat();
-        setAvailableTests(allTests);
-      } catch (err) {
-        console.error('Error loading lab tests:', err);
-      }
-    };
-    loadLabTests();
-  }, []);
+  // Load available lab tests lazily (when "Send to Lab" is toggled)
+  const ensureLabTestsLoaded = async () => {
+    if (availableTests.length > 0) return;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/lab/tests/available`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const allTests = Object.values(response.data).flat();
+      setAvailableTests(allTests);
+    } catch (err) {
+      console.error('Error loading lab tests:', err);
+    }
+  };
 
   const flashMessage = (setter, message) => {
     setter(message);
@@ -714,6 +753,7 @@ const PatientDetails = () => {
 
   // Open lab test modal for a specific treatment
   const openLabTestModal = (treatment) => {
+    ensureLabTestsLoaded();
     setSelectedTreatmentForLab(treatment);
     setModalSelectedTests([]);
     setModalLabPriority('routine');
@@ -937,7 +977,10 @@ const PatientDetails = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => setShowAdmissionModal(true)}
+                          onClick={() => {
+                          ensureDoctorsLoaded();
+                          setShowAdmissionModal(true);
+                        }}
                           className="flex items-center px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-all duration-300 shadow-md"
                         >
                           <BedDouble size={16} className="mr-2" /> Admit
@@ -955,6 +998,7 @@ const PatientDetails = () => {
                           ...prev,
                           visit_date: new Date().toISOString().split('T')[0]
                         }));
+                        ensureDoctorsLoaded();
                       }
                       setShowForm(!showForm);
                     }}
@@ -1364,7 +1408,11 @@ const PatientDetails = () => {
                           <input
                             type="checkbox"
                             checked={sendToLab}
-                            onChange={(e) => setSendToLab(e.target.checked)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSendToLab(checked);
+                              if (checked) ensureLabTestsLoaded();
+                            }}
                             className="form-checkbox h-4 w-4 text-indigo-600"
                           />
                           <Microscope className="w-4 h-4" />
@@ -1608,40 +1656,40 @@ const PatientDetails = () => {
                   {/* Tab Buttons */}
                   <div className="flex gap-2 border-b">
                     <button
-                      onClick={() => setActiveTab('treatments')}
+                      onClick={() => handleTabChange('treatments')}
                       className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'treatments'
                         ? 'text-indigo-700 border-b-2 border-indigo-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Treatment History ({treatments.length})
+                      Treatment History ({treatmentsPagination?.total || treatments.length})
                     </button>
                     <button
-                      onClick={() => setActiveTab('lab-results')}
+                      onClick={() => handleTabChange('lab-results')}
                       className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'lab-results'
                         ? 'text-indigo-700 border-b-2 border-indigo-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Lab Results ({labRequests.length})
+                      Lab Results ({labLoaded ? labRequests.length : '...'})
                     </button>
                     <button
-                      onClick={() => setActiveTab('vitals-history')}
+                      onClick={() => handleTabChange('vitals-history')}
                       className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'vitals-history'
                         ? 'text-indigo-700 border-b-2 border-indigo-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Vitals History ({allTriages.length})
+                      Vitals History ({triagesLoaded ? allTriages.length : '...'})
                     </button>
                     <button
-                      onClick={() => setActiveTab('deleted-prescriptions')}
+                      onClick={() => handleTabChange('deleted-prescriptions')}
                       className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'deleted-prescriptions'
                         ? 'text-red-700 border-b-2 border-red-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Deleted Prescriptions ({deletedPrescriptions.length})
+                      Deleted Prescriptions ({deletedPresLoaded ? deletedPrescriptions.length : '...'})
                     </button>
                   </div>
 
@@ -1653,23 +1701,31 @@ const PatientDetails = () => {
                           {/* Pagination Info */}
                           <div className="mb-4 flex justify-between items-center">
                             <p className="text-sm text-gray-600">
-                              Showing {((currentPage - 1) * treatmentsPerPage) + 1} -{" "}
-                              {Math.min(currentPage * treatmentsPerPage, treatments.length)} of {treatments.length} treatments
+                              Showing {((treatmentsPagination?.current_page - 1) * (treatmentsPagination?.per_page || 10)) + 1} -{" "}
+                              {Math.min((treatmentsPagination?.current_page || 1) * (treatmentsPagination?.per_page || 10), treatmentsPagination?.total || treatments.length)} of {treatmentsPagination?.total || treatments.length} treatments
                             </p>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
+                                onClick={() => {
+                                  const newPage = (treatmentsPagination?.current_page || 1) - 1;
+                                  setCurrentPage(newPage);
+                                  fetchTreatments(newPage);
+                                }}
+                                disabled={!treatmentsPagination || treatmentsPagination.current_page <= 1}
                                 className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded transition-colors"
                               >
                                 Previous
                               </button>
                               <span className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded font-medium">
-                                Page {currentPage} of {Math.ceil(treatments.length / treatmentsPerPage)}
+                                Page {treatmentsPagination?.current_page || 1} of {treatmentsPagination?.last_page || 1}
                               </span>
                               <button
-                                onClick={() => setCurrentPage(p => Math.min(Math.ceil(treatments.length / treatmentsPerPage), p + 1))}
-                                disabled={currentPage >= Math.ceil(treatments.length / treatmentsPerPage)}
+                                onClick={() => {
+                                  const newPage = (treatmentsPagination?.current_page || 1) + 1;
+                                  setCurrentPage(newPage);
+                                  fetchTreatments(newPage);
+                                }}
+                                disabled={!treatmentsPagination || treatmentsPagination.current_page >= treatmentsPagination.last_page}
                                 className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded transition-colors"
                               >
                                 Next
@@ -1677,9 +1733,8 @@ const PatientDetails = () => {
                             </div>
                           </div>
 
-                          {/* Treatment Cards */}
+                          {/* Treatment Cards — server-paginated, no client slice */}
                           {treatments
-                            .slice((currentPage - 1) * treatmentsPerPage, currentPage * treatmentsPerPage)
                             .map((t) => {
                               // Get lab requests for this treatment
                               const treatmentLabRequests = labRequests.filter(lr => lr.treatment_id === t.id);
@@ -1694,10 +1749,7 @@ const PatientDetails = () => {
                                 >
                                   {/* Collapsed Header - Always Visible */}
                                   <button
-                                    onClick={() => setExpandedTreatments(prev => ({
-                                      ...prev,
-                                      [t.id]: !prev[t.id]
-                                    }))}
+                                    onClick={() => handleExpandTreatment(t.id)}
                                     className="w-full text-left"
                                   >
                                     <div className="flex justify-between items-start">
@@ -1748,8 +1800,15 @@ const PatientDetails = () => {
                                   </button>
 
                                   {/* Expanded Content */}
-                                  {expandedTreatments[t.id] && (
+                                  {expandedTreatments[t.id] && (() => {
+                                    const detail = treatmentDetails[t.id] || t; // Use full detail if loaded, else lean data
+                                    return (
                                     <div className="mt-4 pt-4 border-t-2 border-gray-200 space-y-4">
+                                      {!treatmentDetails[t.id] && (
+                                        <div className="flex items-center justify-center py-4 text-gray-500">
+                                          <Loader className="w-5 h-5 animate-spin mr-2" /> Loading treatment details...
+                                        </div>
+                                      )}
 
                                       {/* Treatment Notes Section */}
                                       <div>
@@ -1774,64 +1833,64 @@ const PatientDetails = () => {
                                           {/* Chief Complaint */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Chief Complaint</p>
-                                            <p className={`text-xs ${t.chief_complaint ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.chief_complaint || 'Not recorded'}
+                                            <p className={`text-xs ${detail.chief_complaint ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.chief_complaint || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* History of Presenting Illness */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">History of Presenting Illness</p>
-                                            <p className={`text-xs ${t.history_presenting_illness ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.history_presenting_illness || 'Not recorded'}
+                                            <p className={`text-xs ${detail.history_presenting_illness ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.history_presenting_illness || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* Systemic Review */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Systemic Review</p>
-                                            <p className={`text-xs ${t.systemic_review ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.systemic_review || 'Not recorded'}
+                                            <p className={`text-xs ${detail.systemic_review ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.systemic_review || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* Past Medical History */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Past Medical and Surgical History</p>
-                                            <p className={`text-xs ${t.past_medical_history ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.past_medical_history || 'Not recorded'}
+                                            <p className={`text-xs ${detail.past_medical_history ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.past_medical_history || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* Premedication */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Premedication</p>
-                                            <p className={`text-xs ${t.premedication ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.premedication || 'Not recorded'}
+                                            <p className={`text-xs ${detail.premedication ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.premedication || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* General and Systemic examination */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">General and Systemic examination</p>
-                                            <p className={`text-xs ${t.general_systemic_examination ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.general_systemic_examination || 'Not recorded'}
+                                            <p className={`text-xs ${detail.general_systemic_examination ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.general_systemic_examination || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* Impression */}
                                           <div className="bg-gray-50 p-2 rounded border-l-2 border-indigo-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Impression</p>
-                                            <p className={`text-xs ${t.impression ? 'text-gray-800' : 'text-gray-400 italic'}`}>
-                                              {t.impression || 'Not recorded'}
+                                            <p className={`text-xs ${detail.impression ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                              {detail.impression || 'Not recorded'}
                                             </p>
                                           </div>
 
                                           {/* Payment Type */}
                                           <div className="bg-green-50 p-2 rounded border-l-2 border-green-500">
                                             <p className="text-xs font-semibold text-gray-700 mb-0.5">Mode of Payment</p>
-                                            <p className={`text-xs ${t.payment_type ? 'text-gray-800 font-medium' : 'text-gray-400 italic'}`}>
-                                              {t.payment_type || 'Not recorded'}
+                                            <p className={`text-xs ${detail.payment_type ? 'text-gray-800 font-medium' : 'text-gray-400 italic'}`}>
+                                              {detail.payment_type || 'Not recorded'}
                                             </p>
                                           </div>
                                         </div>
@@ -2095,8 +2154,8 @@ const PatientDetails = () => {
                                         </button>
                                       </div>
                                     </div>
-                                  )
-                                  }
+                                  );
+                                  })()}
                                 </div>
                               );
                             })}

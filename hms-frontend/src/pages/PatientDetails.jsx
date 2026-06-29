@@ -1685,7 +1685,7 @@ const PatientDetails = () => {
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Lab Results {labLoaded ? `(${labRequests.length})` : isLabLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
+                      Lab Results {labLoaded ? `(${labRequests.length})` : isLabLoading ? <Loader className="w-4 h-4 animate-spin ml-1.5" /> : ' (...)'}
                     </button>
                     <button
                       onClick={() => handleTabChange('vitals-history')}
@@ -1694,7 +1694,7 @@ const PatientDetails = () => {
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Vitals History {triagesLoaded ? `(${allTriages.length})` : isTriagesLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
+                      Vitals History {triagesLoaded ? `(${allTriages.length})` : isTriagesLoading ? <Loader className="w-4 h-4 animate-spin ml-1.5" /> : ' (...)'}
                     </button>
                     <button
                       onClick={() => handleTabChange('deleted-prescriptions')}
@@ -1703,7 +1703,7 @@ const PatientDetails = () => {
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Deleted Prescriptions {deletedPresLoaded ? `(${deletedPrescriptions.length})` : isDeletedPresLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
+                      Deleted Prescriptions {deletedPresLoaded ? `(${deletedPrescriptions.length})` : isDeletedPresLoading ? <Loader className="w-4 h-4 animate-spin ml-1.5" /> : ' (...)'}
                     </button>
                   </div>
 

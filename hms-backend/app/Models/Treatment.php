@@ -123,6 +123,11 @@ class Treatment extends Model
     protected static function booted()
     {
         static::creating(function ($treatment) {
+            // Ensure treatment_type is set
+            if (empty($treatment->treatment_type)) {
+                $treatment->treatment_type = 'new';
+            }
+
             if (empty($treatment->status)) {
                 $treatment->status = 'active';
             }
@@ -155,6 +160,19 @@ class Treatment extends Model
                 $treatment->updated_by = auth()->id();
             }
         });
+
+        // ── Cache Invalidation for Reports ──────────────────────────────────────────
+        $invalidateCache = function ($treatment) {
+            if ($treatment->visit_date) {
+                $date = \Carbon\Carbon::parse($treatment->visit_date);
+                \Illuminate\Support\Facades\Cache::forget("moh_717_{$date->year}_{$date->month}");
+                \Illuminate\Support\Facades\Cache::forget("moh_706_{$date->year}_{$date->month}");
+                \Illuminate\Support\Facades\Cache::forget("disease_surveillance_{$date->year}_{$date->month}");
+            }
+        };
+
+        static::saved($invalidateCache);
+        static::deleted($invalidateCache);
     }
 
     /*

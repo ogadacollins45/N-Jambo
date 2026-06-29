@@ -12,6 +12,7 @@ use App\Models\Admission;
 use Carbon\Carbon;
 use App\Services\DiseaseMapper;
 use App\Services\LabTestMapper;
+use Illuminate\Support\Facades\Cache;
 
 class ReportController extends Controller
 {
@@ -95,152 +96,151 @@ class ReportController extends Controller
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString();
         $endDate   = Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
 
-        $perPage = (int) $request->input('per_page', 500);
-        $paginator = Treatment::with([
-            'patient:id,upid,first_name,last_name,age,age_years,gender,pregnancy_status',
-            'diagnoses:id,treatment_id,diagnosis'
-        ])
-            ->select('id', 'patient_id', 'visit_date', 'treatment_type', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'chief_complaint', 'treatment_notes')
-            ->whereBetween('visit_date', [$startDate, $endDate])
-            ->paginate($perPage);
+        $cacheKey = "moh_717_{$year}_{$month}";
+        $ttl = ($month === Carbon::now()->month && $year === Carbon::now()->year) 
+            ? now()->addHours(24) 
+            : now()->addYears(10); // Historical data cached practically forever
 
-        $treatments = $paginator->items();
-
-        $result = [
-            'a1'             => $this->initDemographics(),
-            'a2'             => $this->initDemographics(),
-            'a3'             => $this->initSpecialClinics(),
-            'a4'             => $this->initMch(),
-            'a5'             => ['attendances' => 0, 'fillings' => 0, 'extractions' => 0, 'patients' => []],
-            'a6_total'       => 0,
-            'other_services' => ['a7' => 0, 'a8' => 0, 'a9' => 0, 'a10' => 0, 'a11' => 0, 'a12' => 0, 'patients' => []],
-        ];
-
-        foreach ($treatments as $treatment) {
-            $patient = $treatment->patient;
-            if (!$patient) continue;
-
-            $age    = $patient->age_years ?? $patient->age ?? 0;
-            $gender = strtoupper($patient->gender ?? '');
-
-            // ── Demographic row key ───────────────────────────────────────────
-            if ($age >= 60) {
-                $demoKey = 'over_60';
-            } elseif ($age >= 5) {
-                $demoKey = ($gender === 'M') ? 'over_5_m' : 'over_5_f';
-            } else {
-                $demoKey = ($gender === 'M') ? 'under_5_m' : 'under_5_f';
-            }
-
-            // ── Visit type key (NEW vs RE-ATT) ────────────────────────────────
-            $visitKey = (strtolower($treatment->treatment_type ?? '') === 'revisit') ? 'reatt' : 'new';
-
-            $patientPayload = [
-                'patient_id'   => $patient->id,
-                'upid'         => $patient->upid,
-                'name'         => trim($patient->first_name . ' ' . $patient->last_name),
-                'age'          => $age,
-                'gender'       => $gender,
-                'visit_date'   => $treatment->visit_date,
-                'visit_type'   => $treatment->treatment_type,
-                'diagnosis'    => $treatment->diagnosis,
-                'category'     => $treatment->diagnosis_category,
-                'subcategory'  => $treatment->diagnosis_subcategory,
-                'treatment_id' => $treatment->id,
+        $result = Cache::remember($cacheKey, $ttl, function () use ($startDate, $endDate) {
+            $result = [
+                'a1'             => $this->initDemographics(),
+                'a2'             => $this->initDemographics(),
+                'a3'             => $this->initSpecialClinics(),
+                'a4'             => $this->initMch(),
+                'a5'             => ['attendances' => 0, 'fillings' => 0, 'extractions' => 0, 'patients' => []],
+                'a6_total'       => 0,
+                'other_services' => ['a7' => 0, 'a8' => 0, 'a9' => 0, 'a10' => 0, 'a11' => 0, 'a12' => 0, 'patients' => []],
             ];
 
-            // ── Extract all relevant text fields ──────────────────────────────
-            $chiefComplaint = strtolower($treatment->chief_complaint ?? '');
-            $notes          = strtolower($treatment->treatment_notes ?? '');
-            
-            // Collect all diagnoses strings for AI Mapping
-            $diagnosesTexts = [];
-            if (!empty($treatment->diagnosis)) $diagnosesTexts[] = $treatment->diagnosis;
-            foreach ($treatment->diagnoses as $diag) {
-                if (!empty($diag->diagnosis)) $diagnosesTexts[] = $diag->diagnosis;
-            }
-            
-            // Run AI mapping on the primary diagnosis to detect special clinics
-            $primaryDiagnosisText = $diagnosesTexts[0] ?? '';
-            $diseaseGroup = 'other_diseases';
-            if (!empty($primaryDiagnosisText)) {
-                $diseaseGroup = DiseaseMapper::map($primaryDiagnosisText, $treatment->diagnosis_category, $treatment->diagnosis_subcategory);
-            }
+            Treatment::with([
+                'patient:id,upid,first_name,last_name,age,age_years,gender,pregnancy_status',
+                'diagnoses:id,treatment_id,diagnosis'
+            ])
+            ->select('id', 'patient_id', 'visit_date', 'treatment_type', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'chief_complaint', 'treatment_notes')
+            ->whereBetween('visit_date', [$startDate, $endDate])
+            ->chunk(1000, function ($treatments) use (&$result) {
+                foreach ($treatments as $treatment) {
+                    $patient = $treatment->patient;
+                    if (!$patient) continue;
 
-            // ── 1. A.2 Casualty / Emergency (Regex check) ─────────────────────
-            if (preg_match('/\b(rta|accident|bleeding|unconscious|collapse|burns|assault|emergency|casualty)\b/i', $chiefComplaint . ' ' . $notes)) {
-                $result['a2'][$demoKey][$visitKey]++;
-                $result['a2'][$demoKey]['total']++;
-                $result['a2'][$demoKey]['patients'][] = $patientPayload;
-                continue;
-            }
+                    $age    = $patient->age_years ?? $patient->age ?? 0;
+                    $gender = strtoupper($patient->gender ?? '');
 
-            // ── 2. A.4 MCH / Family Planning / CWC ────────────────────────────
-            if ($age < 5 && preg_match('/\b(vaccin|immuniz|polio|measles|bcp|bcg|growth monitoring|cwc)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
-                $result['a4']['cwc'][$visitKey]++;
-                $result['a4']['cwc']['total']++;
-                $result['a4']['cwc']['patients'][] = $patientPayload;
-                continue;
-            }
-            if (preg_match('/\b(family planning|fp|implant|iucd|depo|jadelle|pill|condom)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
-                $result['a4']['fp'][$visitKey]++;
-                $result['a4']['fp']['total']++;
-                $result['a4']['fp']['patients'][] = $patientPayload;
-                continue;
-            }
-            if ($gender === 'F' && ($patient->pregnancy_status === 'pregnant' || preg_match('/\b(anc|antenatal|pregnancy)\b/i', $notes))) {
-                $result['a4']['anc'][$visitKey]++;
-                $result['a4']['anc']['total']++;
-                $result['a4']['anc']['patients'][] = $patientPayload;
-                continue;
-            }
+                    // ── Demographic row key ───────────────────────────────────────────
+                    if ($age >= 60) {
+                        $demoKey = 'over_60';
+                    } elseif ($age >= 5) {
+                        $demoKey = ($gender === 'M') ? 'over_5_m' : 'over_5_f';
+                    } else {
+                        $demoKey = ($gender === 'M') ? 'under_5_m' : 'under_5_f';
+                    }
 
-            // ── 3. A.5 Dental Procedures ──────────────────────────────────────
-            if ($diseaseGroup === 'dental_disorders' || preg_match('/\b(dental|tooth|teeth)\b/i', $primaryDiagnosisText)) {
-                $result['a5']['attendances']++;
-                $result['a5']['patients'][] = $patientPayload;
-                if (preg_match('/\b(filling|amalgam|composite|restor)\b/i', $notes)) {
-                    $result['a5']['fillings']++;
+                    // ── Visit type key (NEW vs RE-ATT) ────────────────────────────────
+                    $visitKey = (strtolower($treatment->treatment_type ?? '') === 'revisit') ? 'reatt' : 'new';
+
+                    $patientPayload = [
+                        'patient_id'   => $patient->id,
+                        'upid'         => $patient->upid,
+                        'name'         => trim($patient->first_name . ' ' . $patient->last_name),
+                        'age'          => $age,
+                        'gender'       => $gender,
+                        'visit_date'   => $treatment->visit_date,
+                        'visit_type'   => $treatment->treatment_type,
+                        'diagnosis'    => $treatment->diagnosis,
+                        'category'     => $treatment->diagnosis_category,
+                        'subcategory'  => $treatment->diagnosis_subcategory,
+                        'treatment_id' => $treatment->id,
+                    ];
+
+                    // ── Extract all relevant text fields ──────────────────────────────
+                    $chiefComplaint = strtolower($treatment->chief_complaint ?? '');
+                    $notes          = strtolower($treatment->treatment_notes ?? '');
+                    
+                    // Collect all diagnoses strings for AI Mapping
+                    $diagnosesTexts = [];
+                    if (!empty($treatment->diagnosis)) $diagnosesTexts[] = $treatment->diagnosis;
+                    foreach ($treatment->diagnoses as $diag) {
+                        if (!empty($diag->diagnosis)) $diagnosesTexts[] = $diag->diagnosis;
+                    }
+                    
+                    // Run AI mapping on the primary diagnosis to detect special clinics
+                    $primaryDiagnosisText = $diagnosesTexts[0] ?? '';
+                    $diseaseGroup = 'other_diseases';
+                    if (!empty($primaryDiagnosisText)) {
+                        $diseaseGroup = DiseaseMapper::map($primaryDiagnosisText, $treatment->diagnosis_category, $treatment->diagnosis_subcategory);
+                    }
+
+                    // ── 1. A.2 Casualty / Emergency (Regex check) ─────────────────────
+                    if (preg_match('/\b(rta|accident|bleeding|unconscious|collapse|burns|assault|emergency|casualty)\b/i', $chiefComplaint . ' ' . $notes)) {
+                        $result['a2'][$demoKey][$visitKey]++;
+                        $result['a2'][$demoKey]['total']++;
+                        if (count($result['a2'][$demoKey]['patients']) < 100) $result['a2'][$demoKey]['patients'][] = $patientPayload;
+                        continue;
+                    }
+
+                    // ── 2. A.4 MCH / Family Planning / CWC ────────────────────────────
+                    if ($age < 5 && preg_match('/\b(vaccin|immuniz|polio|measles|bcp|bcg|growth monitoring|cwc)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
+                        $result['a4']['cwc'][$visitKey]++;
+                        $result['a4']['cwc']['total']++;
+                        if (count($result['a4']['cwc']['patients']) < 100) $result['a4']['cwc']['patients'][] = $patientPayload;
+                        continue;
+                    }
+                    if (preg_match('/\b(family planning|fp|implant|iucd|depo|jadelle|pill|condom)\b/i', $notes . ' ' . $primaryDiagnosisText)) {
+                        $result['a4']['fp'][$visitKey]++;
+                        $result['a4']['fp']['total']++;
+                        if (count($result['a4']['fp']['patients']) < 100) $result['a4']['fp']['patients'][] = $patientPayload;
+                        continue;
+                    }
+                    if ($gender === 'F' && ($patient->pregnancy_status === 'pregnant' || preg_match('/\b(anc|antenatal|pregnancy)\b/i', $notes))) {
+                        $result['a4']['anc'][$visitKey]++;
+                        $result['a4']['anc']['total']++;
+                        if (count($result['a4']['anc']['patients']) < 100) $result['a4']['anc']['patients'][] = $patientPayload;
+                        continue;
+                    }
+
+                    // ── 3. A.5 Dental Procedures ──────────────────────────────────────
+                    if ($diseaseGroup === 'dental_disorders' || preg_match('/\b(dental|tooth|teeth)\b/i', $primaryDiagnosisText)) {
+                        $result['a5']['attendances']++;
+                        if (count($result['a5']['patients']) < 100) $result['a5']['patients'][] = $patientPayload;
+                        if (preg_match('/\b(filling|amalgam|composite|restor)\b/i', $notes)) {
+                            $result['a5']['fillings']++;
+                        }
+                        if (preg_match('/\b(extract|xla|pulled)\b/i', $notes)) {
+                            $result['a5']['extractions']++;
+                        }
+                        continue; // Processed
+                    }
+
+                    // ── 4. A.3 Special Clinics (Based on AI Disease Mapping) ──────────
+                    $specialKey = $this->mapDiseaseToSpecialClinic($diseaseGroup);
+                    if ($specialKey) {
+                        $result['a3'][$specialKey][$visitKey]++;
+                        $result['a3'][$specialKey]['total']++;
+                        if (count($result['a3'][$specialKey]['patients']) < 100) $result['a3'][$specialKey]['patients'][] = $patientPayload;
+                        continue;
+                    }
+
+                    // ── 5. Fallback -> A.1 General Outpatients ────────────────────────
+                    $result['a1'][$demoKey][$visitKey]++;
+                    $result['a1'][$demoKey]['total']++;
+                    if (count($result['a1'][$demoKey]['patients']) < 100) $result['a1'][$demoKey]['patients'][] = $patientPayload;
                 }
-                if (preg_match('/\b(extract|xla|pulled)\b/i', $notes)) {
-                    $result['a5']['extractions']++;
-                }
-                continue; // Processed
+            });
+
+            // ── A.6 Total Outpatient Services ─────────────────────────────────────
+            $a6 = 0;
+            foreach (['a1', 'a2'] as $sec) {
+                foreach ($result[$sec] as $row) { $a6 += $row['total']; }
             }
+            foreach ($result['a3'] as $row) { $a6 += $row['total']; }
+            foreach ($result['a4'] as $row) { $a6 += $row['total']; }
+            $a6 += $result['a5']['attendances'];
+            $result['a6_total'] = $a6;
 
-            // ── 4. A.3 Special Clinics (Based on AI Disease Mapping) ──────────
-            $specialKey = $this->mapDiseaseToSpecialClinic($diseaseGroup);
-            if ($specialKey) {
-                $result['a3'][$specialKey][$visitKey]++;
-                $result['a3'][$specialKey]['total']++;
-                $result['a3'][$specialKey]['patients'][] = $patientPayload;
-                continue;
-            }
+            return $result;
+        });
 
-            // ── 5. Fallback -> A.1 General Outpatients ────────────────────────
-            $result['a1'][$demoKey][$visitKey]++;
-            $result['a1'][$demoKey]['total']++;
-            $result['a1'][$demoKey]['patients'][] = $patientPayload;
-        }
-
-        // ── A.6 Total Outpatient Services ─────────────────────────────────────
-        $a6 = 0;
-        foreach (['a1', 'a2'] as $sec) {
-            foreach ($result[$sec] as $row) { $a6 += $row['total']; }
-        }
-        foreach ($result['a3'] as $row) { $a6 += $row['total']; }
-        foreach ($result['a4'] as $row) { $a6 += $row['total']; }
-        $a6 += $result['a5']['attendances'];
-        $result['a6_total'] = $a6;
-
-        return response()->json([
-            'report' => $result,
-            'pagination' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'total'        => $paginator->total(),
-            ]
-        ]);
+        return response()->json(['report' => $result]);
     }
 
     // ──────────────────────────────────────────────────────────────────────────

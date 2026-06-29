@@ -160,6 +160,11 @@ const PatientDetails = () => {
   const [deletedPresLoaded, setDeletedPresLoaded] = useState(false);
   const [doctorsLoaded, setDoctorsLoaded] = useState(false);
 
+  // ── Loading states for UI feedback ──
+  const [isLabLoading, setIsLabLoading] = useState(false);
+  const [isTriagesLoading, setIsTriagesLoading] = useState(false);
+  const [isDeletedPresLoading, setIsDeletedPresLoading] = useState(false);
+
   // ── Fetch treatments (paginated, lean) ──
   const fetchTreatments = async (page = 1) => {
     try {
@@ -242,18 +247,22 @@ const PatientDetails = () => {
   };
 
   const ensureLabRequestsLoaded = async () => {
-    if (labLoaded) return;
+    if (labLoaded || isLabLoading) return;
+    setIsLabLoading(true);
     try {
       const labRes = await axios.get(`${API_BASE_URL}/lab/requests/patient/${id}`);
       setLabRequests(labRes.data || []);
       setLabLoaded(true);
     } catch (err) {
       console.error('Error loading lab requests:', err);
+    } finally {
+      setIsLabLoading(false);
     }
   };
 
   const ensureTriagesLoaded = async () => {
-    if (triagesLoaded) return;
+    if (triagesLoaded || isTriagesLoading) return;
+    setIsTriagesLoading(true);
     try {
       const allTriagesRes = await axios.get(`${API_BASE_URL}/triages/patient/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -262,17 +271,22 @@ const PatientDetails = () => {
       setTriagesLoaded(true);
     } catch (err) {
       setAllTriages([]);
+    } finally {
+      setIsTriagesLoading(false);
     }
   };
 
   const ensureDeletedPrescriptionsLoaded = async () => {
-    if (deletedPresLoaded) return;
+    if (deletedPresLoaded || isDeletedPresLoading) return;
+    setIsDeletedPresLoading(true);
     try {
       const delPresRes = await axios.get(`${API_BASE_URL}/patients/${id}/deleted-prescriptions`);
       setDeletedPrescriptions(delPresRes.data || []);
       setDeletedPresLoaded(true);
     } catch (err) {
       console.error('Error loading deleted prescriptions:', err);
+    } finally {
+      setIsDeletedPresLoading(false);
     }
   };
 
@@ -1666,30 +1680,30 @@ const PatientDetails = () => {
                     </button>
                     <button
                       onClick={() => handleTabChange('lab-results')}
-                      className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'lab-results'
+                      className={`px-4 py-2 font-semibold transition-colors flex items-center ${activeTab === 'lab-results'
                         ? 'text-indigo-700 border-b-2 border-indigo-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Lab Results ({labLoaded ? labRequests.length : '...'})
+                      Lab Results {labLoaded ? `(${labRequests.length})` : isLabLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
                     </button>
                     <button
                       onClick={() => handleTabChange('vitals-history')}
-                      className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'vitals-history'
+                      className={`px-4 py-2 font-semibold transition-colors flex items-center ${activeTab === 'vitals-history'
                         ? 'text-indigo-700 border-b-2 border-indigo-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Vitals History ({triagesLoaded ? allTriages.length : '...'})
+                      Vitals History {triagesLoaded ? `(${allTriages.length})` : isTriagesLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
                     </button>
                     <button
                       onClick={() => handleTabChange('deleted-prescriptions')}
-                      className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'deleted-prescriptions'
+                      className={`px-4 py-2 font-semibold transition-colors flex items-center ${activeTab === 'deleted-prescriptions'
                         ? 'text-red-700 border-b-2 border-red-700'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      Deleted Prescriptions ({deletedPresLoaded ? deletedPrescriptions.length : '...'})
+                      Deleted Prescriptions {deletedPresLoaded ? `(${deletedPrescriptions.length})` : isDeletedPresLoading ? <Loader className="w-3 h-3 animate-spin ml-1.5" /> : null}
                     </button>
                   </div>
 

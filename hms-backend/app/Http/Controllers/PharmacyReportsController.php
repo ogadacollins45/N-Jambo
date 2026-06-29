@@ -166,10 +166,7 @@ class PharmacyReportsController extends Controller
             'pending_prescriptions' => Prescription::where('pharmacy_status', 'sent_to_pharmacy')->count(),
 
             'total_stock_value' => PharmacyDrug::where('is_active', true)
-                ->get()
-                ->sum(function ($drug) {
-                    return $drug->current_stock * $drug->default_unit_price;
-                }),
+                ->sum(\Illuminate\Support\Facades\DB::raw('current_stock * default_unit_price')),
         ];
 
         return response()->json($stats);

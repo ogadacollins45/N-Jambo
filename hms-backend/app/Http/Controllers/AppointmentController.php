@@ -47,7 +47,22 @@ class AppointmentController extends Controller
             $query->where('doctor_id', $request->doctor_id);
         }
 
-        $appointments = $query->orderByDesc('appointment_time')->get();
+        // Filter by status if provided (and not 'all')
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Search by patient name or phone
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->whereHas('patient', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $appointments = $query->orderByDesc('appointment_time')->paginate(15);
         
         return response()->json($appointments);
     }

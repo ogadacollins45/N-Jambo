@@ -49,10 +49,15 @@ class DashboardController extends Controller
 
         // ---------- Billing Funnel-ish ----------
         // Unbilled: treatments not yet linked to any bill OR status 'active'
-        $unbilledTreatments = Treatment::with(['patient','doctor'])
-            ->whereIn('status', ['active', 'awaiting_billing'])
-            ->when($doctorId, fn($q) => $q->where('doctor_id', $doctorId))
+        $unbilledTreatmentsQuery = Treatment::whereIn('status', ['active', 'awaiting_billing'])
+            ->when($doctorId, fn($q) => $q->where('doctor_id', $doctorId));
+            
+        $unbilledTreatmentsCount = $unbilledTreatmentsQuery->count();
+
+        $unbilledTreatments = $unbilledTreatmentsQuery->with(['patient:id,first_name,last_name,phone', 'doctor:id,first_name,last_name'])
+            ->select('id', 'patient_id', 'doctor_id', 'visit_date', 'status', 'diagnosis')
             ->orderByDesc('visit_date')
+            ->limit(20)
             ->get();
 
         // Partial bills
@@ -70,30 +75,28 @@ class DashboardController extends Controller
 
         $arAging = [];
         foreach ($arBuckets as $label => [$min, $max]) {
-            $sum = Bill::whereIn('status', ['unpaid','partial'])
+            $sum = DB::table('bills')
+                ->whereIn('status', ['unpaid', 'partial'])
                 ->whereBetween(DB::raw('DATEDIFF(CURDATE(), created_at)'), [$min, $max])
-                ->get()
-                ->sum(function ($b) {
-                    $paid = $b->payments()->sum('amount_paid');
-                    return max(0, ($b->total_amount ?? 0) - $paid);
-                });
+                ->selectRaw('SUM(GREATEST(0, COALESCE(total_amount, 0) - (SELECT COALESCE(SUM(amount_paid), 0) FROM payments WHERE payments.bill_id = bills.id))) as remaining')
+                ->value('remaining');
 
-            $arAging[] = ['bucket' => $label, 'amount' => round($sum, 2)];
+            $arAging[] = ['bucket' => $label, 'amount' => round((float)$sum, 2)];
         }
 
         // ---------- Revenue by Doctor (collected) ----------
         // Sum of payments attributed to the bill's doctor
-        $revenueByDoctor = Payment::select('b.doctor_id', DB::raw('SUM(payments.amount_paid) as amount'))
+        $revenueByDoctor = Payment::select('b.doctor_id', 'd.first_name', 'd.last_name', DB::raw('SUM(payments.amount_paid) as amount'))
             ->join('bills as b', 'payments.bill_id', '=', 'b.id')
+            ->leftJoin('doctors as d', 'b.doctor_id', '=', 'd.id')
             ->when($doctorId, fn($q) => $q->where('b.doctor_id', $doctorId))
             ->whereBetween('payments.paid_at', [$fromDate, $toDate])
-            ->groupBy('b.doctor_id')
+            ->groupBy('b.doctor_id', 'd.first_name', 'd.last_name')
             ->orderByDesc('amount')
             ->get()
             ->map(function ($row) {
-                $doc = Doctor::find($row->doctor_id);
                 return [
-                    'doctor' => $doc ? "Dr. {$doc->first_name} {$doc->last_name}" : 'N/A',
+                    'doctor' => $row->first_name ? "Dr. {$row->first_name} {$row->last_name}" : 'N/A',
                     'amount' => (float)$row->amount,
                 ];
             })
@@ -173,6 +176,7 @@ class DashboardController extends Controller
             ],
             'exceptions' => [
                 'unbilled_treatments' => $unbilledTreatments,
+                'unbilled_treatments_count' => $unbilledTreatmentsCount,
                 'partial_bills'       => Bill::with(['patient','doctor'])
                                             ->where('status', 'partial')
                                             ->latest()

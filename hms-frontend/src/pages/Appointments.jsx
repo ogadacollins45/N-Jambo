@@ -30,6 +30,9 @@ export default function Appointments() {
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalAppointments, setTotalAppointments] = useState(0);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
@@ -55,12 +58,10 @@ export default function Appointments() {
     }, [role, API_BASE_URL]);
 
     // Fetch appointments
-    const fetchAppointments = async () => {
+    const fetchAppointments = async (currentPage = 1) => {
         setLoading(true);
         setError("");
         try {
-            // For now, we'll fetch all appointments and filter client-side
-            // Ideally, the backend should have a GET /api/appointments endpoint
             const doctorIdToFetch = role === "doctor" ? userId : selectedDoctor;
 
             if (!doctorIdToFetch) {
@@ -68,9 +69,17 @@ export default function Appointments() {
                 return;
             }
 
-            // This is a workaround - ideally use GET /api/appointments?doctor_id=X
-            const res = await axios.get(`${API_BASE_URL}/appointments?doctor_id=${doctorIdToFetch}`);
-            setAppointments(res.data || []);
+            const res = await axios.get(`${API_BASE_URL}/appointments`, {
+                params: {
+                    doctor_id: doctorIdToFetch,
+                    page: currentPage,
+                    status: statusFilter,
+                    search: searchQuery
+                }
+            });
+            setAppointments(res.data.data || []);
+            setTotalPages(res.data.last_page || 1);
+            setTotalAppointments(res.data.total || 0);
         } catch (err) {
             console.error("Failed to load appointments", err);
             setError("Unable to load appointments. Please try again.");
@@ -81,29 +90,15 @@ export default function Appointments() {
 
     useEffect(() => {
         if (role === "doctor" || (role === "admin" && selectedDoctor)) {
-            fetchAppointments();
+            fetchAppointments(page);
         } else if (role === "admin" && !selectedDoctor) {
             setLoading(false);
         }
-    }, [role, userId, selectedDoctor]);
-
-    // Filter appointments
-    const filteredAppointments = appointments.filter((apt) => {
-        const matchesStatus = statusFilter === "all" || apt.status?.toLowerCase() === statusFilter.toLowerCase();
-        const matchesSearch =
-            !searchQuery ||
-            apt.patient?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            apt.patient?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            apt.patient?.phone?.includes(searchQuery);
-        return matchesStatus && matchesSearch;
-    });
+    }, [role, userId, selectedDoctor, page, statusFilter, searchQuery]);
 
     // Pagination
-    const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
-    const paginatedAppointments = filteredAppointments.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // We already fetch paginated data from the server, and the backend handles filtering.
+    const paginatedAppointments = appointments;
 
     const getStatusBadge = (status) => {
         const normalizedStatus = status?.toLowerCase() || "scheduled";
@@ -323,26 +318,26 @@ export default function Appointments() {
                                 {/* Footer with Pagination */}
                                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
                                     <p className="text-xs md:text-sm text-gray-600">
-                                        Showing <span className="font-semibold text-gray-800">{((currentPage - 1) * itemsPerPage) + 1}</span> to{" "}
-                                        <span className="font-semibold text-gray-800">{Math.min(currentPage * itemsPerPage, filteredAppointments.length)}</span> of{" "}
-                                        <span className="font-semibold text-gray-800">{filteredAppointments.length}</span> appointments
+                                        Showing <span className="font-semibold text-gray-800">{((page - 1) * 15) + (paginatedAppointments.length > 0 ? 1 : 0)}</span> to{" "}
+                                        <span className="font-semibold text-gray-800">{((page - 1) * 15) + paginatedAppointments.length}</span> of{" "}
+                                        <span className="font-semibold text-gray-800">{totalAppointments}</span> appointments
                                     </p>
 
                                     {totalPages > 1 && (
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                                disabled={currentPage === 1}
+                                                onClick={() => setPage(Math.max(1, page - 1))}
+                                                disabled={page === 1}
                                                 className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 Previous
                                             </button>
                                             <span className="px-3 py-1 text-sm">
-                                                Page {currentPage} of {totalPages}
+                                                Page {page} of {totalPages}
                                             </span>
                                             <button
-                                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                                disabled={currentPage === totalPages}
+                                                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                                                disabled={page === totalPages}
                                                 className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 Next

@@ -78,9 +78,9 @@ export default function Dashboard() {
     fetchDashboard();
   }, [fetchDashboard, pollToggle]);
 
+  // Polling interval removed for cost optimization. Data will refresh on component mount or manual trigger.
   useEffect(() => {
-    const id = setInterval(() => setPollToggle((x) => !x), 60000);
-    return () => clearInterval(id);
+    // No-op for now.
   }, []);
 
   const kpis = data?.kpis || {};
@@ -89,10 +89,10 @@ export default function Dashboard() {
   const exceptions = data?.exceptions || {};
 
   const billingStatusData = useMemo(() => ([
-    { stage: "Unbilled", count: exceptions?.unbilled_treatments?.length || 0 },
+    { stage: "Unbilled", count: exceptions?.unbilled_treatments_count || 0 },
     { stage: "Partial", count: exceptions?.partial_bills?.length || 0 },
     { stage: "Paid", count: (kpis?.paid_bills_count ?? 0) },
-  ]), [exceptions?.unbilled_treatments?.length, exceptions?.partial_bills?.length, kpis?.paid_bills_count]);
+  ]), [exceptions?.unbilled_treatments_count, exceptions?.partial_bills?.length, kpis?.paid_bills_count]);
 
   const roleLabel =
     role === "admin" ? "Admin" :
@@ -347,8 +347,8 @@ export default function Dashboard() {
                 </Card>
 
                 {(role === "admin" || role === "reception") && (
-                  <Card title="🧾 Unbilled Treatments (Action Required)">
-                    {exceptions.unbilled_treatments?.length ? (
+                  <Card title={`⚠️ Unbilled Treatments (${exceptions?.unbilled_treatments_count || 0})`}>
+                    {exceptions.unbilled_treatments_count > 0 ? (
                       <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                         {exceptions.unbilled_treatments.slice(0, 10).map((t, idx) => (
                           <div key={idx} className="p-2.5 rounded-lg transition-all bg-gray-50 hover:bg-gray-100">

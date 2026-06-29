@@ -92,7 +92,11 @@ class ReportController extends Controller
         $month = (int) $request->input('month', Carbon::now()->month);
         $year  = (int) $request->input('year',  Carbon::now()->year);
 
-        $treatments = Treatment::with(['patient', 'diagnoses'])
+        $treatments = Treatment::with([
+            'patient:id,upid,first_name,last_name,age,age_years,gender,pregnancy_status',
+            'diagnoses:id,treatment_id,diagnosis'
+        ])
+            ->select('id', 'patient_id', 'visit_date', 'treatment_type', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'chief_complaint', 'treatment_notes')
             ->whereYear('visit_date', $year)
             ->whereMonth('visit_date', $month)
             ->get();
@@ -336,8 +340,12 @@ class ReportController extends Controller
         $month = (int) $request->input('month', Carbon::now()->month);
         $year  = (int) $request->input('year',  Carbon::now()->year);
 
-        // Fetch treatments with patients and additional diagnoses
-        $treatments = Treatment::with(['patient', 'diagnoses'])
+        // Fetch treatments with lean patients and additional diagnoses
+        $treatments = Treatment::with([
+            'patient:id,first_name,last_name,age_years,age,gender',
+            'diagnoses:id,treatment_id,diagnosis'
+        ])
+            ->select('id', 'patient_id', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'visit_date', 'treatment_type')
             ->whereYear('visit_date', $year)
             ->whereMonth('visit_date', $month)
             ->get();
@@ -880,10 +888,12 @@ class ReportController extends Controller
 
         // ── 3. Section 8 — Specimen Referrals ──────────────────────────────────
         $allRequests = LabRequest::with([
-
-                'tests.template',
-                'tests.result',
+                'tests:id,lab_request_id,test_template_id',
+                'tests.template:id,name',
+                'tests.result:id,lab_request_test_id,status',
+                'patient:id,upid,first_name,last_name,age,age_years,gender'
             ])
+            ->select('id', 'patient_id', 'request_date', 'status')
             ->whereYear('request_date', $year)
             ->whereMonth('request_date', $month)
             ->whereNotIn('status', ['rejected', 'cancelled'])

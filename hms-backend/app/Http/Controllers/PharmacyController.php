@@ -30,9 +30,10 @@ class PharmacyController extends Controller
             }
         }
 
-        $orders = $query->get();
+        $orders = $query->paginate(15);
 
-        return response()->json($orders->map(function ($order) {
+        // Map the items to retain the desired shape, but preserve the paginator structure
+        $orders->getCollection()->transform(function ($order) {
             return [
                 'id' => $order->id,
                 'prescription_id' => $order->prescription_id,
@@ -62,7 +63,9 @@ class PharmacyController extends Controller
                 'created_at' => $order->created_at->toDateTimeString(),
                 'dispensed_at' => $order->dispensed_at ? $order->dispensed_at->toDateTimeString() : null,
             ];
-        }));
+        });
+
+        return response()->json($orders);
     }
 
     /**

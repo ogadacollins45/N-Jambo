@@ -10,17 +10,23 @@ const PharmacyQueue = () => {
     const [filter, setFilter] = useState('all'); // all, pending, dispensed
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [dispensing, setDispensing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalOrders, setTotalOrders] = useState(0);
 
     useEffect(() => {
-        fetchOrders();
+        fetchOrders(page);
         // No polling - manual refresh only for cost optimization
-    }, [filter]);
+    }, [filter, page]);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (currentPage = 1) => {
+        setLoading(true);
         try {
-            const params = filter !== 'all' ? { status: filter } : {};
+            const params = filter !== 'all' ? { status: filter, page: currentPage } : { page: currentPage };
             const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/pharmacy/orders`, { params });
-            setOrders(res.data);
+            setOrders(res.data.data || []);
+            setTotalPages(res.data.last_page || 1);
+            setTotalOrders(res.data.total || 0);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching pharmacy orders:', error);
@@ -73,21 +79,21 @@ const PharmacyQueue = () => {
                 <div className="queue-filters">
                     <button
                         className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                        onClick={() => setFilter('all')}
+                        onClick={() => { setFilter('all'); setPage(1); }}
                     >
-                        All Orders ({orders.length})
+                        All Orders {filter === 'all' && `(${totalOrders})`}
                     </button>
                     <button
                         className={`filter-btn ${filter === 'pending' ? 'active' : ''}`}
-                        onClick={() => setFilter('pending')}
+                        onClick={() => { setFilter('pending'); setPage(1); }}
                     >
-                        Pending ({orders.filter(o => o.status === 'pending').length})
+                        Pending {filter === 'pending' && `(${totalOrders})`}
                     </button>
                     <button
                         className={`filter-btn ${filter === 'dispensed' ? 'active' : ''}`}
-                        onClick={() => setFilter('dispensed')}
+                        onClick={() => { setFilter('dispensed'); setPage(1); }}
                     >
-                        Dispensed ({orders.filter(o => o.status === 'dispensed').length})
+                        Dispensed {filter === 'dispensed' && `(${totalOrders})`}
                     </button>
                 </div>
 
@@ -140,6 +146,31 @@ const PharmacyQueue = () => {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    )}
+                    
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-between items-center mt-6 py-4 border-t border-gray-100">
+                            <span className="text-sm text-gray-600 font-medium">
+                                Showing Page {page} of {totalPages}
+                            </span>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 hover:shadow-md'}`}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${page === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 hover:shadow-md'}`}
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

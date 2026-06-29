@@ -32,12 +32,9 @@ export const LabNotificationProvider = ({ children }) => {
         }
     }, []);
 
-    // Fetch immediately on mount, then poll every 30 seconds
+    // Fetch only on mount or manual trigger (no polling for cost optimization)
     useEffect(() => {
         refreshLabCount();
-
-        const interval = setInterval(refreshLabCount, 30000);
-        return () => clearInterval(interval);
     }, [refreshLabCount]);
 
     return (

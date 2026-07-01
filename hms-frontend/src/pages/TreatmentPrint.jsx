@@ -57,12 +57,14 @@ const TreatmentPrint = () => {
                 return;
             }
 
-            // --- Step 2: Find the specific treatment from eager-loaded data ---
-            const treatments = patientData.treatments || [];
-            const specificTreatment = treatments.find(t => t.id === parseInt(treatmentId));
-
-            if (!specificTreatment) {
-                const msg = `Treatment #${treatmentId} not found in patient #${id}'s records.\nPatient has ${treatments.length} treatment(s): [${treatments.map(t => t.id).join(', ')}]`;
+            // --- Step 2: Fetch the specific treatment directly ---
+            const treatmentUrl = `${API_BASE_URL}/treatments/${treatmentId}`;
+            let specificTreatment = null;
+            try {
+                const tRes = await axios.get(treatmentUrl, config);
+                specificTreatment = tRes.data;
+            } catch (err) {
+                const msg = `Treatment #${treatmentId} could not be fetched.\nError: ${err.response?.data?.message || err.message}`;
                 console.error('TreatmentPrint:', msg);
                 setError(msg);
                 setLoading(false);

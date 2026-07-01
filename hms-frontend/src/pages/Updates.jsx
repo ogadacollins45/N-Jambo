@@ -184,11 +184,11 @@ export default function Documentation() {
     const systemInfo = [
         {
             label: "Version",
-            value: "2.0.0",
+            value: "3.5.0",
         },
         {
             label: "Last Updated",
-            value: "December 2025",
+            value: "July 2026",
         },
         {
             label: "Frontend",

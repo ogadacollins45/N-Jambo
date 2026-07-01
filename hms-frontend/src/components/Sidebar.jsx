@@ -164,6 +164,12 @@ const Sidebar = () => {
       icon: <Microscope className="w-5 h-5" />
     },
     {
+      name: "Services Price List",
+      path: "/services-price-list",
+      roles: ["admin", "doctor", "reception", "labtech", "facility_clerk", "pharmacist"],
+      icon: <ClipboardList className="w-5 h-5" />
+    },
+    {
       name: "Reports",
       path: "/reports",
       roles: ["admin", "facility_clerk"],

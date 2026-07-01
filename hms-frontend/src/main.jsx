@@ -67,6 +67,7 @@ import LabReportPrint from "./pages/LabReportPrint.jsx";
 import Updates from "./pages/Updates.jsx";
 import DatabaseManagement from "./pages/DatabaseManagement.jsx";
 import Reports from "./pages/Reports.jsx";
+import ServicesPriceList from "./pages/ServicesPriceList.jsx";
 
 import "./index.css";
 
@@ -143,6 +144,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
               {/* Suppliers */}
               <Route path="/suppliers" element={<Suppliers />} />
+
+              {/* Services Price List */}
+              <Route path="/services-price-list" element={<ServicesPriceList />} />
 
               {/* Billing */}
               <Route path="/billing" element={<Billing />} />

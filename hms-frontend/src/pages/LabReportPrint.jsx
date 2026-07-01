@@ -243,10 +243,10 @@ const LabReportPrint = () => {
                                                 </tbody>
                                             </table>
                                             
-                                            {test.result.remarks && (
+                                            {test.result.overall_comment && (
                                                 <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-100">
                                                     <span className="font-bold text-gray-700 uppercase text-[10px] block mb-1">Technician Remarks:</span>
-                                                    <span className="text-gray-700 italic">{test.result.remarks}</span>
+                                                    <span className="text-gray-700 italic">{test.result.overall_comment}</span>
                                                 </div>
                                             )}
                                         </div>

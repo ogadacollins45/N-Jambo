@@ -393,18 +393,20 @@ const TreatmentPrint = () => {
                                                         </div>
                                                         {test.result && (
                                                             <div className="mt-0.5 bg-blue-50/50 p-1.5 rounded text-xs print:bg-transparent print:p-0">
-                                                                <div className="flex gap-2">
-                                                                    <span className="font-bold text-blue-900 text-[10px] uppercase w-10 pt-0.5">Result:</span>
-                                                                    <span className="font-mono text-gray-800">
-                                                                        {typeof test.result.result_value === 'object'
-                                                                            ? JSON.stringify(test.result.result_value)
-                                                                            : test.result.result_value}
-                                                                    </span>
+                                                                <div className="flex flex-col gap-1">
+                                                                    {test.result.parameters && test.result.parameters.map((paramResult, pIdx) => (
+                                                                        <div key={pIdx} className="flex gap-2">
+                                                                            <span className="font-semibold text-gray-700">{paramResult.parameter?.name || "Parameter"}:</span>
+                                                                            <span className={`font-bold ${paramResult.is_abnormal ? 'text-red-600' : 'text-gray-900'}`}>
+                                                                                {paramResult.value} {paramResult.unit || ''}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                                {test.result.remarks && (
-                                                                    <div className="flex gap-2 mt-0.5">
+                                                                {test.result.overall_comment && (
+                                                                    <div className="flex gap-2 mt-1 pt-1 border-t border-gray-150">
                                                                         <span className="font-bold text-gray-400 text-[10px] uppercase w-10">Note:</span>
-                                                                        <span className="italic text-gray-600 text-[10px]">{test.result.remarks}</span>
+                                                                        <span className="italic text-gray-600 text-[10px]">{test.result.overall_comment}</span>
                                                                     </div>
                                                                 )}
                                                             </div>

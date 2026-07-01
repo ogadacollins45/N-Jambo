@@ -81,6 +81,15 @@ const LabReportPrint = () => {
 
     const { patient, doctor, tests, labTechnician } = labRequest;
 
+    const formatAge = (p) => {
+        if (!p) return "?";
+        if (p.age_years > 0) return `${p.age_years} yrs`;
+        if (p.age_months > 0) return `${p.age_months} mos`;
+        if (p.age_days >= 0) return `${p.age_days} days`;
+        if (p.age === 0) return "Under 1 yr";
+        return `${p.age || "?"} yrs`;
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans print:bg-white">
             {/* Navbar / Controls - Hidden on Print */}
@@ -165,7 +174,7 @@ const LabReportPrint = () => {
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Gender / Age</p>
-                                <p className="font-medium text-gray-800 text-sm">{patient?.gender}, {patient?.age || "?"} yrs</p>
+                                <p className="font-medium text-gray-800 text-sm">{patient?.gender}, {formatAge(patient)}</p>
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Request Date</p>
@@ -201,7 +210,7 @@ const LabReportPrint = () => {
                                         Status: {test.status}
                                     </span>
                                 </div>
-                                
+
                                 <div className="p-4">
                                     {test.status === 'completed' && test.result ? (
                                         <div className="overflow-x-auto">
@@ -218,7 +227,7 @@ const LabReportPrint = () => {
                                                         const p = paramResult.parameter;
                                                         const isNumeric = p?.result_type === 'range';
                                                         const val = paramResult.value;
-                                                        
+
                                                         // Check if out of range for highlight
                                                         const isOutOfRange = paramResult.is_abnormal;
 
@@ -232,7 +241,7 @@ const LabReportPrint = () => {
                                                                     </span>
                                                                 </td>
                                                                 <td className="py-2 text-xs text-gray-500">
-                                                                    {isNumeric 
+                                                                    {isNumeric
                                                                         ? `${p?.normal_range_min || ''} - ${p?.normal_range_max || ''} ${p?.unit || ''}`
                                                                         : 'Negative'
                                                                     }
@@ -242,10 +251,10 @@ const LabReportPrint = () => {
                                                     })}
                                                 </tbody>
                                             </table>
-                                            
+
                                             {test.result.overall_comment && (
                                                 <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-100">
-                                                    <span className="font-bold text-gray-700 uppercase text-[10px] block mb-1">Technician Remarks:</span>
+                                                    <span className="font-bold text-gray-700 uppercase text-[10px] block mb-1">Remarks:</span>
                                                     <span className="text-gray-700 italic">{test.result.overall_comment}</span>
                                                 </div>
                                             )}

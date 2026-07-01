@@ -161,6 +161,15 @@ const TreatmentPrint = () => {
         );
     }
 
+    const formatAge = (p) => {
+        if (!p) return "?";
+        if (p.age_years > 0) return `${p.age_years} yrs`;
+        if (p.age_months > 0) return `${p.age_months} mos`;
+        if (p.age_days >= 0) return `${p.age_days} days`;
+        if (p.age === 0) return "Under 1 yr";
+        return `${p.age || "?"} yrs`;
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans print:bg-white">
             {/* Navbar / Controls - Hidden on Print */}
@@ -245,7 +254,7 @@ const TreatmentPrint = () => {
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Gender / Age</p>
-                                <p className="font-medium text-gray-800 text-sm">{patient.gender}, {patient.age || "?"} yrs</p>
+                                <p className="font-medium text-gray-800 text-sm">{patient.gender}, {formatAge(patient)}</p>
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contact</p>

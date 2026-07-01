@@ -386,6 +386,7 @@ const AddManualLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
                                         </div>
                                     </div>
                                     <div><label className="text-xs text-gray-500">Phone</label><input type="tel" name="phone" value={newPatient.phone} onChange={handlePatientChange} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
+                                    <div><label className="text-xs text-gray-500">Address / Residence</label><input type="text" name="address" value={newPatient.address} onChange={handlePatientChange} className="w-full border rounded p-2 focus:ring-indigo-500" /></div>
                                     <div className="sm:col-span-2">
                                         <button onClick={handleRegisterPatient} disabled={loading || !newPatient.first_name || !newPatient.last_name || !newPatient.gender} className="w-full bg-indigo-600 text-white py-2.5 rounded hover:bg-indigo-700 disabled:opacity-50 font-medium mt-2">
                                             {loading ? 'Registering...' : 'Register & Continue'}

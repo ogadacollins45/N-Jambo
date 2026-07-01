@@ -6,7 +6,7 @@ import AddDrugModal from '../components/AddDrugModal';
 import DispenseToPharmacyModal from '../components/DispenseToPharmacyModal';
 import DrugImportModal from '../components/DrugImportModal';
 import BulkDeleteModal from '../components/BulkDeleteModal';
-import { PlusCircle, Search, Edit, Trash2, Pill, Send, ChevronLeft, AlertCircle, CheckCircle, Link, Download, Bell } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, Pill, Send, ChevronLeft, AlertCircle, CheckCircle, Link, Download, Bell, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/main-store/drugs`;
@@ -27,6 +27,11 @@ const MainStoreDrugs = () => {
     const [deleting, setDeleting] = useState(false);
     const [reorderRequests, setReorderRequests] = useState([]);
     const [showReorderModal, setShowReorderModal] = useState(false);
+
+    const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+    const [quickAddDrug, setQuickAddDrug] = useState(null);
+    const [quickAddQuantity, setQuickAddQuantity] = useState('');
+    const [addingStock, setAddingStock] = useState(false);
 
     const [showError, setShowError] = useState('');
     const [showSuccess, setShowSuccess] = useState('');
@@ -173,6 +178,31 @@ const MainStoreDrugs = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [search, linkFilter]);
+
+    const handleQuickAddStock = async () => {
+        if (!quickAddQuantity || isNaN(quickAddQuantity) || parseInt(quickAddQuantity) <= 0) {
+            setShowError("Please enter a valid quantity to add.");
+            return;
+        }
+        setAddingStock(true);
+        try {
+            const newTotal = parseInt(quickAddDrug.quantity || 0) + parseInt(quickAddQuantity);
+            await axios.put(`${API_URL}/${quickAddDrug.id}`, {
+                quantity: newTotal
+            });
+            
+            setShowSuccess(`Successfully added ${quickAddQuantity} units to ${quickAddDrug.name}.`);
+            fetchDrugs();
+            setShowQuickAddModal(false);
+            setQuickAddDrug(null);
+            setQuickAddQuantity('');
+        } catch (err) {
+            console.error('Error adding stock:', err);
+            setShowError(err.response?.data?.message || 'Failed to add stock');
+        } finally {
+            setAddingStock(false);
+        }
+    };
 
     return (
         <DashboardLayout>
@@ -377,6 +407,17 @@ const MainStoreDrugs = () => {
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         <div className="flex items-center justify-center space-x-3">
                                                             <button
+                                                                onClick={() => {
+                                                                    setQuickAddDrug(drug);
+                                                                    setQuickAddQuantity('');
+                                                                    setShowQuickAddModal(true);
+                                                                }}
+                                                                className="text-blue-600 hover:text-blue-900 transition-colors duration-200 flex items-center"
+                                                                title="Quick Add Stock"
+                                                            >
+                                                                <PlusCircle className="w-4 h-4" />
+                                                            </button>
+                                                            <button
                                                                 onClick={() => handleEditDrug(drug)}
                                                                 className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200 flex items-center"
                                                                 title="Edit Medicine"
@@ -547,6 +588,49 @@ const MainStoreDrugs = () => {
                                 >
                                     Close
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Quick Add Stock Modal */}
+                {showQuickAddModal && quickAddDrug && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col">
+                            <div className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+                                <h2 className="text-lg font-bold flex items-center"><PlusCircle className="mr-2 w-5 h-5" /> Add Stock</h2>
+                                <button onClick={() => setShowQuickAddModal(false)} className="text-blue-100 hover:text-white transition">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="p-6">
+                                <p className="mb-4 text-gray-700 font-medium">Add stock for <strong className="text-blue-700">{quickAddDrug.name}</strong></p>
+                                <p className="mb-4 text-sm text-gray-500">Current Stock: <span className="font-bold text-gray-800">{quickAddDrug.quantity}</span></p>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Quantity to Add</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={quickAddQuantity}
+                                    onChange={(e) => setQuickAddQuantity(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                    placeholder="e.g. 50"
+                                    autoFocus
+                                />
+                                <div className="mt-6 flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setShowQuickAddModal(false)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleQuickAddStock}
+                                        disabled={addingStock || !quickAddQuantity}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:opacity-50"
+                                    >
+                                        {addingStock ? 'Adding...' : 'Add Stock'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

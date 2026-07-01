@@ -279,7 +279,7 @@ const MainStoreDrugs = () => {
                                     />
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                {/* <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setLinkFilter('all')}
                                         className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${linkFilter === 'all'
@@ -307,7 +307,7 @@ const MainStoreDrugs = () => {
                                     >
                                         Unlinked
                                     </button>
-                                </div>
+                                </div> */}
                             </div>
 
                             {/* Table */}
@@ -329,7 +329,7 @@ const MainStoreDrugs = () => {
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosage</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pharmacy Link</th>
+                                                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pharmacy Link</th> */}
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
@@ -363,7 +363,7 @@ const MainStoreDrugs = () => {
                                                     <td className="px-6 py-4 text-sm text-gray-900">
                                                         KSH {parseFloat(drug.unit_price).toFixed(2)}
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    {/* <td className="px-6 py-4">
                                                         {drug.pharmacy_drug_id ? (
                                                             <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                                 <Link className="w-3 h-3 mr-1" /> Linked
@@ -373,7 +373,7 @@ const MainStoreDrugs = () => {
                                                                 Not Linked
                                                             </span>
                                                         )}
-                                                    </td>
+                                                    </td> */}
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         <div className="flex items-center justify-center space-x-3">
                                                             <button

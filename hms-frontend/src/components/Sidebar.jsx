@@ -158,7 +158,7 @@ const Sidebar = () => {
       icon: <Package className="w-5 h-5" />
     },
     {
-      name: "Lab Queue",
+      name: "Laboratory",
       path: "/lab/queue",
       roles: ["admin", "labtech"],
       icon: <Microscope className="w-5 h-5" />

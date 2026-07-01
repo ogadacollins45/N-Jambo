@@ -356,7 +356,7 @@ const TreatmentPrint = () => {
                                 <table className="w-full text-xs text-left border-collapse">
                                     <thead>
                                         <tr className="text-gray-500 border-b border-gray-300">
-                                            <th className="py-1 pr-4 font-semibold uppercase">Drug Name / Item</th>
+                                            <th className="py-1 pr-4 font-semibold uppercase">Medicine Name / Item</th>
                                             <th className="py-1 px-4 font-semibold uppercase">Dosage</th>
                                             <th className="py-1 px-4 font-semibold uppercase">Freq.</th>
                                             <th className="py-1 px-4 font-semibold uppercase">Dur.</th>

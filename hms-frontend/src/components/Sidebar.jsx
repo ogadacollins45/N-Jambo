@@ -116,7 +116,7 @@ const Sidebar = () => {
       icon: <Package className="w-5 h-5" />
     },
     {
-      name: "Main Drug Store",
+      name: "Main Medicine Store",
       path: "/main-store/drugs",
       roles: ["admin"],
       icon: <Pill className="w-5 h-5" />

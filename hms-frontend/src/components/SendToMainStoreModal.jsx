@@ -91,17 +91,17 @@ const SendToMainStoreModal = ({ isOpen, onClose, drug, onSuccess }) => {
                         </div>
                         <div>
                             <h3 className="text-2xl font-bold text-white">Reorder from Main Store</h3>
-                            <p className="text-indigo-100 text-sm mt-1">Request drug reorder from Main Drug Store</p>
+                            <p className="text-indigo-100 text-sm mt-1">Request drug reorder from Main Medicine Store</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
-                    {/* Drug Info Banner */}
+                    {/* Medicine Info Banner */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl mb-6 border border-indigo-200">
                         <div>
-                            <p className="text-sm text-gray-600 font-medium">Pharmacy Drug</p>
+                            <p className="text-sm text-gray-600 font-medium">Pharmacy Medicine</p>
                             <p className="text-lg font-bold text-gray-900">{drug.generic_name}</p>
                             <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                                 <span>Code: <span className="font-semibold">{drug.drug_code}</span></span>

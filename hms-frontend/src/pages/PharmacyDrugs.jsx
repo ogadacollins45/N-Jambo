@@ -257,7 +257,7 @@ const PharmacyDrugs = () => {
                         <Pill className="header-icon" />
                         <div className="header-text">
                             <h1>Pharmacy Store</h1>
-                            <p>Manage drug catalogue and inventory</p>
+                            <p>Manage medicine catalogue and inventory</p>
                         </div>
                     </div>
                 </div>
@@ -266,7 +266,7 @@ const PharmacyDrugs = () => {
                     <Search size={20} />
                     <input
                         type="text"
-                        placeholder="Search by drug name or code..."
+                        placeholder="Search by medicine name or code..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -305,7 +305,7 @@ const PharmacyDrugs = () => {
                     {fetchLoading && (
                         <div className="loading-overlay">
                             <Loader className="animate-spin" size={40} />
-                            <p>Loading drugs...</p>
+                            <p>Loading medicines...</p>
                         </div>
                     )}
                     <div className={`drugs-grid ${fetchLoading ? 'loading' : ''}`}>
@@ -445,7 +445,7 @@ const PharmacyDrugs = () => {
                 {showModal && (
                     <div className="modal-overlay" onClick={() => setShowModal(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <h2>{editingDrug ? 'Edit Drug' : 'Add New Drug'}</h2>
+                            <h2>{editingDrug ? 'Edit Medicine' : 'Add New Medicine'}</h2>
 
                             <form onSubmit={handleSubmit}>
                                 <div className="form-grid">
@@ -566,7 +566,7 @@ const PharmacyDrugs = () => {
                                         Cancel
                                     </button>
                                     <button type="submit" disabled={loading} className="btn-primary">
-                                        {loading ? 'Saving...' : editingDrug ? 'Update Drug' : 'Add Drug'}
+                                        {loading ? 'Saving...' : editingDrug ? 'Update Drug' : 'Add Medicine'}
                                     </button>
                                 </div>
                             </form>
@@ -649,7 +649,7 @@ const PharmacyDrugs = () => {
                         <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                                 <Send className="text-indigo-600" size={24} />
-                                <h2 style={{ margin: 0 }}>Reorder Drug - {selectedReorderDrug.generic_name}</h2>
+                                <h2 style={{ margin: 0 }}>Reorder Medicine - {selectedReorderDrug.generic_name}</h2>
                             </div>
 
                             <form onSubmit={submitReorder}>

@@ -45,7 +45,7 @@ const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, o
     const updated = [...items];
     updated[index][field] = value;
 
-    // Clear drug_id and stock if user manually edits drug name (not from autocomplete)
+    // Clear drug_id and stock if user manually edits medicine name (not from autocomplete)
     if (field === 'drug_name') {
       updated[index].drug_id = null;
       updated[index].current_stock = null;
@@ -133,7 +133,7 @@ const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, o
   const handleSubmit = async () => {
     // Validation
     if (items.some(item => !item.drug_name.trim())) {
-      flashMessage(setError, "Please enter drug name for all items.");
+      flashMessage(setError, "Please enter medicine name for all items.");
       return;
     }
 
@@ -263,7 +263,7 @@ const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, o
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2 relative">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Drug Name *
+                        Medicine Name *
                       </label>
                       <input
                         type="text"
@@ -302,7 +302,7 @@ const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, o
                             setShowSuggestions(prev => ({ ...prev, [index]: true }));
                           }
                         }}
-                        placeholder="Start typing drug name..."
+                        placeholder="Start typing medicine name..."
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         required
                         autoComplete="off"
@@ -387,7 +387,7 @@ const AddPrescriptionModal = ({ patientId, treatmentId, admissionId, doctorId, o
                         item.drug_name.length >= 2 &&
                         suggestions[index]?.length === 0 && (
                           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
-                            <p className="text-sm text-gray-500 text-center">No drugs found in pharmacy</p>
+                            <p className="text-sm text-gray-500 text-center">No medicines found in pharmacy</p>
                           </div>
                         )}
                     </div>

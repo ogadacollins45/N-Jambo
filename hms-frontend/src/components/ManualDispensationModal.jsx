@@ -260,7 +260,7 @@ const ManualDispensationModal = ({ isOpen, onClose, onSuccess }) => {
                         1. Select Patient
                     </div>
                     <div className={`flex-1 text-center py-3 ${step >= 2 ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500'}`}>
-                        2. Select Drugs
+                        2. Select Medicines
                     </div>
                     <div className={`flex-1 text-center py-3 ${step >= 3 ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500'}`}>
                         3. Review & Dispense
@@ -438,7 +438,7 @@ const ManualDispensationModal = ({ isOpen, onClose, onSuccess }) => {
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Search drugs..."
+                                    placeholder="Search medicines..."
                                     value={drugSearch}
                                     onChange={(e) => setDrugSearch(e.target.value)}
                                     className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"

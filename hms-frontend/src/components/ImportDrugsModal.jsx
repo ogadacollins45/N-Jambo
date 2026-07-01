@@ -70,8 +70,8 @@ const DrugMigrationModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
                     <div>
-                        <h2 className="text-2xl font-bold text-white">Import Drugs from Pharmacy</h2>
-                        <p className="text-blue-100 text-sm mt-1">Import existing drugs from the Pharmacy Store into the Main Drug Store</p>
+                        <h2 className="text-2xl font-bold text-white">Import Medicines from Pharmacy</h2>
+                        <p className="text-blue-100 text-sm mt-1">Import existing drugs from the Pharmacy Store into the Main Medicine Store</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -108,7 +108,7 @@ const DrugMigrationModal = ({ isOpen, onClose, onSuccess }) => {
                             {/* Stats Cards */}
                             <div className="grid grid-cols-3 gap-4 mb-6">
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <p className="text-sm font-medium text-blue-600 mb-1">Total Drugs</p>
+                                    <p className="text-sm font-medium text-blue-600 mb-1">Total Medicines</p>
                                     <p className="text-3xl font-bold text-blue-700">{status.total_drugs}</p>
                                 </div>
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -145,7 +145,7 @@ const DrugMigrationModal = ({ isOpen, onClose, onSuccess }) => {
                                                 <thead className="bg-gray-100 sticky top-0">
                                                     <tr>
                                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                                            Drug Code
+                                                            Medicine Code
                                                         </th>
                                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                                                             Name
@@ -202,7 +202,7 @@ const DrugMigrationModal = ({ isOpen, onClose, onSuccess }) => {
                                 <div className="text-center py-12">
                                     <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
                                     <h3 className="text-2xl font-bold text-gray-800 mb-2">All drugs imported!</h3>
-                                    <p className="text-gray-600">All Pharmacy Store items have been successfully imported into the Main Drug Store</p>
+                                    <p className="text-gray-600">All Pharmacy Store items have been successfully imported into the Main Medicine Store</p>
                                 </div>
                             )}
                         </div>

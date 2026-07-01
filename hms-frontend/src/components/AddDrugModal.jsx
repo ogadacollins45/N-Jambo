@@ -157,7 +157,7 @@ const AddDrugModal = ({ isOpen, onClose, onSuccess, editingDrug = null }) => {
                         </div>
                         <div>
                             <h3 className="text-2xl font-bold text-white">
-                                {editingDrug ? 'Edit Drug' : 'Add New Drug'}
+                                {editingDrug ? 'Edit Medicine' : 'Add New Medicine'}
                             </h3>
                             <p className="text-blue-100 text-sm mt-1">Essential drug information for Main Store</p>
                         </div>
@@ -173,10 +173,10 @@ const AddDrugModal = ({ isOpen, onClose, onSuccess, editingDrug = null }) => {
                         </div>
                     )}
 
-                    {/* Drug Information */}
+                    {/* Medicine Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Drug Name *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Medicine Name *</label>
                             <input
                                 type="text"
                                 name="name"
@@ -445,7 +445,7 @@ const AddDrugModal = ({ isOpen, onClose, onSuccess, editingDrug = null }) => {
                             {loading ? (
                                 <><Loader className="animate-spin mr-2 h-5 w-5" /> Saving...</>
                             ) : (
-                                editingDrug ? 'Update Drug' : 'Add Drug'
+                                editingDrug ? 'Update Drug' : 'Add Medicine'
                             )}
                         </button>
                     </div>

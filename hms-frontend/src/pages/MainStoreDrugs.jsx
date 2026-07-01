@@ -196,7 +196,7 @@ const MainStoreDrugs = () => {
                                 <div className="flex items-center">
                                     <Pill className="w-8 h-8 text-white mr-4" />
                                     <div>
-                                        <h2 className="text-2xl font-bold text-white">Main Drug Store</h2>
+                                        <h2 className="text-2xl font-bold text-white">Main Medicine Store</h2>
                                         <p className="text-blue-100 text-sm mt-1">{filteredDrugs.length} medicine(s) in stock</p>
                                     </div>
                                 </div>
@@ -215,21 +215,21 @@ const MainStoreDrugs = () => {
                                         )}
                                     </button>
 
-                                    <button
+                                    {/* <button
                                         onClick={handleBulkDeleteUnlinked}
                                         disabled={deleting}
                                         className="flex items-center px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all duration-300 shadow-sm"
-                                        title="Delete all drugs not linked to pharmacy"
+                                        title="Delete all medicines not linked to pharmacy"
                                     >
                                         <Trash2 className="w-5 h-5 mr-2" /> Bulk Delete Unlinked
                                     </button>
                                     <button
                                         onClick={() => setShowImportModal(true)}
                                         className="flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                                        title="Import drugs from pharmacy inventory"
+                                        title="Import medicines from pharmacy inventory"
                                     >
-                                        <Download className="w-5 h-5 mr-2" /> Import Drugs
-                                    </button>
+                                        <Download className="w-5 h-5 mr-2" /> Import Medicines
+                                    </button> */}
                                     <button
                                         onClick={() => {
                                             setEditingDrug(null);
@@ -237,7 +237,7 @@ const MainStoreDrugs = () => {
                                         }}
                                         className="flex items-center px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg hover:bg-blue-50 transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
-                                        <PlusCircle className="w-5 h-5 mr-2" /> Add New Drug
+                                        <PlusCircle className="w-5 h-5 mr-2" /> Add New Medicine
                                     </button>
                                 </div>
                             </div>
@@ -272,7 +272,7 @@ const MainStoreDrugs = () => {
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Search drugs..."
+                                        placeholder="Search medicines..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
@@ -316,7 +316,7 @@ const MainStoreDrugs = () => {
                             ) : paginatedDrugs.length === 0 ? (
                                 <div className="text-center py-10 text-gray-500">
                                     <Pill className="w-16 h-16 mx-auto mb-4" />
-                                    <p className="text-xl font-semibold">No drugs found.</p>
+                                    <p className="text-xl font-semibold">No medicines found.</p>
                                     <p>Try adjusting your filters or add a new drug.</p>
                                 </div>
                             ) : (
@@ -324,7 +324,7 @@ const MainStoreDrugs = () => {
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drug Info</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicine Info</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generic Name</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosage</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
@@ -379,7 +379,7 @@ const MainStoreDrugs = () => {
                                                             <button
                                                                 onClick={() => handleEditDrug(drug)}
                                                                 className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200 flex items-center"
-                                                                title="Edit Drug"
+                                                                title="Edit Medicine"
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </button>

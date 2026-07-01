@@ -174,7 +174,7 @@ const PharmacyReports = () => {
                     <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm">Drugs Dispensed (Units)</p>
+                                <p className="text-gray-600 text-sm">Medicines Dispensed (Units)</p>
                                 <p className="text-2xl font-bold text-gray-800">{summaryStats.total_drugs_dispensed || 0}</p>
                             </div>
                             <Package className="w-10 h-10 text-green-500 opacity-50" />
@@ -204,10 +204,10 @@ const PharmacyReports = () => {
                     </div>
                 </div>
 
-                {/* Top Dispensed Drugs */}
+                {/* Top Dispensed Medicines */}
                 {topDrugs.length > 0 && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Dispensed Drugs (This Month)</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Dispensed Medicines (This Month)</h3>
                         <div className="space-y-3">
                             {topDrugs.map((drug, index) => (
                                 <div key={drug.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -255,7 +255,7 @@ const PharmacyReports = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
                                     <input
                                         type="text"
-                                        placeholder="Search drug..."
+                                        placeholder="Search medicine..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -376,7 +376,7 @@ const PharmacyReports = () => {
                                             <table className="w-full">
                                                 <thead className="bg-gray-50">
                                                     <tr>
-                                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Drug Code</th>
+                                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Medicine Code</th>
                                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
                                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Form</th>
                                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Current Stock</th>

@@ -236,11 +236,11 @@ const DispenseToPharmacyModal = ({ isOpen, onClose, drug, onSuccess }) => {
                         )}
                     </div>
 
-                    {/* Drug Info Banner */}
+                    {/* Medicine Info Banner */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl mb-6 border border-indigo-200">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 font-medium">Drug Name</p>
+                                <p className="text-sm text-gray-600 font-medium">Medicine Name</p>
                                 <p className="text-lg font-bold text-gray-900">{drug.name}</p>
                                 <p className="text-sm text-gray-600 mt-1">
                                     Code: <span className="font-semibold">{drug.item_code}</span>

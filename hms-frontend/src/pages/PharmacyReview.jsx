@@ -32,7 +32,7 @@ const PharmacyReview = () => {
     const [dispensing, setDispensing] = useState(false);
     const [showManualModal, setShowManualModal] = useState(false);
 
-    // Add Drug Modal State
+    // Add Medicine Modal State
     const [showAddDrugModal, setShowAddDrugModal] = useState(false);
     const [drugSearchQuery, setDrugSearchQuery] = useState('');
     const [searchedDrugs, setSearchedDrugs] = useState([]);
@@ -216,7 +216,7 @@ const PharmacyReview = () => {
         }
     };
 
-    // Search drugs for adding to prescription
+    // Search medicines for adding to prescription
     const handleSearchDrugs = async (query) => {
         setDrugSearchQuery(query);
         if (query.length < 2) {
@@ -253,7 +253,7 @@ const PharmacyReview = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            flashMessage(setSuccess, 'Drug added to prescription successfully');
+            flashMessage(setSuccess, 'Medicine added to prescription successfully');
 
             // Refresh prescription data
             const response = await axios.get(`${API_BASE}/pharmacy/review/${selectedPrescription.id}`, {
@@ -428,7 +428,7 @@ const PharmacyReview = () => {
                                             className="flex items-center gap-1 text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
                                         >
                                             <PlusCircle size={16} />
-                                            Add Drug
+                                            Add Medicine
                                         </button>
                                     </div>
 
@@ -469,7 +469,7 @@ const PharmacyReview = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Mapped Drug Display */}
+                                                {/* Mapped Medicine Display */}
                                                 {isMapped && mapping.mapped_drug ? (
                                                     <div className="bg-green-50 border border-green-300 rounded-lg p-3 mb-3">
                                                         <div className="flex justify-between items-start">
@@ -637,12 +637,12 @@ const PharmacyReview = () => {
                     </div>
                 )}
 
-                {/* Add Drug Modal */}
+                {/* Add Medicine Modal */}
                 {showAddDrugModal && selectedPrescription && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                         <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
                             <div className="flex justify-between items-center px-6 py-4 border-b">
-                                <h3 className="text-xl font-bold text-gray-800">Add Drug to Prescription</h3>
+                                <h3 className="text-xl font-bold text-gray-800">Add Medicine to Prescription</h3>
                                 <button
                                     onClick={() => {
                                         setShowAddDrugModal(false);
@@ -659,13 +659,13 @@ const PharmacyReview = () => {
                             <div className="flex-1 overflow-y-auto p-6">
                                 {/* Search Input */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Drug</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Medicine</label>
                                     <input
                                         type="text"
                                         value={drugSearchQuery}
                                         onChange={(e) => handleSearchDrugs(e.target.value)}
                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                        placeholder="Type drug name..."
+                                        placeholder="Type medicine name..."
                                     />
                                 </div>
 

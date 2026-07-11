@@ -134,6 +134,7 @@ const AddDiagnosisModal = ({ treatment, mode = 'primary', diagnosisData = null, 
                             value={diagnosis}
                             onChange={(val) => setDiagnosis(val)}
                             placeholder="Search or select diagnosis..."
+                            type="diagnosis"
                         />
                         <p className="text-xs text-gray-500 mt-2">
                             The disease category and subcategory will be automatically assigned.

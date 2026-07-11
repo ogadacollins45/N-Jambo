@@ -1367,6 +1367,7 @@ const PatientDetails = () => {
                               value={newTreatment.impression}
                               onChange={(val) => setNewTreatment(prev => ({ ...prev, impression: val }))}
                               placeholder="Search or select impression... (Add custom impressions/diagnoses in System Settings)"
+                              type="impression"
                             />
                           </div>
                         </div>
@@ -3005,6 +3006,7 @@ const PatientDetails = () => {
                   value={admissionForm.reason}
                   onChange={(val) => setAdmissionForm(prev => ({ ...prev, reason: val }))}
                   placeholder="Search or select provisional diagnosis..."
+                  type="impression"
                 />
               </div>
 

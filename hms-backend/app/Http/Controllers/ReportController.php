@@ -357,7 +357,7 @@ class ReportController extends Controller
             'patient:id,first_name,last_name,age_years,age,gender',
             'diagnoses:id,treatment_id,diagnosis'
         ])
-            ->select('id', 'patient_id', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'visit_date', 'treatment_type')
+            ->select('id', 'patient_id', 'diagnosis', 'diagnosis_category', 'diagnosis_subcategory', 'visit_date', 'treatment_type', 'impression')
             ->whereYear('visit_date', $year)
             ->whereMonth('visit_date', $month)
             ->get();
@@ -442,6 +442,29 @@ class ReportController extends Controller
                         'category' => $diag->diagnosis_category,
                         'sub'      => $diag->diagnosis_subcategory,
                     ];
+                }
+            }
+
+            // Impressions (Only extract if it maps to a 'suspected' or 'presumed' disease)
+            if (!empty($treatment->impression)) {
+                $impKey = DiseaseMapper::strictMap($treatment->impression, $customOptions);
+                if ($impKey && (str_starts_with($impKey, 'suspected_') || str_starts_with($impKey, 'presumed_') || $impKey === 'suspected_malaria')) {
+                    // Only add if not already in the diagnosis list to avoid duplicates
+                    $alreadyExists = false;
+                    foreach ($diagnosisList as $d) {
+                        if (strtolower(trim($d['text'])) === strtolower(trim($treatment->impression))) {
+                            $alreadyExists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!$alreadyExists) {
+                        $diagnosisList[] = [
+                            'text'     => $treatment->impression,
+                            'category' => null, // Impression has no category/subcategory
+                            'sub'      => null,
+                        ];
+                    }
                 }
             }
 

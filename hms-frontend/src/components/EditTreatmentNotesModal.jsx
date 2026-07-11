@@ -206,6 +206,7 @@ const EditTreatmentNotesModal = ({ treatment, onClose, onSaved }) => {
                 value={formData.impression}
                 onChange={(val) => setFormData(prev => ({ ...prev, impression: val }))}
                 placeholder="Clinical impression and assessment"
+                type="impression"
               />
             </div>
 

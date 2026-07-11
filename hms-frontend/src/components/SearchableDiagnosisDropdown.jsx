@@ -5,7 +5,7 @@ import diseasesList from "../data/diseases_dropdown.json";
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
-const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search for a diagnosis..." }) => {
+const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search for a diagnosis...", type = "both" }) => {
   const [options, setOptions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [baseValue, setBaseValue] = useState("");
@@ -30,7 +30,17 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
         }));
 
         // Combine custom and predefined
-        const allDiagnoses = [...customDiagnoses, ...diseasesList];
+        let allDiagnoses = [...customDiagnoses, ...diseasesList];
+
+        // Filter based on type
+        if (type === "impression") {
+          allDiagnoses = allDiagnoses.filter(d => !d.label.toLowerCase().includes("confirmed"));
+        } else if (type === "diagnosis") {
+          allDiagnoses = allDiagnoses.filter(d => 
+            !d.label.toLowerCase().includes("suspected") && 
+            !d.label.toLowerCase().includes("presumed")
+          );
+        }
 
         // Ensure "All Other Diseases" is in the list
         const hasOther = allDiagnoses.some(d => d.value === "All Other Diseases");
@@ -55,14 +65,23 @@ const SearchableDiagnosisDropdown = ({ value, onChange, placeholder = "Search fo
       } catch (err) {
         console.error("Failed to load custom diagnoses", err);
         // Fallback to just predefined
-        setOptions(diseasesList);
+        let fallbackDiagnoses = diseasesList;
+        if (type === "impression") {
+          fallbackDiagnoses = fallbackDiagnoses.filter(d => !d.label.toLowerCase().includes("confirmed"));
+        } else if (type === "diagnosis") {
+          fallbackDiagnoses = fallbackDiagnoses.filter(d => 
+            !d.label.toLowerCase().includes("suspected") && 
+            !d.label.toLowerCase().includes("presumed")
+          );
+        }
+        setOptions(fallbackDiagnoses);
       } finally {
         setLoading(false);
       }
     };
 
     fetchCustomDiagnoses();
-  }, []);
+  }, [type]);
 
   // Set initial search term if value is provided
   useEffect(() => {

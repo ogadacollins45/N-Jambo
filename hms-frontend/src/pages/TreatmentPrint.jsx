@@ -210,10 +210,10 @@ const TreatmentPrint = () => {
                                 <img src={logo} alt="Logo" className="w-16 h-16 rounded-xl object-cover shadow-lg border border-blue-100" />
                                 <div>
                                     <h1 className="text-3xl font-sans font-black text-blue-900 tracking-tight uppercase leading-none mb-1">
-                                        Naitiri Jambo
+                                        NAITIRI JAMBO
                                     </h1>
                                     <h2 className="text-xl font-sans font-bold text-gray-600 tracking-wide uppercase">
-                                        Healthcare HMIS
+                                        MEDICAL CENTRE
                                     </h2>
                                     <p className="text-xs text-blue-800 mt-2 font-semibold tracking-widest uppercase">Excellence in Care</p>
                                 </div>
@@ -224,11 +224,11 @@ const TreatmentPrint = () => {
                                     <div className="p-1 bg-blue-50 rounded-full"><MapPin size={14} className="text-blue-900" /></div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2 text-gray-600 text-sm">
-                                    <span>+254 792 100336</span>
+                                    <span>0726427775</span>
                                     <div className="p-1 bg-blue-50 rounded-full"><Phone size={14} className="text-blue-900" /></div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2 text-gray-600 text-sm">
-                                    <span>info@naitirijambo.com</span>
+                                    <span>jamboclinicnaitiri@gmail.com</span>
                                     <div className="p-1 bg-blue-50 rounded-full"><Mail size={14} className="text-blue-900" /></div>
                                 </div>
                             </div>
